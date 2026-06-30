@@ -304,10 +304,10 @@ void hpm_pmbus_isr_handler(I2C_Type *ptr)
                     cfg.len = 0;
                     break;
                 }
-                pec = hpm_smbus_pec_crc8_in_command(obj->slave_addr, obj->command_code, &obj->slave_conf[obj->command_code].rdata[0], cfg.len, false, false);
                 if (obj->slave_conf[obj->command_code].rdata == NULL) {
                     return;
                 }
+                pec = hpm_smbus_pec_crc8_in_command(obj->slave_addr, obj->command_code, &obj->slave_conf[obj->command_code].rdata[0], cfg.len, false, false);
                 if (pec != obj->slave_conf[obj->command_code].rdata[obj->data_length - 1]) {
                     cfg.pec_check = false;
                 } else {
@@ -355,6 +355,7 @@ hpm_stat_t hpm_pmbus_master_read(I2C_Type *ptr, uint8_t slave_address, uint8_t c
 {
     hpm_pmbus_cmd_param_t para;
     hpm_stat_t sta = status_success;
+    uint32_t actual_len = 0;
     para = pmbus_cmd_param_table[command];
     switch (para.read_transaction_type) {
     case read_byte:
@@ -367,10 +368,15 @@ hpm_stat_t hpm_pmbus_master_read(I2C_Type *ptr, uint8_t slave_address, uint8_t c
         break;
     case read_block:
         if (para.data_length != 0xFFFFFFFF) {
-            sta = hpm_smbus_master_read_block_in_command(ptr, slave_address, command, data, para.data_length);
+            sta = hpm_smbus_master_read_block_in_command(ptr, slave_address, command, data, para.data_length, NULL);
             *len = para.data_length;
         } else {
-            sta = hpm_smbus_master_read_block_in_command(ptr, slave_address, command, data, *len);
+            /* Variable-length block (e.g. MFR_ID, MFR_MODEL, MFR_REVISION, MFR_LOCATION):
+             * *len as input is the buffer size, as output is the actual data length from slave */
+            sta = hpm_smbus_master_read_block_in_command(ptr, slave_address, command, data, *len, &actual_len);
+            if (sta == status_success) {
+                *len = actual_len;
+            }
         }
         break;
     case mfr_defined:

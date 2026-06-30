@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,7 +32,7 @@
  * I2C Section
  */
 #define I2C_SOC_FIFO_SIZE (4U)
-#define I2C_SOC_TRANSFER_COUNT_MAX (4096U)
+#define I2C_SOC_TRANSFER_COUNT_MAX (65536U)
 
 /*
  * PMIC Section
@@ -143,6 +143,7 @@
 #define TSW_SOC_SHAP_MAX_QUEUES                    (8U)
 #define TSW_SOC_SHAP_MAX_CL_ENTRIES                (256U)
 #define TSW_SOC_RTC_PORT                           (0U)
+#define TSW_SOC_ENVELOPE_FRAME_PAYLOAD_MAX         (1982U)
 
 /*
 * ADC Section
@@ -158,6 +159,7 @@
 #define ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT        (1U)
 #define ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES     (16777216U)
 #define ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES     (48U)
+#define ADC_SOC_HW_TRIG_SRC                        (1U)
 
 #define ADC16_SOC_PARAMS_LEN                       (34U)
 #define ADC16_SOC_MAX_CH_NUM                       (15U)

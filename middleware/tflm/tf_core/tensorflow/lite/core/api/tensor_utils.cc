@@ -17,7 +17,7 @@ limitations under the License.
 
 #include <string.h>
 
-#include "tensorflow/lite/c/common.h"
+#include "tensorflow/lite/core/c/common.h"
 
 namespace tflite {
 
@@ -33,8 +33,8 @@ TfLiteStatus ResetVariableTensor(TfLiteTensor* tensor) {
   }
   // TODO(b/139446230): Provide a platform header to better handle these
   // specific scenarios.
-#if __ANDROID__ || defined(__x86_64__) || defined(__i386__) || \
-    defined(__i386) || defined(__x86__) || defined(__X86__) || \
+#if defined(__ANDROID__) || defined(__x86_64__) || defined(__i386__) || \
+    defined(__i386) || defined(__x86__) || defined(__X86__) ||          \
     defined(_X86_) || defined(_M_IX86) || defined(_M_X64)
   memset(tensor->data.raw, value, tensor->bytes);
 #else

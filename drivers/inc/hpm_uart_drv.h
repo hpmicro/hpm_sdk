@@ -224,6 +224,10 @@ typedef struct hpm_uart_config {
 #if defined(HPM_IP_FEATURE_UART_RX_EN) && (HPM_IP_FEATURE_UART_RX_EN == 1)
     bool rx_enable;                             /**< RX Enable configuration */
 #endif
+#if defined(HPM_IP_FEATURE_UART_TXRX_POL) && (HPM_IP_FEATURE_UART_TXRX_POL == 1)
+    bool tx_pin_level_invert;                  /**< TX Pin level invert configuration */
+    bool rx_pin_level_invert;                  /**< RX Pin level invert configuration */
+#endif
 } uart_config_t;
 
 #if defined(HPM_IP_FEATURE_UART_TRIG_MODE) && (HPM_IP_FEATURE_UART_TRIG_MODE == 1)
@@ -1106,6 +1110,209 @@ static inline void uart_set_de_delay_after_stop_bit(UART_Type *ptr, uint8_t dela
 {
     ptr->MOTO_CFG |= UART_MOTO_CFG_TXSTOP_OPT_MASK | UART_MOTO_CFG_TXSTOP_INSERT_MASK;
     ptr->MOTO_CFG = (ptr->MOTO_CFG & ~UART_MOTO_CFG_TXSTP_BITS_MASK) | UART_MOTO_CFG_TXSTP_BITS_SET(delay);
+}
+
+#endif
+
+/**
+ * @brief Set UART data bits (word length)
+ *
+ * @param [in] ptr UART base address
+ * @param [in] word_length Word length (word_length_5_bits ~ word_length_8_bits)
+ */
+static inline void uart_set_data_bits(UART_Type *ptr, word_length_t word_length)
+{
+    /* DLAB bit must be cleared because when DLAB=1, access is redirected to baudrate divisor registers */
+    ptr->LCR = (ptr->LCR & ~(UART_LCR_DLAB_MASK | UART_LCR_WLS_MASK)) | UART_LCR_WLS_SET(word_length);
+}
+
+/**
+ * @brief Get UART current data bits (word length)
+ *
+ * @param [in] ptr UART base address
+ * @retval Current word length setting
+ */
+static inline word_length_t uart_get_data_bits(UART_Type *ptr)
+{
+    return (word_length_t)((ptr->LCR & UART_LCR_WLS_MASK) >> UART_LCR_WLS_SHIFT);
+}
+
+/**
+ * @brief Set UART parity
+ *
+ * @param [in] ptr UART base address
+ * @param [in] parity Parity setting (parity_none/parity_odd/parity_even/parity_always_1/parity_always_0)
+ */
+static inline void uart_set_parity(UART_Type *ptr, parity_setting_t parity)
+{
+    /* DLAB bit must be cleared because when DLAB=1, access is redirected to baudrate divisor registers */
+    uint32_t lcr = ptr->LCR & ~(UART_LCR_SPS_MASK | UART_LCR_EPS_MASK | UART_LCR_PEN_MASK | UART_LCR_DLAB_MASK);
+    switch (parity) {
+    case parity_none:
+        break;
+    case parity_odd:
+        lcr |= UART_LCR_PEN_MASK;
+        break;
+    case parity_even:
+        lcr |= UART_LCR_PEN_MASK | UART_LCR_EPS_MASK;
+        break;
+    case parity_always_1:
+        lcr |= UART_LCR_PEN_MASK | UART_LCR_SPS_MASK;
+        break;
+    case parity_always_0:
+        lcr |= UART_LCR_EPS_MASK | UART_LCR_PEN_MASK | UART_LCR_SPS_MASK;
+        break;
+    default:
+        break;
+    }
+    ptr->LCR = lcr;
+}
+
+/**
+ * @brief Get UART current parity setting
+ *
+ * @param [in] ptr UART base address
+ * @retval Current parity setting
+ */
+static inline parity_setting_t uart_get_parity(UART_Type *ptr)
+{
+    uint32_t lcr = ptr->LCR;
+    if (!(lcr & UART_LCR_PEN_MASK)) {
+        return parity_none;
+    } else if (lcr & UART_LCR_SPS_MASK) {
+        if (lcr & UART_LCR_EPS_MASK) {
+            return parity_always_0;
+        } else {
+            return parity_always_1;
+        }
+    } else if (lcr & UART_LCR_EPS_MASK) {
+        return parity_even;
+    } else {
+        return parity_odd;
+    }
+}
+
+/**
+ * @brief Set UART stop bits
+ *
+ * @param [in] ptr UART base address
+ * @param [in] stop_bits Number of stop bits (stop_bits_1/stop_bits_1_5/stop_bits_2)
+ */
+static inline void uart_set_stop_bits(UART_Type *ptr, num_of_stop_bits_t stop_bits)
+{
+    /* DLAB bit must be cleared because when DLAB=1, access is redirected to baudrate divisor registers */
+    if (stop_bits == stop_bits_1) {
+        ptr->LCR = (ptr->LCR & ~(UART_LCR_DLAB_MASK | UART_LCR_STB_MASK));
+    } else {
+        ptr->LCR = (ptr->LCR & ~UART_LCR_DLAB_MASK) | UART_LCR_STB_MASK;
+    }
+}
+
+/**
+ * @brief Get UART current stop bits setting
+ *
+ * @param [in] ptr UART base address
+ * @retval Current stop bits setting
+ */
+static inline num_of_stop_bits_t uart_get_stop_bits(UART_Type *ptr)
+{
+    if (ptr->LCR & UART_LCR_STB_MASK) {
+        /* Check word length to distinguish between 1.5 and 2 stop bits */
+        word_length_t wl = uart_get_data_bits(ptr);
+        if (wl == word_length_5_bits) {
+            return stop_bits_1_5;
+        } else {
+            return stop_bits_2;
+        }
+    } else {
+        return stop_bits_1;
+    }
+}
+
+/**
+ * @brief Enable UART hardware flow control (RTS/CTS)
+ *
+ * @param [in] ptr UART base address
+ */
+static inline void uart_enable_flow_control(UART_Type *ptr)
+{
+    ptr->MCR |= UART_MCR_AFE_MASK;
+}
+
+/**
+ * @brief Disable UART hardware flow control (RTS/CTS)
+ *
+ * @param [in] ptr UART base address
+ */
+static inline void uart_disable_flow_control(UART_Type *ptr)
+{
+    ptr->MCR &= ~UART_MCR_AFE_MASK;
+}
+
+/**
+ * @brief Check if UART hardware flow control is enabled
+ *
+ * @param [in] ptr UART base address
+ * @retval true if flow control is enabled
+ * @retval false if flow control is disabled
+ */
+static inline bool uart_is_flow_control_enabled(UART_Type *ptr)
+{
+    return ((ptr->MCR & UART_MCR_AFE_MASK) != 0U) ? true : false;
+}
+
+#if defined(HPM_IP_FEATURE_UART_TXRX_POL) && (HPM_IP_FEATURE_UART_TXRX_POL == 1)
+
+/**
+ * @brief Set UART TX pin level invert
+ *
+ * @param [in] ptr UART base address
+ * @param [in] invert true to invert, false to not invert
+*/
+static inline void uart_set_tx_pin_level_invert(UART_Type *ptr, bool invert)
+{
+    if (invert) {
+        ptr->IDLE_CFG |= UART_IDLE_CFG_TX_POL_MASK;
+    } else {
+        ptr->IDLE_CFG &= ~UART_IDLE_CFG_TX_POL_MASK;
+    }
+}
+
+/**
+ * @brief Get UART TX pin level invert
+ *
+ * @param [in] ptr UART base address
+ * @retval true if invert, false if not invert
+*/
+static inline bool uart_get_tx_pin_level_invert(UART_Type *ptr)
+{
+    return ((ptr->IDLE_CFG & UART_IDLE_CFG_TX_POL_MASK) != 0U) ? true : false;
+}
+
+/**
+ * @brief Set UART RX pin level invert
+ *
+ * @param [in] ptr UART base address
+ * @param [in] invert true to invert, false to not invert
+*/
+static inline void uart_set_rx_pin_level_invert(UART_Type *ptr, bool invert)
+{
+    if (invert) {
+        ptr->IDLE_CFG |= UART_IDLE_CFG_RX_POL_MASK;
+    } else {
+        ptr->IDLE_CFG &= ~UART_IDLE_CFG_RX_POL_MASK;
+    }
+}
+
+/**
+ * @brief Get UART RX pin level invert
+ *
+ * @param [in] ptr UART base address
+ * @retval true if invert, false if not invert
+*/
+static inline bool uart_get_rx_pin_level_invert(UART_Type *ptr)
+{
+    return ((ptr->IDLE_CFG & UART_IDLE_CFG_RX_POL_MASK) != 0U) ? true : false;
 }
 
 #endif

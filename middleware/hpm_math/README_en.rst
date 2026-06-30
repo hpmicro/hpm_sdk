@@ -15,10 +15,10 @@ DSP Functions
 The DSP library provides a wide range of optimized mathematical operations:
 
 1. Basic Math Operations
-   - Addition, subtraction, multiplication, division
-   - Square root, power functions
-   - Trigonometric functions
-   - Vector operations
+    - Addition, subtraction, multiplication, division
+    - Square root, power functions
+    - Trigonometric functions
+    - Vector operations
 
 2. Complex Number Operations
    - Complex arithmetic

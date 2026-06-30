@@ -11,7 +11,11 @@
 #include "hpm_sysctl_drv.h"
 #include "hpm_cam_drv.h"
 #include "hpm_camera.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_pdma_drv.h"
 #include "genNN.h"
 #include "detectionUtility.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,14 +14,34 @@
 #include "task.h"
 #include "ping.h"
 
+static void do_backspace(uint8_t *p, uint8_t *idx)
+{
+    if (*idx > 0) {
+        (*idx)--;
+        p[*idx] = '\0';
+    }
+}
+
 static void ping_fetch_user_command(uint8_t *p)
 {
     uint8_t cmd_str_idx = 0;
+    uint8_t ch;
 
     while (1) {
-        uint8_t ch = console_try_receive_byte();
+        ch = console_try_receive_byte();
 
         if (ch != 0) {
+            if (ch == 0x1b) {
+                /* consume ANSI escape sequence to avoid garbage in buffer */
+                for (int i = 0; i < 12; i++) {
+                    board_delay_us(100);
+                    ch = console_try_receive_byte();
+                    if (ch != 0 && ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '~')) {
+                        break;
+                    }
+                }
+                continue;
+            }
             console_send_byte(ch);
             if (ch == '\r') {
                 console_send_byte('\n');
@@ -29,8 +49,8 @@ static void ping_fetch_user_command(uint8_t *p)
 
             if (isprint(ch)) {
                 p[cmd_str_idx++] = ch;
-            } else if (ch == 0x7f) {
-                p[--cmd_str_idx] = '\0';
+            } else if (ch == 0x7f || ch == 0x08) {
+                do_backspace(p, &cmd_str_idx);
             } else if (ch == '\r') {
                 if (cmd_str_idx != 0) {
                     p[cmd_str_idx] = '\0';

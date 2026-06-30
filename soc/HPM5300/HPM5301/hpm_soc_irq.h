@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,8 +39,6 @@
 #define IRQn_TRGMUX1                   49      /* TRGMUX1 IRQ */
 #define IRQn_USB0                      51      /* USB0 IRQ */
 #define IRQn_XPI0                      52      /* XPI0 IRQ */
-#define IRQn_PSEC                      54      /* PSEC IRQ */
-#define IRQn_SECMON                    55      /* SECMON IRQ */
 #define IRQn_FUSE                      57      /* FUSE IRQ */
 #define IRQn_ADC0                      58      /* ADC0 IRQ */
 #define IRQn_ACMP_0                    62      /* ACMP_0 IRQ */

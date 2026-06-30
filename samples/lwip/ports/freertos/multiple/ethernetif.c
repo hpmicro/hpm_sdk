@@ -44,13 +44,16 @@
 */
 
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
 #include "common.h"
+#if defined(LWIP_PTP) && LWIP_PTP
+#include "lwip_ptp_tx_ts.h"
+#endif
 #include "lwip/opt.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
@@ -77,6 +80,10 @@
 #define netifMTU                           (1500)
 #define netifINTERFACE_TASK_STACK_SIZE     (1024)
 
+/*
+ * ETH RX task priority (FreeRTOS): larger value means higher priority.
+ * Keep one step below configMAX_PRIORITIES so the driver stays above lwIP worker tasks.
+ */
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 #define netifINTERFACE_TASK_PRIORITY       (configMAX_PRIORITIES - 1)
 #elif defined(__ENABLE_RTTHREAD_NANO) && __ENABLE_RTTHREAD_NANO
@@ -182,6 +189,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
 #if defined(LWIP_PTP) && LWIP_PTP
     enet_ptp_ts_system_t timestamp;
+    enet_tx_control_config_t tx_cfg;
 #endif
 
 #if defined(NO_SYS) && !NO_SYS
@@ -239,10 +247,13 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
         l1c_dc_writeback(((uint32_t)p->payload + (MEM_ALIGNMENT - 1)) & ~(MEM_ALIGNMENT - 1), ENET_TX_BUFF_SIZE);
 
         #if defined(LWIP_PTP) && LWIP_PTP
-            enet_prepare_tx_desc_with_ts_record(base, &desc[netif->num].tx_desc_list_cur, &desc[netif->num].tx_control_config, frame_length, desc.tx_buff_cfg.size, &timestamp);
-            /* Get the transmit timestamp */
-            p->time_sec  = timestamp.sec;
-            p->time_nsec = timestamp.nsec;
+            tx_cfg = desc[netif->num].tx_control_config;
+            tx_cfg.enable_ttse = lwip_ptp_frame_needs_tx_hw_timestamp(p);
+            enet_prepare_tx_desc_with_ts_record(base, &desc[netif->num].tx_desc_list_cur, &tx_cfg, frame_length, desc[netif->num].tx_buff_cfg.size, &timestamp);
+            if (tx_cfg.enable_ttse) {
+                p->time_sec  = timestamp.sec;
+                p->time_nsec = timestamp.nsec;
+            }
         #else
             enet_prepare_tx_desc(base, &desc[netif->num].tx_desc_list_cur, &desc[netif->num].tx_control_config, frame_length, desc[netif->num].tx_buff_cfg.size);
         #endif

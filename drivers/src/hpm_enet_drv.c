@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,13 @@
  */
 #include "hpm_enet_drv.h"
 #include "hpm_enet_soc_drv.h"
+
+#define ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, enet_ptr) do { \
+    __asm volatile("fence w, w" ::: "memory"); \
+    (dma_tx_desc)->tdes0_bm.own = 1; \
+    __asm volatile("fence w, o" ::: "memory"); \
+    (enet_ptr)->DMA_TX_POLL_DEMAND = 1; \
+} while (0)
 
 /*---------------------------------------------------------------------
  * Internal API
@@ -208,8 +215,10 @@ void enet_dma_flush(ENET_Type *ptr)
     }
 }
 
-void enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t data)
+hpm_stat_t enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t data)
 {
+    uint32_t retry_cnt = ENET_MDIO_BUSY_RETRY_CNT;
+
     /* set data to be written */
     ptr->GMII_DATA = ENET_GMII_DATA_GD_SET(data);
 
@@ -222,11 +231,22 @@ void enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t d
 
     /* wait until the write operation is completed */
     while (ENET_GMII_ADDR_GB_GET(ptr->GMII_ADDR)) {
+        if (--retry_cnt == 0U) {
+            return status_timeout;
+        }
     }
+
+    return status_success;
 }
 
-uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr)
+hpm_stat_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint16_t *data)
 {
+    uint32_t retry_cnt = ENET_MDIO_BUSY_RETRY_CNT;
+
+    if (data == NULL) {
+        return status_invalid_argument;
+    }
+
     /* set phy address, register address, read operation and busy flag */
     ptr->GMII_ADDR = ENET_GMII_ADDR_PA_SET(phy_addr)
                    | ENET_GMII_ADDR_GR_SET(addr)
@@ -236,10 +256,15 @@ uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr)
 
     /* wait until the write operation is completed */
     while (ENET_GMII_ADDR_GB_GET(ptr->GMII_ADDR)) {
+        if (--retry_cnt == 0U) {
+            return status_timeout;
+        }
     }
 
     /* read and return data */
-    return (uint16_t)ENET_GMII_DATA_GD_GET(ptr->GMII_DATA);
+    *data = (uint16_t)ENET_GMII_DATA_GD_GET(ptr->GMII_DATA);
+
+    return status_success;
 }
 
 void enet_set_line_speed(ENET_Type *ptr, enet_line_speed_t speed)
@@ -492,9 +517,7 @@ uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
         /* set the frame size */
         dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
         /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-        dma_tx_desc->tdes0_bm.own = 1;
-        __asm volatile("fence rw, rw");
-        ptr->DMA_TX_POLL_DEMAND = 1;
+        ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
 
         if (dma_tx_desc->tdes0_bm.ttse == true) {
             do {
@@ -555,9 +578,7 @@ uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
                 dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
 
                 /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-                dma_tx_desc->tdes0_bm.own = 1;
-                __asm volatile("fence rw, rw");
-                ptr->DMA_TX_POLL_DEMAND = 1;
+                ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
             }
         }
     }
@@ -603,9 +624,7 @@ uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_li
         /* set the frame size */
         dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
         /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-        dma_tx_desc->tdes0_bm.own = 1;
-        __asm volatile("fence rw, rw");
-        ptr->DMA_TX_POLL_DEMAND = 1;
+        ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
 
         dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
     } else {
@@ -636,9 +655,7 @@ uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_li
                 dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
 
                 /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-                dma_tx_desc->tdes0_bm.own = 1;
-                __asm volatile("fence rw, rw");
-                ptr->DMA_TX_POLL_DEMAND = 1;
+                ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
             }
 
             dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
@@ -686,9 +703,7 @@ uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **
         /* set the frame size */
         dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
         /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-        dma_tx_desc->tdes0_bm.own = 1;
-        __asm volatile("fence rw, rw");
-        ptr->DMA_TX_POLL_DEMAND = 1;
+        ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
 
         dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
     } else {
@@ -712,9 +727,7 @@ uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **
                 dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
 
                 /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-                dma_tx_desc->tdes0_bm.own = 1;
-                __asm volatile("fence rw, rw");
-                ptr->DMA_TX_POLL_DEMAND = 1;
+                ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
             }
 
             dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
@@ -898,13 +911,36 @@ hpm_stat_t enet_get_default_ptp_config(ENET_Type *ptr, uint32_t ptp_clk_freq, en
     config->timestamp_rollover_mode = enet_ts_dig_rollover_control;
     config->update_method = enet_ptp_time_coarse_update;
     config->addend = 0;
+    config->pps_enable_output = false;
 
     return status_success;
 }
 
-void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
+hpm_stat_t enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
 {
+    hpm_stat_t stat = status_success;
     bool default_setting = false;
+
+    if (config == NULL || config->ptp_timestamp == NULL) {
+        return status_invalid_argument;
+    }
+
+    if (config->pps_enable_output) {
+        if (config->mode == enet_pps_fixed_output) {
+            enet_set_pps0_control_output(ptr, config->param.control_freq);
+        } else if (config->mode == enet_pps_flexible_output) {
+            stat = enet_set_ppsx_config(ptr, (enet_pps_cmd_config_t *)&config->param.flexible.config, config->param.flexible.idx);
+            if (stat != status_success) {
+                return stat;
+            }
+            stat = enet_set_ppsx_command(ptr, config->param.flexible.cmd, config->param.flexible.idx);
+            if (stat != status_success) {
+                return stat;
+            }
+        } else {
+            return status_invalid_argument;
+        }
+    }
 
     if ((config->update_method == enet_ptp_time_fine_update) && (config->addend == 0)) {
         default_setting = true;
@@ -918,7 +954,6 @@ void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
     ptr->TS_CTRL |= ENET_TS_CTRL_TSENALL_MASK | ENET_TS_CTRL_TSENA_MASK;
 
     /* set sub-second increment */
-
     ptr->SUB_SEC_INCR &= ~ENET_SUB_SEC_INCR_SSINC_MASK;
     ptr->SUB_SEC_INCR |= default_setting ? ENET_SUB_SEC_INCR_SSINC_SET(2 * config->ssinc) : ENET_SUB_SEC_INCR_SSINC_SET(config->ssinc);
 
@@ -940,6 +975,10 @@ void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config)
         /* coarse update */
         ptr->TS_CTRL &= ~ENET_TS_CTRL_TSCFUPDT_MASK;
     }
+
+    enet_set_ptp_timestamp(ptr, (enet_ptp_ts_update_t *)config->ptp_timestamp);
+
+    return stat;
 }
 
 void enet_set_pps0_control_output(ENET_Type *ptr, enet_pps_ctrl_t freq)

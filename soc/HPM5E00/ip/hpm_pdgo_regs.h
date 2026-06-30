@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1268,10 +1268,9 @@ typedef struct {
 #define PDGO_PCNT_HOMING_CFG_RNG_CMP_SRC_GET(x) (((uint32_t)(x) & PDGO_PCNT_HOMING_CFG_RNG_CMP_SRC_MASK) >> PDGO_PCNT_HOMING_CFG_RNG_CMP_SRC_SHIFT)
 
 /*
- * CMP0_MODE (RW)
+ * MATCH0_MODE (RW)
  *
- * Match Mode for Comparator 0:
- * Comparison point 0 matches mode:
+ * Match Mode for Match0:
  * Mode0 : Disable.
  * Mode1 : Range Match:
  * If  CMP0 <= CMP1, match valid when CMP0 <= RNG_CMP_SRC <= CMP1;
@@ -1286,10 +1285,10 @@ typedef struct {
  * Direction update value: direction decoded by the decoder according to the Phase (e.g. Phase 0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 0 ...... mean forward.
  * Current Direction: direction decoded by the comparator based on the line field in counter.
  */
-#define PDGO_PCNT_HOMING_CFG_CMP0_MODE_MASK (0x70000UL)
-#define PDGO_PCNT_HOMING_CFG_CMP0_MODE_SHIFT (16U)
-#define PDGO_PCNT_HOMING_CFG_CMP0_MODE_SET(x) (((uint32_t)(x) << PDGO_PCNT_HOMING_CFG_CMP0_MODE_SHIFT) & PDGO_PCNT_HOMING_CFG_CMP0_MODE_MASK)
-#define PDGO_PCNT_HOMING_CFG_CMP0_MODE_GET(x) (((uint32_t)(x) & PDGO_PCNT_HOMING_CFG_CMP0_MODE_MASK) >> PDGO_PCNT_HOMING_CFG_CMP0_MODE_SHIFT)
+#define PDGO_PCNT_HOMING_CFG_MATCH0_MODE_MASK (0x70000UL)
+#define PDGO_PCNT_HOMING_CFG_MATCH0_MODE_SHIFT (16U)
+#define PDGO_PCNT_HOMING_CFG_MATCH0_MODE_SET(x) (((uint32_t)(x) << PDGO_PCNT_HOMING_CFG_MATCH0_MODE_SHIFT) & PDGO_PCNT_HOMING_CFG_MATCH0_MODE_MASK)
+#define PDGO_PCNT_HOMING_CFG_MATCH0_MODE_GET(x) (((uint32_t)(x) & PDGO_PCNT_HOMING_CFG_MATCH0_MODE_MASK) >> PDGO_PCNT_HOMING_CFG_MATCH0_MODE_SHIFT)
 
 /*
  * DMODE (RW)

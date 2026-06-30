@@ -7,7 +7,7 @@
 #ifndef LWIPOPTS_H
 #define LWIPOPTS_H
 
-#if defined(__GNUC__) && (__GNUC__ >= 14)
+#if defined(__GNUC__) && (__GNUC__ >= 14) && !defined(__SES_RISCV)
 #include "sys/select.h"
 #endif
 

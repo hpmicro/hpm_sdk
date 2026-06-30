@@ -6,7 +6,7 @@ CAN
 概述
 ------
 
-can_demo 例程提供如下功能：
+CAN 例程按照与 MCAN 例程一致的方式拆分为公共框架和分功能源码文件，提供如下功能：
 
 - SoC支持的所有CAN外设的回环测试，主要集中在CAN和CAN-FD测试
 
@@ -19,6 +19,25 @@ can_demo 例程提供如下功能：
 - CAN的错误相关的检测
 
 - CAN过滤器
+
+- CAN时间戳功能演示
+
+源码组织
+------------
+
+- ``src/can_app_common.c`` 和 ``src/can_app_common.h`` 保存公共入口、菜单、CAN 实例表、消息显示辅助函数以及 ISR 回调分发逻辑。
+
+- ``src/can_loopback_demo.c`` 保存所有 CAN 实例的阻塞式回环测试，以及开发板 CAN 实例的中断模式回环测试。
+
+- ``src/can_echo_demo.c`` 保存双板 Echo 发起端和响应端流程。
+
+- ``src/can_txrx_demo.c`` 保存经典 CAN 和 CAN FD 的批量发送演示，用于总线连通性检查。
+
+- ``src/can_error_demo.c`` 保存错误检测演示，以及关闭自动重传后的错误场景演示。
+
+- ``src/can_filter_demo.c`` 保存验收过滤器测试。
+
+- ``src/can_timestamp_demo.c`` 保存基于 PTPC 的经典 CAN 和 CAN FD 时间戳演示。
 
 硬件设置
 ------------
@@ -61,3 +80,5 @@ can_demo 例程提供如下功能：
 - 对于菜单选项 4, 用户需确认开发板挂载到有效的CAN总线上。 如果开发板连接在CAN分析仪上，用户可以通过CAN分析仪观测到开发板在运行该选项后发送了多包数据
 
 - 对于菜单选项 7, 用户需确认开发板挂载到有效的CAN总线上且总线支持5Mbits/s的传输速度。 如果开发板连接在CAN分析仪上，用户可以通过CAN分析仪观测到开发板在运行该选项后发送了多包数据
+
+- 针对驱动回归和运行时覆盖，请使用 ``unit_test/drivers/can`` 目标。该单元测试覆盖了辅助 API、回环、CAN FD、时间戳以及边界场景。

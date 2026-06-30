@@ -1,8 +1,10 @@
 # Change Log
 
 ## Version
- Commit :1a0287fc5fa81fa6aa1dcfb0c5b2e01f74164393
- 
+ Commit :f2b2b3f51cdf97fe190ef8bd6d1839013c9c179e
+
  - Change :
+    - Upgrade from 1a0287fc to f2b2b3f5 (latest upstream main)
     - ADD __HPMICRO__ to middleware
     - Optimize running speed with nn library
+    - See PORTING_NOTES.md for full patch details

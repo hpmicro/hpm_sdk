@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -210,33 +210,12 @@
 /* USB0 base pointer */
 #define HPM_USB0 ((USB_Type *) HPM_USB0_BASE)
 
-#include "hpm_sec_regs.h"
-/* Address of SEC instances */
-/* SEC base address */
-#define HPM_SEC_BASE (0xF3044000UL)
-/* SEC base pointer */
-#define HPM_SEC ((SEC_Type *) HPM_SEC_BASE)
-
-#include "hpm_mon_regs.h"
-/* Address of MON instances */
-/* MON base address */
-#define HPM_MON_BASE (0xF3048000UL)
-/* MON base pointer */
-#define HPM_MON ((MON_Type *) HPM_MON_BASE)
-
 #include "hpm_otp_regs.h"
 /* Address of OTP instances */
 /* OTP base address */
 #define HPM_OTP_BASE (0xF3050000UL)
 /* OTP base pointer */
 #define HPM_OTP ((OTP_Type *) HPM_OTP_BASE)
-
-#include "hpm_keym_regs.h"
-/* Address of KEYM instances */
-/* KEYM base address */
-#define HPM_KEYM_BASE (0xF3054000UL)
-/* KEYM base pointer */
-#define HPM_KEYM ((KEYM_Type *) HPM_KEYM_BASE)
 
 #include "hpm_adc16_regs.h"
 /* Address of ADC16 instances */

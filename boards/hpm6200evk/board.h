@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,6 +20,7 @@
 
 #define BOARD_NAME          "hpm6200evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
+#define BOARD_DFU_SIGNATURE (0x48504D21UL)
 
 #define SEC_CORE_IMG_START CORE1_ILM_LOCAL_BASE
 
@@ -138,10 +139,10 @@
 #define BOARD_ACMP_MINUS_INPUT ACMP_INPUT_ANALOG_5 /* align with used pin */
 
 /* dma section */
-#define BOARD_APP_XDMA      HPM_XDMA
-#define BOARD_APP_HDMA      HPM_HDMA
-#define BOARD_APP_XDMA_IRQ  IRQn_XDMA
-#define BOARD_APP_HDMA_IRQ  IRQn_HDMA
+#define BOARD_APP_DMA1      HPM_XDMA
+#define BOARD_APP_DMA0      HPM_HDMA
+#define BOARD_APP_DMA1_IRQ  IRQn_XDMA
+#define BOARD_APP_DMA0_IRQ  IRQn_HDMA
 #define BOARD_APP_DMAMUX    HPM_DMAMUX
 #define TEST_DMA_CONTROLLER HPM_XDMA
 #define TEST_DMA_IRQ        IRQn_XDMA
@@ -280,6 +281,7 @@
 #define BOARD_BLDC_QEI_TRGM_QEI_B_SRC            HPM_TRGM0_INPUT_SRC_TRGM0_P7
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE              clock_mot0
+#define BOARD_BLDC_MOTOR_CLOCK_SOURCE            clock_mot0
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV   (4000U)
 
 /*Timer define*/
@@ -308,11 +310,12 @@
 #define BOARD_BLDC_HFI_PLL_KI (1.0f)
 
 /*adc*/
-#define BOARD_BLDC_ADC_MODULE    ADCX_MODULE_ADC16
 #define BOARD_BLDC_ADC_U_BASE    HPM_ADC0
+#define BOARD_BLDC_ADC_RES_BITS              (16U)
+#define BOARD_BLDC_ADC_CLOCK_DIV             (4U)
+#define BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE  (20U)
 #define BOARD_BLDC_ADC_V_BASE    HPM_ADC1
 #define BOARD_BLDC_ADC_W_BASE    HPM_ADC2
-#define BOARD_BLDC_ADC_TRIG_FLAG adc16_event_trig_complete
 
 #define BOARD_BLDC_ADC_CH_U                   (11U)
 #define BOARD_BLDC_ADC_CH_V                   (9U)
@@ -375,6 +378,7 @@
 #define BOARD_B_GPIO_INDEX GPIO_DI_GPIOB
 #define BOARD_B_GPIO_PIN   19
 
+#define BOARD_LED_GPIO_NAME  "PB01"
 #define BOARD_LED_GPIO_CTRL  BOARD_G_GPIO_CTRL
 #define BOARD_LED_GPIO_INDEX BOARD_G_GPIO_INDEX
 #define BOARD_LED_GPIO_PIN   BOARD_G_GPIO_PIN
@@ -417,7 +421,7 @@
 /* PLA TAMAGAWA*/
 
 #define PLA_TMGW_SPI              HPM_SPI2
-#define PLA_TMGW_SPI_DMA          BOARD_APP_HDMA
+#define PLA_TMGW_SPI_DMA          BOARD_APP_DMA0
 #define PLA_TMGW_SPI_DMAMUX       BOARD_APP_DMAMUX
 #define PLA_TMGW_SPI_RX_DMA_REQ   HPM_DMA_SRC_SPI2_RX
 #define PLA_TMGW_SPI_TX_DMA_REQ   HPM_DMA_SRC_SPI2_TX
@@ -477,7 +481,7 @@
 #define PLA_TMGW_QEI_TRGM_QEI_TRG0   HPM_TRGM0_INPUT_SRC_QEI0_TRGO
 #define PLA_TMGW_QEI_TRGM_QEI_PLA_IN TRGM_TRGOCFG_PLA_IN1
 
-#define PLA_TMGW_QEI_DMA       BOARD_APP_HDMA
+#define PLA_TMGW_QEI_DMA       BOARD_APP_DMA0
 #define PLA_TMGW_QEI_DMAMUX    BOARD_APP_DMAMUX
 #define PLA_TMGW_QEI_DMAREQ    HPM_DMA_SRC_MOT0_0
 #define PLA_TMGW_QEI_DMACH     (2UL)
@@ -485,7 +489,7 @@
 
 #define PLA_TMGW_HALL_BASE      HPM_HALL0
 #define PLA_TMGW_HALL_TRGM      HPM_TRGM0
-#define PLA_TMGW_HALL_DMA       BOARD_APP_HDMA
+#define PLA_TMGW_HALL_DMA       BOARD_APP_DMA0
 #define PLA_TMGW_HALL_DMAMUX    BOARD_APP_DMAMUX
 #define PLA_TMGW_HALL_DMA_CH    (3U)
 #define PLA_TMGW_HALL_DMAMUX_CH DMA_SOC_CHN_TO_DMAMUX_CHN(PLA_TMGW_HALL_DMA, PLA_TMGW_HALL_DMA_CH)
@@ -494,7 +498,7 @@
 
 #define PLA_TMGW_DMA_LINK_NUM        (25U)
 #define PLA_TMGW_DMA_LINK_TRGM       HPM_TRGM0
-#define PLA_TMGW_DMA_LINK_DMA        BOARD_APP_HDMA
+#define PLA_TMGW_DMA_LINK_DMA        BOARD_APP_DMA0
 #define PLA_TMGW_DMA_LINK_DMAMUX     BOARD_APP_DMAMUX
 #define PLA_TMGW_DMA_LINK_DMA_CH     (4U)
 #define PLA_TMGW_DMA_LINK_DMAMUX_CH  DMA_SOC_CHN_TO_DMAMUX_CHN(PLA_TMGW_DMA_LINK_DMA, PLA_TMGW_DMA_LINK_DMA_CH)
@@ -515,7 +519,6 @@
 #define BOARD_BLDC_ADC_PHASE_TRG              ADC16_CONFIG_TRG0A
 #define BOARD_BLDC_ADC_PHASE_PREEMPT_TRIG_LEN (3)
 #define BOARD_BLDC_ADC_PHASE_IRQn             IRQn_ADC0
-#define BOARD_BLDC_ADC_PHASE_TRIG_FLAG        adc16_event_trig_complete
 
 #ifndef BOARD_SHOW_CLOCK
 #define BOARD_SHOW_CLOCK 1
@@ -603,6 +606,14 @@
 
 #define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
 #define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PB31
+
+/* sent decode pin */
+
+#define BOARD_SENT_IDLE_HIGH_GPTMR                   HPM_GPTMR1
+#define BOARD_SENT_IDLE_HIGH_GPTMR_IRQ               IRQn_GPTMR1
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CHANNEL           2
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CLK_NAME          clock_gptmr1
+#define BOARD_SENT_IDLE_HIGH_GPTMR_DMA_SRC           HPM_DMA_SRC_GPTMR1_2
 
 #if defined(__cplusplus)
 extern "C" {
@@ -702,6 +713,7 @@ void init_trgmux_pins(uint32_t pin);
 void init_lin_pins(LIN_Type *ptr);
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
 void board_init_brownout_indicate_pin(void);
+void init_sent_decode_pins(bool idle_high);
 
 #if defined(__cplusplus)
 }

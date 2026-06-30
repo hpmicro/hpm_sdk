@@ -1,15 +1,10 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
-/*
- * Copyright (c) 2021 HPMicro
- *
- * SPDX-License-Identifier: BSD-3-Clause
- *
- */
+
 #include <stdio.h>
 #include "board.h"
 #include "hpm_clock_drv.h"
@@ -24,7 +19,7 @@
 /* Define */
 #define SERIAL_UART                    BOARD_MODBUS_UART_BASE
 #define SERIAL_UART_CLK_NAME           BOARD_MODBUS_UART_CLK_NAME
-#define SERIAL_UART_DMA_CONTROLLER     BOARD_APP_HDMA
+#define SERIAL_UART_DMA_CONTROLLER     BOARD_APP_DMA0
 #define SERIAL_UART_DMAMUX_CONTROLLER  BOARD_APP_DMAMUX
 #define SERIAL_UART_RX_DMA_REQ         BOARD_MODBUS_UART_RX_DMA_REQ
 #define SERIAL_UART_TX_DMA_REQ         BOARD_MODBUS_UART_TX_DMA_REQ
@@ -39,8 +34,8 @@ static void serial_uart_dma_init(void);
 
 /* dma buffer should be 4-byte aligned */
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(4) uint8_t uart_rx_buf[SERIAL_BUFFER_SIZE];
-/* descriptor should be 8-byte aligned */
-ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors[2];
+/* descriptor should be DMA_LINKED_DESCRIPTOR_ALIGN aligned */
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(DMA_LINKED_DESCRIPTOR_ALIGN) dma_linked_descriptor_t descriptors[2];
 typedef struct {
     uint32_t front_index;
     uint32_t rear_index;

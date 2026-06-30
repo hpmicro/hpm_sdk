@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -82,13 +82,12 @@ void face_obj_display(uint16_t *buf, int image_width, int image_height)
         draw_square(buf, px[face_num], py[face_num], 60, 4, 800, color_buf[face_num]);
     }
 }
-TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
-                      int image_height, int channels, int8_t* image_data)
+TfLiteStatus GetImage(int image_width, int image_height, int channels,
+                      int8_t* image_data)
 {
     int x, y;
     uint32_t i = 0;
     uint32_t data_pos;
-    (void)error_reporter;
     (void)channels;
 
     for (y = 0; y < 480; y++) {

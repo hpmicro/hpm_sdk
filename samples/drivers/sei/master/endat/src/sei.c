@@ -9,7 +9,11 @@
 #include "hpm_clock_drv.h"
 #include "hpm_sei_drv.h"
 #include "hpm_synt_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_interrupt.h"
 
 #define DISCONNECT_TIMEOUT_MS (1000)

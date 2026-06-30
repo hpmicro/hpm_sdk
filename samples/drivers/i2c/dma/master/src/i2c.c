@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -23,6 +23,7 @@
 #define TEST_I2C_DMAMUX_SRC    BOARD_APP_I2C_DMA_SRC
 #define TEST_I2C_DMA_CH        0
 #define TEST_I2C_DMAMUX_CH     DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_I2C_DMA, TEST_I2C_DMA_CH)
+#define TEST_I2C_IRQ           BOARD_APP_I2C_IRQ
 
 #define TEST_I2C_SLAVE_ADDRESS (0x16U)
 
@@ -39,10 +40,27 @@ ATTR_PLACE_AT_NONCACHEABLE uint8_t rx_buff[TEST_TRANSFER_DATA_IN_BYTE];
 ATTR_PLACE_AT_NONCACHEABLE uint8_t tx_buff[TEST_TRANSFER_DATA_IN_BYTE];
 #endif
 
+volatile bool i2c_transfer_done;
+
+SDK_DECLARE_EXT_ISR_M(TEST_I2C_IRQ, i2c_isr)
+void i2c_isr(void)
+{
+    volatile uint32_t status;
+    status = i2c_get_status(TEST_I2C);
+
+    /* complete */
+    if (status & I2C_EVENT_TRANSACTION_COMPLETE) {
+        i2c_transfer_done = true;
+        i2c_clear_status(TEST_I2C, I2C_EVENT_TRANSACTION_COMPLETE);
+    }
+}
+
 hpm_stat_t i2c_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_ptr, uint32_t src, uint32_t size)
 {
     dma_handshake_config_t config;
 
+    /* disable i2c dma before next dma transaction */
+    i2c_dma_disable(i2c_ptr);
     dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&i2c_ptr->DATA;
@@ -59,6 +77,8 @@ hpm_stat_t i2c_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_p
 {
     dma_handshake_config_t config;
 
+    /* disable i2c dma before next dma transaction */
+    i2c_dma_disable(i2c_ptr);
     dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = dst;
@@ -69,20 +89,6 @@ hpm_stat_t i2c_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, I2C_Type *i2c_p
     config.size_in_byte = size;
 
     return dma_setup_handshake(dma_ptr, &config, true);
-}
-
-static void i2c_handle_dma_transfer_complete(I2C_Type *ptr)
-{
-    volatile uint32_t status;
-
-    /* wait for i2c transaction complete */
-    do {
-        status = i2c_get_status(ptr);
-    } while (!(status & I2C_STATUS_CMPL_MASK));
-    /* clear status */
-    i2c_clear_status(ptr, status);
-    /* disable i2c dma before next dma transaction */
-    i2c_dma_disable(ptr);
 }
 
 static void prepare_tx_data(void)
@@ -134,7 +140,11 @@ int main(void)
 
     dmamux_config(TEST_I2C_DMAMUX, TEST_I2C_DMAMUX_CH, TEST_I2C_DMAMUX_SRC, true);
 
-    /* setup i2c dma tx */
+    /* Enable I2C transmission completion interrupt */
+    i2c_enable_irq(TEST_I2C, I2C_EVENT_TRANSACTION_COMPLETE);
+    intc_m_enable_irq_with_priority(TEST_I2C_IRQ, 1);
+
+    /* I2C DMA Transmit */
 #if PLACE_BUFF_AT_CACHEABLE
     if (l1c_dc_is_enabled()) {
         /* cache writeback before DMA sent data */
@@ -151,15 +161,23 @@ int main(void)
         while (1) {
         }
     }
+    i2c_transfer_done = false;
     if (i2c_master_start_dma_write(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, TEST_TRANSFER_DATA_IN_BYTE) != status_success) {
         printf("I2C master start dma write failed!\n");
         dma_disable_channel(TEST_I2C_DMA, TEST_I2C_DMA_CH);
         while (1) {
         }
     }
-    i2c_handle_dma_transfer_complete(TEST_I2C);
 
-    /* setup i2c dma rx */
+    /* Wait for the i2c master write to complete */
+    while (!i2c_transfer_done) {
+    }
+
+    /* Waiting for the slave controller to be ready for the next communication. */
+    /* Adjusting the delay time based on the condition of the slave controller is necessary. */
+    board_delay_ms(10);
+
+    /* I2C DMA Receive */
     stat = i2c_rx_trigger_dma(TEST_I2C_DMA,
                             TEST_I2C_DMA_CH,
                             TEST_I2C,
@@ -170,13 +188,18 @@ int main(void)
         while (1) {
         }
     }
+    i2c_transfer_done = false;
     if (i2c_master_start_dma_read(TEST_I2C, TEST_I2C_SLAVE_ADDRESS, TEST_TRANSFER_DATA_IN_BYTE) != status_success) {
         printf("I2C master start dma read failed!\n");
         dma_disable_channel(TEST_I2C_DMA, TEST_I2C_DMA_CH);
         while (1) {
         }
     }
-    i2c_handle_dma_transfer_complete(TEST_I2C);
+
+    /* Wait for the i2c master read to complete */
+    while (!i2c_transfer_done) {
+    }
+
 #if PLACE_BUFF_AT_CACHEABLE
     if (l1c_dc_is_enabled()) {
         /* cache invalidate after DMA receive data */

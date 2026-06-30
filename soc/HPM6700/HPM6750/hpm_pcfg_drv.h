@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -217,7 +217,7 @@ static inline bool pcfg_dcdc_is_stable(PCFG_Type *ptr)
  */
 static inline void pcfg_dcdc_set_mode(PCFG_Type *ptr, uint8_t mode)
 {
-    ptr->DCDC_MODE = (ptr->DCDC_MODE & ~PCFG_DCDC_MODE_MODE_MASK) | PCFG_DCDC_MODE_MODE_SET(mode);
+    ptr->DCDC_MODE = (ptr->DCDC_MODE & ~(PCFG_DCDC_MODE_MODE_MASK | 0xF000u)) | PCFG_DCDC_MODE_MODE_SET(mode) | (mode << 12u);
 }
 
 /**
@@ -594,6 +594,22 @@ void pcfg_dcdc_switch_to_dcm_mode(PCFG_Type *ptr);
  * @param[in] ptr base address
  */
 void pcfg_dcdc_switch_to_ccm_mode(PCFG_Type *ptr);
+
+/**
+ * @brief set dcdc voltage and switch to dcm mode
+ *
+ * @param[in] ptr base address
+ * @param[in] voltage target voltage in mV
+ */
+void pcfg_dcdc_set_voltage_dcm_mode(PCFG_Type *ptr, uint16_t voltage);
+
+/**
+ * @brief set dcdc voltage and switch to ccm mode
+ *
+ * @param[in] ptr base address
+ * @param[in] voltage target voltage in mV
+ */
+void pcfg_dcdc_set_voltage_ccm_mode(PCFG_Type *ptr, uint16_t voltage);
 
 /**
  * @brief config irc24m track

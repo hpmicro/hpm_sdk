@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,9 +23,10 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/memory_helpers.h"
-#include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_graph.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_resource_variable.h"
+#include "tensorflow/lite/micro/micro_utils.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
 namespace tflite {
@@ -34,6 +35,20 @@ namespace {
 
 constexpr int kInputVariableId = 0;
 constexpr int kInputValue = 1;
+
+#ifdef USE_TFLM_COMPRESSION
+
+struct OpData {
+  // scratch buffer for compressed input tensor
+  int scratch_index;
+};
+
+void* Init(TfLiteContext* context, const char* buffer, size_t length) {
+  TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
+  return context->AllocatePersistentBuffer(context, sizeof(OpData));
+}
+
+#endif  // USE_TFLM_COMPRESSION
 
 TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
@@ -60,9 +75,26 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   MicroGraph& graph_info = micro_context->graph();
 
   MicroResourceVariables* resources = graph_info.GetResourceVariables();
-  TF_LITE_ENSURE_OK(context,
-                    resources->Allocate(input_resource_id_tensor->data.i32[0],
-                                        context, input_value));
+  // If the data field of this tensor is nullptr, we assume that this is a case
+  // of using resource variables in another subgraph, and the resource_id
+  // will be valid during Eval time. In case it wasn't valid, this will
+  // still be caught during Invoke. More info in b/277231654.
+  if (input_resource_id_tensor->data.i32 != nullptr) {
+    TF_LITE_ENSURE_OK(context,
+                      resources->Allocate(input_resource_id_tensor->data.i32[0],
+                                          context, input_value));
+  }
+
+#ifdef USE_TFLM_COMPRESSION
+
+  TFLITE_DCHECK(node->user_data != nullptr);
+  OpData* data = static_cast<OpData*>(node->user_data);
+  // Compression scratch buffers.
+  // These will only be allocated if the tensor is compressed.
+  data->scratch_index =
+      micro_context->AllocateDecompressionScratchBuffer(node, kInputValue);
+
+#endif  // USE_TFLM_COMPRESSION
 
   micro_context->DeallocateTempTfLiteTensor(input_value);
   return kTfLiteOk;
@@ -87,22 +119,36 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         "ResourceVariables and pass it to the interpreter.");
     return kTfLiteError;
   }
+
+#ifdef USE_TFLM_COMPRESSION
+  OpData* data = static_cast<OpData*>(node->user_data);
+  const CompressionTensorData* comp_td =
+      micro_context->GetTensorCompressionData(node, kInputValue);
+  const void* buffer = tflite::micro::GetTensorData<void>(
+      micro_context, input_value, comp_td, data->scratch_index);
+#else   // USE_TFLM_COMPRESSION
+  const void* buffer = tflite::micro::GetTensorData<void>(input_value);
+#endif  // USE_TFLM_COMPRESSION
+
   TF_LITE_ENSURE_OK(context,
-                    resources->Assign(input_id->data.i32[0], input_value));
+                    resources->Assign(input_id->data.i32[0],
+                                      EvalTensorBytes(input_value), buffer));
   return kTfLiteOk;
 }
 
 }  // namespace.
 
-TfLiteRegistration Register_ASSIGN_VARIABLE() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+#ifdef USE_TFLM_COMPRESSION
+
+TFLMRegistration Register_ASSIGN_VARIABLE() {
+  return tflite::micro::RegisterOp(Init, Prepare, Eval);
+
+#else  // USE_TFLM_COMPRESSION
+
+TFLMRegistration Register_ASSIGN_VARIABLE() {
+  return tflite::micro::RegisterOp(nullptr, Prepare, Eval);
+
+#endif  // USE_TFLM_COMPRESSION
 }
 
 }  // namespace tflite

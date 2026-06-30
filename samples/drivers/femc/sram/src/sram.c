@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include "hpm_l1c_drv.h"
 #include "hpm_femc_drv.h"
+
+#if defined(BOARD_HAS_FEMC_ASYNC_SRAM) && (BOARD_HAS_FEMC_ASYNC_SRAM == 1)
 
 #define SRAM_BASE_ADDR 0x48000000U
 #define SRAM_SIZE      BOARD_FEMC_ASYNC_SRAM_SIZE
@@ -31,7 +33,6 @@ static void rw_comparison(uint32_t start, uint32_t size_in_byte)
         if (u32_data_ptr[i] != 0x12345678) {
             printf("[%x] data u32 mismatch @ 0x%x\n", (uint32_t)&(u32_data_ptr[i]), u32_data_ptr[i]);
             status = status_fail;
-            break;
         }
     }
     printf("%s u32 comparison %s\n", status == status_fail ? "!! " : "** ", status == status_fail ? "failed" : "succeeded");
@@ -45,7 +46,6 @@ static void rw_comparison(uint32_t start, uint32_t size_in_byte)
         if (u16_data_ptr[i] != 0x5AA5) {
             printf("[%x] data u16 mismatch @ 0x%x\n", (uint32_t)&(u16_data_ptr[i]), u16_data_ptr[i]);
             status = status_fail;
-            break;
         }
     }
     printf("%s u16 comparison %s\n", status == status_fail ? "!! " : "** ", status == status_fail ? "failed" : "succeeded");
@@ -59,7 +59,6 @@ static void rw_comparison(uint32_t start, uint32_t size_in_byte)
         if (u8_data_ptr[i] != (i % 256)) {
             printf("[%x] data u8 mismatch @ 0x%x\n", (uint32_t)&(u8_data_ptr[i]), u8_data_ptr[i]);
             status = status_fail;
-            break;
         }
     }
     printf("%s u8 comparison %s\n", status == status_fail ? "!! " : "** ", status == status_fail ? "failed" : "succeeded");
@@ -108,17 +107,29 @@ static void init_sram_config(void)
 
     femc_config_sram(HPM_FEMC, femc_clk_in_hz, &sram_config);
 }
+#endif
 
 int main(void)
 {
+    /* Attention: When using FEMC SRAM interface to access external devices (non storage class), such as FPGA, the SRAM address space needs to be configured as non-cacheable.
+     * You can config non-cacheable memory attribute in board_init()-board_init_pmp() instead of using l1c_dc_disable().
+     */
     l1c_dc_disable();
 
     board_init();
+    printf("FEMC sram example\n\n");
+
+#if defined(BOARD_HAS_FEMC_ASYNC_SRAM) && (BOARD_HAS_FEMC_ASYNC_SRAM == 1)
     init_femc_pins();
     init_sram_config();
-
-    printf("sram example\n");
     rw_comparison(SRAM_BASE_ADDR, SRAM_SIZE);
+#else
+    printf("No sram on board. If it's your custom board which has sram, please define macros as follows.\n");
+    printf("- BOARD_HAS_FEMC_ASYNC_SRAM\n");
+    printf("- BOARD_FEMC_ASYNC_SRAM_CS_INDEX\n");
+    printf("- BOARD_FEMC_ASYNC_SRAM_AD_MUX_MODE\n");
+    printf("- BOARD_FEMC_ASYNC_SRAM_SIZE\n");
+#endif
 
     while (1) {
         ;

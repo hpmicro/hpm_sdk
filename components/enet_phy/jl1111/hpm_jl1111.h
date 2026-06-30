@@ -6,7 +6,7 @@
  */
 
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -74,6 +74,7 @@ typedef struct {
     bool auto_negotiation;      /**< Enable/disable auto-negotiation */
     uint8_t duplex;             /**< Duplex mode: @ref enet_phy_duplex_mode_t */
     uint8_t rmii_refclk_dir;    /**< RMII reference clock direction: @ref jl1111_config_refclk_direction_t */
+    uint8_t media_interface;    /**< Interface type: @ref enet_inf_type_t */
 } jl1111_config_t;
 
 #if defined(__cplusplus)
@@ -89,6 +90,7 @@ extern "C" {
  * @param[in] phy_addr PHY address
  * @retval true Reset operation completed successfully
  * @retval false Reset operation failed (timeout)
+ * @details This function performs a software reset on the JL1111 PHY chip.
  */
 bool jl1111_reset(ENET_Type *ptr, uint32_t phy_addr);
 
@@ -128,7 +130,7 @@ bool jl1111_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, jl1111_config_t *
  *          - Port speed (10 Mbps or 100 Mbps)
  *          - Duplex mode (half or full)
  */
-void jl1111_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
+hpm_stat_t jl1111_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
 
 /**
  * @brief Set interface mode for JL1111 PHY

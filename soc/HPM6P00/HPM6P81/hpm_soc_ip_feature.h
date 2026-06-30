@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -54,6 +54,9 @@
 #define HPM_IP_FEATURE_ADC16_HAS_MOT_EN 1
 #define HPM_IP_FEATURE_ADC16_HAS_DIFF_MODE 1
 #define HPM_IP_FEATURE_ADC16_SEQ_HCFG_EN 1
+#define HPM_IP_FEATURE_ADC16_HAS_TRIG_OUT 1
+#define HPM_IP_FEATURE_ADC16_HAS_BUS_MODE_EN 1
+#define HPM_IP_FEATURE_ADC16_SEQ_STOP_POS_INT 1
 
 /* ACMP related feature */
 #define HPM_IP_FEATURE_ACMP_HAS_CAP_SEL 1

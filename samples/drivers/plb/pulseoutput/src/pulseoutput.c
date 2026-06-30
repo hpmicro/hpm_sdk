@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -155,7 +155,11 @@ void init_pwm(void)
     pwmv2_enable_counter(BOARD_PLB_PWM_BASE, pwm_counter_0);
     pwmv2_start_pwm_output(BOARD_PLB_PWM_BASE, pwm_counter_0);
 
-    pwmv2_set_trigout_cmp_index(BOARD_PLB_PWM_BASE, pwm_channel_0, 0);
+    if (status_success != pwmv2_set_trigout_cmp_index(BOARD_PLB_PWM_BASE, pwm_channel_0, 0)) {
+        printf("failed to set PWMv2 trigger output compare index\n");
+        while (1) {
+        }
+    }
 
     pwmv2_shadow_register_unlock(BOARD_PLB_PWM_BASE);
     pwmv2_set_shadow_val(BOARD_PLB_PWM_BASE, PWMV2_SHADOW_INDEX(1), reload >> 1, 0, false);

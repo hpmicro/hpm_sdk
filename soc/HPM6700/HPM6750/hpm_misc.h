@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,25 +17,32 @@
 #define CORE1_ILM_SYSTEM_BASE (0x1180000U)
 #define CORE1_DLM_SYSTEM_BASE (0x11C0000U)
 
+#if (ILM_LOCAL_BASE == 0)
 #define ADDRESS_IN_ILM(address) \
     ((ILM_LOCAL_BASE + ILM_SIZE_IN_BYTE) > (address))
+#else
+#define ADDRESS_IN_ILM(address) \
+    (((ILM_LOCAL_BASE) <= (address)) && \
+    ((ILM_LOCAL_BASE + ILM_SIZE_IN_BYTE) > (address)))
+#endif
+
 #define ADDRESS_IN_DLM(address) \
     (((DLM_LOCAL_BASE) <= (address)) && \
-     ((DLM_LOCAL_BASE + DLM_SIZE_IN_BYTE) > (address)))
+    ((DLM_LOCAL_BASE + DLM_SIZE_IN_BYTE) > (address)))
 
 #define ADDRESS_IN_CORE0_ILM_SYSTEM(address) \
     (((CORE0_ILM_SYSTEM_BASE) <= (address)) && \
-     ((CORE0_ILM_SYSTEM_BASE + ILM_SIZE_IN_BYTE) > (address)))
+    ((CORE0_ILM_SYSTEM_BASE + ILM_SIZE_IN_BYTE) > (address)))
 #define ADDRESS_IN_CORE0_DLM_SYSTEM(address) \
     (((CORE0_DLM_SYSTEM_BASE) <= (address)) && \
-     ((CORE0_DLM_SYSTEM_BASE + DLM_SIZE_IN_BYTE) > (address)))
+    ((CORE0_DLM_SYSTEM_BASE + DLM_SIZE_IN_BYTE) > (address)))
 
 #define ADDRESS_IN_CORE1_ILM_SYSTEM(address) \
     (((CORE1_ILM_SYSTEM_BASE) <= (address)) && \
-     ((CORE1_ILM_SYSTEM_BASE + ILM_SIZE_IN_BYTE) > (address)))
+    ((CORE1_ILM_SYSTEM_BASE + ILM_SIZE_IN_BYTE) > (address)))
 #define ADDRESS_IN_CORE1_DLM_SYSTEM(address) \
     (((CORE1_DLM_SYSTEM_BASE) <= (address)) && \
-     ((CORE1_DLM_SYSTEM_BASE + DLM_SIZE_IN_BYTE) > (address)))
+    ((CORE1_DLM_SYSTEM_BASE + DLM_SIZE_IN_BYTE) > (address)))
 
 #define DLM_TO_SYSTEM(address) \
     (CORE0_DLM_SYSTEM_BASE + (address) - (DLM_LOCAL_BASE))

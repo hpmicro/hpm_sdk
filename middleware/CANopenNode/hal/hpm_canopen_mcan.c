@@ -15,10 +15,6 @@ extern hpm_can_config_t hpm_canopen_config[MAX_CANOPEN_DEVICE];
 extern hpm_can_data_t hpm_canopen_data[MAX_CANOPEN_DEVICE];
 extern struct device hpm_canopen_dev[MAX_CANOPEN_DEVICE];
 
-#if defined(CONFIG_CANOPEN_MASTER)
-extern hpm_master_receive_buf_t canopen_rx_buf;
-#endif
-
 static uint32_t hpm_mcan_get_first_filter_index(const mcan_rx_message_t *buf,
                                         const hpm_can_data_t *data)
 {
@@ -29,7 +25,7 @@ static uint32_t hpm_mcan_get_first_filter_index(const mcan_rx_message_t *buf,
     if (buf->use_ext_id) {
         for (uint32_t i = 0; i < ext_filter_count; i++) {
             const mcan_filter_elem_t *filter = &data->ext_filters[i].filters;
-            if ((buf->ext_id | filter->filter_mask) == (filter->filter_id | filter->filter_mask)) {
+            if ((buf->ext_id & filter->filter_mask) == (filter->filter_id & filter->filter_mask)) {
                 filter_index = i;
                 break;
             }
@@ -37,7 +33,7 @@ static uint32_t hpm_mcan_get_first_filter_index(const mcan_rx_message_t *buf,
     } else {
         for (uint32_t i = 0; i < std_filter_count; i++) {
             const mcan_filter_elem_t *filter = &data->std_filters[i].filters;
-            if ((buf->std_id | filter->filter_mask) == (filter->filter_id | filter->filter_mask)) {
+            if ((buf->std_id & filter->filter_mask) == (filter->filter_id & filter->filter_mask)) {
                 filter_index = i;
                 break;
             }
@@ -58,11 +54,6 @@ void hpm_mcan_get_message_from_rxfifo(const struct device *dev, uint32_t fifo_in
     void *cb_arg;
     memset(&s_can_rx_buf, 0, sizeof(s_can_rx_buf));
     mcan_read_rxfifo(can, fifo_index, (mcan_rx_message_t *) &s_can_rx_buf);
-
-#if defined(CONFIG_CANOPEN_MASTER)
-    canopen_rx_buf.has_received_message = true;
-    memcpy(&canopen_rx_buf.rx_buf, &s_can_rx_buf, sizeof(s_can_rx_buf));
-#endif
 
     uint32_t filter_index = hpm_mcan_get_first_filter_index(&s_can_rx_buf, data);
     memset(&frame, 0, sizeof(frame));
@@ -93,8 +84,10 @@ void hpm_mcan_get_message_from_rxfifo(const struct device *dev, uint32_t fifo_in
     /* Handle RX filter callback */
     if (filter_index != (uint32_t)-EINVAL) {
         /* If RTR bit does not match filter RTR mask and bit, drop current frame */
-        bool rtr_filter_mask = (data->filter_rtr_mask & BIT(filter_index)) != 0;
-        bool rtr_filter = (data->filter_rtr & BIT(filter_index)) != 0;
+        uint32_t rtr_reg = s_can_rx_buf.use_ext_id ? data->filter_rtr_ext : data->filter_rtr_std;
+        uint32_t rtr_mask_reg = s_can_rx_buf.use_ext_id ? data->filter_rtr_mask_ext : data->filter_rtr_mask_std;
+        bool rtr_filter_mask = (rtr_mask_reg & BIT(filter_index)) != 0;
+        bool rtr_filter = (rtr_reg & BIT(filter_index)) != 0;
         bool rtr_in_frame = (frame.flags & CAN_FRAME_RTR);
         if ((rtr_filter_mask != rtr_in_frame) || (rtr_filter != rtr_in_frame)) {
             return;
@@ -139,13 +132,13 @@ void canopen_irq_handler(struct device *canopendevice)
     if ((flags & MCAN_IR_RF0L_MASK) != 0U) {
         mcan_clear_interrupt_flags(can, MCAN_IR_RF0L_MASK);
         /* ACK FIFO0 */
-        can->RXF0A = 0; 
+        can->RXF0A = 0;
     }
 
     if ((flags & MCAN_IR_RF1L_MASK) != 0U) {
         mcan_clear_interrupt_flags(can, MCAN_IR_RF1L_MASK);
         /* ACK FIFO1 */
-        can->RXF1A = 0; 
+        can->RXF1A = 0;
     }
 
     /* Error happened */
@@ -163,7 +156,6 @@ int mcan_add_rx_filter(const struct device *dev,
     hpm_can_config_t *cfg = dev->config;
     hpm_can_data_t *data = dev->data;
     MCAN_Type *can = cfg->base;
-    int filter_id = -ENOSPC;
     hpm_stat_t status = status_invalid_argument;
     mcan_filter_elem_t *filter_tmp;
 
@@ -171,59 +163,79 @@ int mcan_add_rx_filter(const struct device *dev,
         return -EINVAL;
     }
 
+    uint32_t idx;
+    uint32_t unique_id;
+
     if (is_ext) {
-        if (data->ext_filter_count < HPM_CAN_EXT_FILTER_NUM_MAX) {
-            filter_id = data->ext_filter_count + data->std_filter_count;
-            data->ext_filter_count++;
-            filter_tmp = &data->ext_filters[filter_id].filters;
-            data->ext_filters[filter_id].filters_index = filter_id;
-            filter_tmp->can_id_type = MCAN_CAN_ID_TYPE_EXTENDED;
-        } else {
+        if (data->ext_filter_count >= HPM_CAN_EXT_FILTER_NUM_MAX) {
             return -ENOSPC;
         }
+        idx = data->ext_filter_count;
+        data->ext_filter_count++;
+        filter_tmp = &data->ext_filters[idx].filters;
+        unique_id = data->next_filter_id;
+        data->ext_filters[idx].filters_index = unique_id;
+        data->next_filter_id++;
+        filter_tmp->can_id_type = MCAN_CAN_ID_TYPE_EXTENDED;
     } else {
-        if (data->std_filter_count < HPM_CAN_STD_FILTER_NUM_MAX) {
-            filter_id = data->std_filter_count + data->ext_filter_count;
-            data->std_filter_count++;
-            filter_tmp = &data->std_filters[filter_id].filters;
-            data->std_filters[filter_id].filters_index = filter_id;
-            filter_tmp->can_id_type = MCAN_CAN_ID_TYPE_STANDARD;
-        } else {
+        if (data->std_filter_count >= HPM_CAN_STD_FILTER_NUM_MAX) {
             return -ENOSPC;
         }
+        idx = data->std_filter_count;
+        data->std_filter_count++;
+        filter_tmp = &data->std_filters[idx].filters;
+        unique_id = data->next_filter_id;
+        data->std_filters[idx].filters_index = unique_id;
+        data->next_filter_id++;
+        filter_tmp->can_id_type = MCAN_CAN_ID_TYPE_STANDARD;
     }
 
     filter_tmp->filter_type = MCAN_FILTER_TYPE_CLASSIC_FILTER;
     filter_tmp->filter_config = MCAN_FILTER_ELEM_CFG_STORE_IN_RX_FIFO0_IF_MATCH;
     filter_tmp->filter_id = filter->id;
-    filter_tmp->filter_mask = ~filter->mask;
+    filter_tmp->filter_mask = filter->mask;
 
-    if ((filter->flags & CAN_FRAME_RTR) != 0) {
-        data->filter_rtr |= (1U << filter_id);
+    /* Per-type RTR tracking (bit position = per-type index, no collision) */
+    uint32_t *rtr, *rtr_mask;
+    if (is_ext) {
+        rtr = &data->filter_rtr_ext;
+        rtr_mask = &data->filter_rtr_mask_ext;
     } else {
-        data->filter_rtr &= ~(1U << filter_id);
+        rtr = &data->filter_rtr_std;
+        rtr_mask = &data->filter_rtr_mask_std;
+    }
+    if ((filter->flags & CAN_FRAME_RTR) != 0) {
+        *rtr |= (1U << idx);
+        *rtr_mask |= (1U << idx);
+    } else {
+        *rtr &= ~(1U << idx);
+        *rtr_mask &= ~(1U << idx);
     }
 
-    if ((filter->flags & CAN_FRAME_RTR) != 0) {
-        data->filter_rtr_mask |= (1U << filter_id);
-    } else {
-        data->filter_rtr_mask &= ~(1U << filter_id);
-    }
-
-    status = mcan_set_filter_element(can, filter_tmp, filter_id);
+    status = mcan_begin_reconfig(can);
     if (status != status_success) {
-        printf("add rxfilt ext failed, error code: %d\n", status);
+        printf("reconfig mcan failed, error code: %d\n", status);
+    }
+
+    status = mcan_set_filter_element(can, filter_tmp, idx);
+    if (status != status_success) {
+        printf("add rxfilt failed, error code: %d\n", status);
+    }
+
+    status = mcan_end_reconfig(can);
+    if (status != status_success) {
+        printf("reconfig mcan failed, error code: %d\n", status);
     }
 
     if (is_ext) {
-        data->rx_cb_ext[filter_id] = callback;
-        data->rx_cb_arg_ext[filter_id] = user_data;
+        data->rx_cb_ext[idx] = callback;
+        data->rx_cb_arg_ext[idx] = user_data;
     } else {
-        data->rx_cb_std[filter_id] = callback;
-        data->rx_cb_arg_std[filter_id] = user_data;
+        data->rx_cb_std[idx] = callback;
+        data->rx_cb_arg_std[idx] = user_data;
     }
 
-    return filter_id;
+    return (int)unique_id;
 }
 
 int hpm_mcan_add_rx_filter(const struct device *dev,
@@ -245,80 +257,75 @@ int hpm_mcan_add_rx_filter(const struct device *dev,
 bool mcan_remove_filter(MCAN_Type *ptr, hpm_can_data_t *data, int filter_id, bool is_ext)
 {
     bool find_index = false;
-    bool is_last_index = false;
-    mcan_filter_elem_t *current_filter_elem;
-    mcan_filter_elem_t *last_filter_elem;
     hpm_stat_t status;
-    uint16_t last_filter_index;
+    uint32_t count;
+    mcan_filter_t *filters;
+    uint32_t found_idx = 0;
+    bool is_last_index = false;
 
-    if (is_ext)
-    {
-        last_filter_index = data->ext_filters[data->ext_filter_count - 1].filters_index;
-        last_filter_elem = &data->ext_filters[data->ext_filter_count - 1].filters;
-        for (uint32_t i = 0; i < data->ext_filter_count; i++) {
-            if (data->ext_filters[i].filters_index == filter_id) {
-                find_index = true;
-                current_filter_elem = last_filter_elem;
-                if (i != data->ext_filter_count - 1U) {
-                    is_last_index = false;
-                    data->ext_filters[i].filters_index = last_filter_index;
-                    memcpy(&data->ext_filters[i].filters, last_filter_elem, sizeof(mcan_filter_elem_t));
-                    data->ext_filters[data->ext_filter_count - 1].filters_index =0;
-                } else {
-                    is_last_index = true;
-                }
-                break;
-            }
-        }
+    if (is_ext) {
+        count = data->ext_filter_count;
+        filters = data->ext_filters;
     } else {
-        last_filter_index = data->std_filters[data->std_filter_count - 1].filters_index;
-        last_filter_elem = &data->std_filters[data->std_filter_count - 1].filters;
-        for (uint32_t i = 0; i < data->std_filter_count; i++) {
-            if (data->std_filters[i].filters_index == filter_id) {
-                find_index = true;
-                current_filter_elem = last_filter_elem;
-                if (i != data->std_filter_count - 1U) {
-                    is_last_index = false;
-                    data->std_filters[i].filters_index = last_filter_index;
-                    memcpy(&data->std_filters[i].filters, last_filter_elem, sizeof(mcan_filter_elem_t));
-                    data->std_filters[data->std_filter_count - 1].filters_index =0;
-                } else {
-                    is_last_index = true;
-                }
-                break;
-            }
-        }
+        count = data->std_filter_count;
+        filters = data->std_filters;
     }
 
-    if (find_index) {
-        current_filter_elem->filter_id = last_filter_elem->filter_id;
-        current_filter_elem->filter_mask = last_filter_elem->filter_mask;
-        current_filter_elem->filter_type = last_filter_elem->filter_type;
-        current_filter_elem->filter_config = last_filter_elem->filter_config;
-        current_filter_elem->can_id_type = last_filter_elem->can_id_type;
+    if (count == 0) {
+        return false;
+    }
 
-        status = mcan_set_filter_element(ptr, current_filter_elem, filter_id);
+    for (uint32_t i = 0; i < count; i++) {
+        if (filters[i].filters_index == (uint32_t)filter_id) {
+            find_index = true;
+            found_idx = i;
+            break;
+        }
+    }
+    if (!find_index) {
+        return false;
+    }
+
+    uint32_t last_idx = count - 1;
+    is_last_index = (found_idx == last_idx);
+    uint16_t moved_unique_id = filters[last_idx].filters_index;
+
+    if (!is_last_index) {
+        /* Move last filter element to the vacated position */
+        filters[found_idx].filters_index = moved_unique_id;
+        memcpy(&filters[found_idx].filters, &filters[last_idx].filters, sizeof(mcan_filter_elem_t));
+    }
+    filters[last_idx].filters_index = 0;
+
+    status = mcan_begin_reconfig(ptr);
+    if (status != status_success) {
+        printf("reconfig mcan failed, error code: %d\n", status);
+    }
+
+    /* Write the (possibly moved) filter to HW at the vacated per-type index (not the unique_id) */
+    status = mcan_set_filter_element(ptr, &filters[found_idx].filters, found_idx);
+    if (status != status_success) {
+        printf("remove rx filter failed, error code: %d\n", status);
+        return false;
+    }
+
+    if (!is_last_index) {
+        /* Clear the old last slot in HW */
+        mcan_filter_elem_t empty;
+        memset(&empty, 0, sizeof(empty));
+        status = mcan_set_filter_element(ptr, &empty, last_idx);
         if (status != status_success) {
             printf("remove rx filter failed, error code: %d\n", status);
             return false;
         }
-
-        if (!is_last_index) {
-            /* Construct an empty filter to clear the last filter */
-            current_filter_elem->id2 =0;
-            current_filter_elem->id1 =0;
-            current_filter_elem->filter_config =0;
-            current_filter_elem->filter_type =0;
-
-            status = mcan_set_filter_element(ptr, current_filter_elem, last_filter_index);
-            if (status != status_success) {
-                printf("remove rx filter failed, error code: %d\n", status);
-                return false;
-            }
-        }
-        return true;
     }
-    return false;
+
+    status = mcan_end_reconfig(ptr);
+    if (status != status_success) {
+        printf("reconfig mcan failed, error code: %d\n", status);
+    }
+
+    return true;
 }
 
 void hpm_mcan_remove_rx_filter(const struct device *dev, int filter_id)
@@ -342,7 +349,7 @@ void hpm_mcan_remove_rx_filter(const struct device *dev, int filter_id)
     }
 
     if (data->ext_filter_count > 0) {
-        state = mcan_remove_filter(can, data, filter_id, false);
+        state = mcan_remove_filter(can, data, filter_id, true);
         if (state == true) {
             data->ext_filter_count -= 1;
             return;
@@ -538,8 +545,11 @@ void hpm_mcan_init(struct canopen_context *candriverstate, can_info_t *can_info,
     hpm_canopen_config[index].base = can_info->can_base;
     hpm_canopen_data[index].config = can_config;
     hpm_canopen_data[index].started = false;
-    hpm_canopen_data[index].filter_rtr = 0;
-    hpm_canopen_data[index].filter_rtr_mask = 0;
+    hpm_canopen_data[index].next_filter_id = 0;
+    hpm_canopen_data[index].filter_rtr_ext = 0;
+    hpm_canopen_data[index].filter_rtr_mask_ext = 0;
+    hpm_canopen_data[index].filter_rtr_std = 0;
+    hpm_canopen_data[index].filter_rtr_mask_std = 0;
     hpm_canopen_data[index].ext_filter_count = 0;
     hpm_canopen_data[index].std_filter_count = 0;
     hpm_canopen_dev[index].config = &hpm_canopen_config[index];

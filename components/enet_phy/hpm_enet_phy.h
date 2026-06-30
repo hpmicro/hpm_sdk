@@ -6,6 +6,7 @@
  */
 #ifndef HPM_ENET_PHY_H
 #define HPM_ENET_PHY_H
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifndef ENET_PHY_SW_RESET_RETRY_CNT
@@ -44,6 +45,35 @@ typedef struct {
     uint8_t enet_phy_link;
     uint8_t enet_phy_speed;
     uint8_t enet_phy_duplex;
+    uint8_t enet_phy_speed_valid;
 } enet_phy_status_t;
+
+static inline bool enet_phy_link_up_with_valid_speed(const enet_phy_status_t *status)
+{
+    return (status->enet_phy_link == enet_phy_link_up) &&
+           (status->enet_phy_speed_valid != 0U);
+}
+
+static inline bool enet_phy_link_down_entered(const enet_phy_status_t *last,
+                                              const enet_phy_status_t *cur)
+{
+    return cur->enet_phy_link == enet_phy_link_down &&
+           last->enet_phy_link != enet_phy_link_down;
+}
+
+static inline void enet_phy_status_note_link_down(enet_phy_status_t *last)
+{
+    last->enet_phy_link = enet_phy_link_down;
+    last->enet_phy_speed_valid = 0U;
+}
+
+static inline bool enet_phy_status_changed(const enet_phy_status_t *last,
+                                           const enet_phy_status_t *cur)
+{
+    return (last->enet_phy_link != enet_phy_link_up) ||
+           (last->enet_phy_speed_valid == 0U) ||
+           (last->enet_phy_speed != cur->enet_phy_speed) ||
+           (last->enet_phy_duplex != cur->enet_phy_duplex);
+}
 
 #endif

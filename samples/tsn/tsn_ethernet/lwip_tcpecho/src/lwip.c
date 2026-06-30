@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,6 +15,7 @@
 #include "lwip/init.h"
 #include "tcp_echo.h"
 #include "hpm_tsw_drv.h"
+#include "lwip/opt.h"
 
 struct netif gnetif;
 uint8_t mac[TSW_ENET_MAC];
@@ -31,7 +32,6 @@ tsw_frame_t frame[TSW_FRAME_BUFF_COUNT];
  *---------------------------------------------------------------------*/
 hpm_stat_t tsw_init(TSW_Type *ptr)
 {
-    rtl8211_config_t phy_config;
     tsw_dma_config_t config;
     tsw_frame_action_config_t internal_config, broadcast_config, unknown_config;
 
@@ -49,6 +49,12 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
 
     /* Set port PHY interface */
     tsw_set_port_interface(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF);
+
+#if defined(TSW_NETIF_MTU)
+    if (tsw_mac_jumbo_required_for_ip_mtu(TSW_NETIF_MTU)) {
+        tsw_ep_set_jumbo_frame(ptr, BOARD_TSW_PORT, tsw_mac_type_emac, true);
+    }
+#endif
 
     /* Enable all MACs(TX/RX) */
     tsw_ep_enable_all_mac_ctrl(ptr, tsw_mac_type_emac);
@@ -70,10 +76,6 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
 
     /* Initialize DMA for sending */
     tsw_init_send(ptr, &config);
-
-    for (uint8_t i = 0; i < TSW_SEND_DESC_COUNT; i++) {
-        *send_buff[i] = BOARD_TSW_PORT + 1;
-    }
 
     /* Initialize DMA for receiving */
 #if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
@@ -101,9 +103,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_ep_set_mdio_config(ptr, BOARD_TSW_PORT, 19);
 
     /* Initialize PHY */
-    rtl8211_reset(ptr, BOARD_TSW_PORT);
-    rtl8211_basic_mode_default_config(ptr, &phy_config);
-    if (rtl8211_basic_mode_init(ptr, BOARD_TSW_PORT, &phy_config) == true) {
+    if (board_init_tsw_port_phy(ptr) == status_success) {
         printf("TSW phy init passed !\n");
         return status_success;
     } else {
@@ -136,7 +136,7 @@ int main(void)
 
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-    #if defined(RGMII) && RGMII
+    #if defined(HPM_TSW_RGMII) && HPM_TSW_RGMII
     board_init_tsw_rgmii_clock_delay(BOARD_TSW, BOARD_TSW_PORT);
     #endif
 

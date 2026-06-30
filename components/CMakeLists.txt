@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2024 HPMicro
+# Copyright (c) 2021-2024,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory_ifdef(CONFIG_ENET_PHY enet_phy)
@@ -9,6 +9,7 @@ add_subdirectory_ifdef(CONFIG_CODEC codec)
 add_subdirectory_ifdef(CONFIG_USB_DEVICE usb/device)
 add_subdirectory_ifdef(CONFIG_TOUCH touch)
 add_subdirectory_ifdef(CONFIG_HPM_ADC adc)
+add_subdirectory_ifdef(CONFIG_HPM_ADC_V2 adc_v2)
 add_subdirectory_ifdef(CONFIG_HPM_SPI spi)
 add_subdirectory_ifdef(CONFIG_DMA_MGR dma_mgr)
 add_subdirectory_ifdef(CONFIG_IPC_EVENT_MGR ipc_event_mgr)

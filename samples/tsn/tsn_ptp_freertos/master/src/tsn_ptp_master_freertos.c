@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,7 +17,7 @@
 #include "ptp4tsync.h"
 #include "kernel/base/rtc.h"
 #include "hpm_tsw_drv.h"
-#include "hpm_tsw_phy_common.h"
+#include "hpm_tsw_phy.h"
 #include "tsn_ptp_master_freertos.h"
 
 #define APP_TSW_SZ_MEMPOOL           (100 * 1024)
@@ -58,8 +58,6 @@ static void preset_system_rtc(struct rtc_s *rtc, uint32_t presetvalue)
  *---------------------------------------------------------------------*/
 hpm_stat_t tsw_init(TSW_Type *ptr)
 {
-    rtl8211_config_t phy_config;
-
     /* Disable all MACs(TX/RX) */
     tsw_ep_disable_all_mac_ctrl(ptr, tsw_mac_type_emac);
 
@@ -88,9 +86,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_ep_set_mdio_config(BOARD_TSW, BOARD_TSW_PORT, 19);
 
     /* Initialize PHY */
-    rtl8211_reset(ptr, BOARD_TSW_PORT);
-    rtl8211_basic_mode_default_config(ptr, &phy_config);
-    if (rtl8211_basic_mode_init(ptr, BOARD_TSW_PORT, &phy_config) == true) {
+    if (board_init_tsw_port_phy(ptr) == status_success) {
         printf("TSW phy init passed !\n");
         return status_success;
     } else {
@@ -115,7 +111,7 @@ void tsw_self_adaptive_port_speed(void)
     char *speed_str[] = { "10Mbps", "100Mbps", "1000Mbps" };
     char *duplex_str[] = { "Half duplex", "Full duplex" };
 
-    rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
+    board_get_tsw_port_phy_status(BOARD_TSW_PORT, &status);
 
     if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
         if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
@@ -244,7 +240,7 @@ int main(void)
 
     printf("This is a TSW demo: PTP Master\n");
 
-#if defined(RGMII) && RGMII
+#if defined(HPM_TSW_RGMII) && HPM_TSW_RGMII
     board_init_tsw_rgmii_clock_delay(BOARD_TSW, BOARD_TSW_PORT);
 #endif
 

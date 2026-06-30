@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,14 +21,14 @@ static volatile uint16_t wm8978_reg_val[] = {
 };
 ;
 
-hpm_stat_t wm8979_init(wm8978_context_t *control)
+hpm_stat_t wm8979_init(codec_control_t *control)
 {
     hpm_stat_t stat;
     uint8_t i;
     for (i = 0; i < 0x7F; i++) {
         if (i2c_master_write(control->ptr, i, NULL, 0) == status_success) {
             if ((i == WM8978_I2C_SLAVE_ADDRESS1) || (i == WM8978_I2C_SLAVE_ADDRESS2)) {
-                control->device_address = i;
+                control->slave_address = i;
                 break;
             }
         }
@@ -40,14 +40,14 @@ hpm_stat_t wm8979_init(wm8978_context_t *control)
     return stat;
 }
 
-hpm_stat_t wm8978_reset(wm8978_context_t *control)
+hpm_stat_t wm8978_reset(codec_control_t *control)
 {
     hpm_stat_t stat = status_success;
     HPM_CHECK_RET(wm8978_write_reg(control, WM8978_RESET, 0));
     return stat;
 }
 
-hpm_stat_t wm8978_set_out_volume(wm8978_context_t *control, wm8978_out_channel_t channel, uint8_t volume)
+hpm_stat_t wm8978_set_out_volume(codec_control_t *control, wm8978_out_channel_t channel, uint8_t volume)
 {
     hpm_stat_t stat = status_success;
     uint8_t l_out_reg;
@@ -70,7 +70,7 @@ hpm_stat_t wm8978_set_out_volume(wm8978_context_t *control, wm8978_out_channel_t
     return stat;
 }
 
-hpm_stat_t wm8978_get_out_volume(wm8978_context_t *control, wm8978_out_channel_t channel, uint8_t *volume)
+hpm_stat_t wm8978_get_out_volume(codec_control_t *control, wm8978_out_channel_t channel, uint8_t *volume)
 {
     hpm_stat_t stat = status_success;
     uint8_t out_reg;
@@ -87,7 +87,7 @@ hpm_stat_t wm8978_get_out_volume(wm8978_context_t *control, wm8978_out_channel_t
     return stat;
 }
 
-hpm_stat_t wm8978_set_out_mute(wm8978_context_t *control, wm8978_out_channel_t channel, bool mute)
+hpm_stat_t wm8978_set_out_mute(codec_control_t *control, wm8978_out_channel_t channel, bool mute)
 {
     hpm_stat_t stat = status_success;
     uint16_t val;
@@ -120,7 +120,7 @@ hpm_stat_t wm8978_set_out_mute(wm8978_context_t *control, wm8978_out_channel_t c
     return stat;
 }
 
-hpm_stat_t wm8978_set_mic_gain(wm8978_context_t *control, uint8_t gain)
+hpm_stat_t wm8978_set_mic_gain(codec_control_t *control, uint8_t gain)
 {
     hpm_stat_t stat = status_success;
     if (gain > WM8978_INPPGA_VOL_MASK) {
@@ -131,7 +131,7 @@ hpm_stat_t wm8978_set_mic_gain(wm8978_context_t *control, uint8_t gain)
     return stat;
 }
 
-hpm_stat_t wm8978_set_line_gain(wm8978_context_t *control, uint8_t gain)
+hpm_stat_t wm8978_set_line_gain(codec_control_t *control, uint8_t gain)
 {
     uint16_t val;
     hpm_stat_t stat = status_success;
@@ -150,12 +150,12 @@ hpm_stat_t wm8978_set_line_gain(wm8978_context_t *control, uint8_t gain)
     return stat;
 }
 
-hpm_stat_t wm8978_power_down(wm8978_context_t *control)
+hpm_stat_t wm8978_power_down(codec_control_t *control)
 {
     return wm8978_reset(control);
 }
 
-hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control, wm8978_audio_interface_t standard, wm8978_word_length_t word_len)
+hpm_stat_t wm8978_cfg_audio_interface(codec_control_t *control, wm8978_audio_interface_t standard, wm8978_word_length_t word_len)
 {
     hpm_stat_t stat = status_success;
     uint16_t usReg = 0;
@@ -168,7 +168,7 @@ hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control, wm8978_audio_in
     return stat;
 }
 
-hpm_stat_t wm8978_invert_lrclk_polarity(wm8978_context_t *control, bool invert)
+hpm_stat_t wm8978_invert_lrclk_polarity(codec_control_t *control, bool invert)
 {
     if (invert) {
         return wm8978_modify_reg(control, WM8978_AUDIO_INTERFACE, WM8978_LRP_MASK, WM8978_LRP_MASK);
@@ -177,7 +177,7 @@ hpm_stat_t wm8978_invert_lrclk_polarity(wm8978_context_t *control, bool invert)
     }
 }
 
-hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control, uint8_t in_flags, uint8_t out_flags)
+hpm_stat_t wm8978_cfg_audio_channel(codec_control_t *control, uint8_t in_flags, uint8_t out_flags)
 {
     uint16_t reg_val = 0;
     hpm_stat_t stat = status_success;
@@ -347,7 +347,7 @@ hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control, uint8_t in_flags,
     return stat;
 }
 
-hpm_stat_t wm8978_notch_filter(wm8978_context_t *control, uint16_t nfa0, uint16_t nfa1)
+hpm_stat_t wm8978_notch_filter(codec_control_t *control, uint16_t nfa0, uint16_t nfa1)
 {
     hpm_stat_t stat = status_success;
     uint16_t reg_val;
@@ -365,7 +365,7 @@ hpm_stat_t wm8978_notch_filter(wm8978_context_t *control, uint16_t nfa0, uint16_
     return stat;
 }
 
-hpm_stat_t wm8978_ctrl_gpio1(wm8978_context_t *control, bool value)
+hpm_stat_t wm8978_ctrl_gpio1(codec_control_t *control, bool value)
 {
     hpm_stat_t stat = status_success;
     uint16_t reg_val;
@@ -378,7 +378,7 @@ hpm_stat_t wm8978_ctrl_gpio1(wm8978_context_t *control, bool value)
     return stat;
 }
 
-hpm_stat_t wm8978_write_reg(wm8978_context_t *control, uint8_t reg, uint16_t val)
+hpm_stat_t wm8978_write_reg(codec_control_t *control, uint8_t reg, uint16_t val)
 {
     uint8_t buff[2];
     /* The first 7 bits (B15 to B9) are address bits that select which control register */
@@ -388,17 +388,17 @@ hpm_stat_t wm8978_write_reg(wm8978_context_t *control, uint8_t reg, uint16_t val
 
     /* record reg val */
     wm8978_reg_val[reg] = val;
-    return i2c_master_write(control->ptr, control->device_address, buff, 2U);
+    return i2c_master_write(control->ptr, control->slave_address, buff, 2U);
 }
 
-hpm_stat_t wm8978_read_reg(wm8978_context_t *control, uint8_t reg, uint16_t *val)
+hpm_stat_t wm8978_read_reg(codec_control_t *control, uint8_t reg, uint16_t *val)
 {
     (void)control;
     *val = wm8978_reg_val[reg];
     return status_success;
 }
 
-hpm_stat_t wm8978_modify_reg(wm8978_context_t *control, uint8_t reg, uint16_t mask, uint16_t val)
+hpm_stat_t wm8978_modify_reg(codec_control_t *control, uint8_t reg, uint16_t mask, uint16_t val)
 {
     hpm_stat_t stat = status_success;
     uint16_t reg_val;

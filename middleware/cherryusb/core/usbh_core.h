@@ -21,12 +21,43 @@
 #include "usb_osal.h"
 #include "usbh_hub.h"
 #include "usb_memcpy.h"
+#include "usb_ringbuffer.h"
+#include "usb_mempool.h"
 #include "usb_dcache.h"
 #include "usb_version.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+enum usbh_event_type {
+    /* USB HCD IRQ */
+    USBH_EVENT_ERROR,
+    USBH_EVENT_SOF,
+
+    /* USB DEVICE STATUS */
+    USBH_EVENT_DEVICE_RESET,
+    USBH_EVENT_DEVICE_CONNECTED,
+    USBH_EVENT_DEVICE_DISCONNECTED,
+    USBH_EVENT_DEVICE_CONFIGURED,
+    USBH_EVENT_DEVICE_WAKEUP,
+    USBH_EVENT_DEVICE_SUSPEND,
+    USBH_EVENT_DEVICE_RESUME,
+
+    /* USB DEVICE INTERFACE STATUS */
+    USBH_EVENT_INTERFACE_UNSUPPORTED,
+    USBH_EVENT_INTERFACE_START,
+    USBH_EVENT_INTERFACE_STOP,
+
+    /* USB FRAMEWORK STATUS */
+    USBH_EVENT_INIT,
+    USBH_EVENT_DEINIT,
+    USBH_EVENT_UNKNOWN,
+};
+
+#define USB_HUB_PORT_ANY  0
+#define USB_HUB_INDEX_ANY 0
+#define USB_INTERFACE_ANY 0xff
 
 #define USB_CLASS_MATCH_VENDOR        0x0001
 #define USB_CLASS_MATCH_PRODUCT       0x0002
@@ -135,7 +166,7 @@ struct usbh_hub {
     uint8_t powerdelay;
     uint8_t tt_think;
     bool ismtt;
-    struct usb_hub_descriptor hub_desc; /* USB 2.0 only */
+    struct usb_hub_descriptor hub_desc;       /* USB 2.0 only */
     struct usb_hub_ss_descriptor hub_ss_desc; /* USB 3.0 only */
     struct usbh_hubport child[CONFIG_USBHOST_MAX_EHPORTS];
     struct usbh_hubport *parent;
@@ -172,7 +203,7 @@ struct usbh_bus {
     struct usbh_devaddr_map devgen;
     usb_osal_thread_t hub_thread;
     usb_osal_mq_t hub_mq;
-    usb_osal_mutex_t mutex;
+    usb_osal_sem_t hub_sem;
     usbh_event_handler_t event_handler;
 };
 
@@ -280,7 +311,7 @@ int usbh_get_string_desc(struct usbh_hubport *hport, uint8_t index, uint8_t *out
  */
 int usbh_set_interface(struct usbh_hubport *hport, uint8_t intf, uint8_t altsetting);
 
-int usbh_initialize(uint8_t busid, uintptr_t reg_base);
+int usbh_initialize(uint8_t busid, uintptr_t reg_base, usbh_event_handler_t event_handler);
 int usbh_deinitialize(uint8_t busid);
 void *usbh_find_class_instance(const char *devname);
 struct usbh_hubport *usbh_find_hubport(uint8_t busid, uint8_t hub_index, uint8_t hub_port);

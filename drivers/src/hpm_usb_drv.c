@@ -139,8 +139,9 @@ void usb_dcd_init(USB_Type *ptr)
     ptr->USBMODE &= ~USB_USBMODE_CM_MASK;
     ptr->USBMODE |= USB_USBMODE_CM_SET(2);
 
-    /* Disable setup lockout, please refer to "Control Endpoint Operation" section in RM. */
-    ptr->USBMODE &= ~USB_USBMODE_SLOM_MASK;
+    /* Setup Lockouts Off (DCD requires use of Setup Data Buffer Tripwire in USBCMD).
+     * Please refer to "Control Endpoint Operation" section in RM. */
+    ptr->USBMODE |= USB_USBMODE_SLOM_MASK;
 
     /* Set the endian */
     ptr->USBMODE &= ~USB_USBMODE_ES_MASK;

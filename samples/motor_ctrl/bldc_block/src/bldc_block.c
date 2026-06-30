@@ -15,7 +15,11 @@
 #include "hpm_pwmv2_drv.h"
 #endif
 #include "hpm_trgm_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
 #include "hpm_mcl_loop.h"
@@ -119,7 +123,7 @@ void motor_init(void)
     motor0.cfg.mcl.physical.time.encoder_process_ts = MCL_USEC_TO_SEC(TIMER_TS);
     motor0.cfg.mcl.physical.time.speed_loop_ts = MCL_USEC_TO_SEC(TIMER_TS) * 2;
     motor0.cfg.mcl.physical.time.mcu_clock_tick = clock_get_frequency(clock_cpu0);
-    motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
+    motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_MOTOR_CLOCK_SOURCE);
 
     motor0.cfg.encoder.communication_interval_us = 0;
     motor0.cfg.encoder.disable_start_sample_interrupt = true;
@@ -730,7 +734,7 @@ int main(void)
     mcl_user_value_t  user_speed;
 
     board_init();
-    motor_clock_hz = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
+    motor_clock_hz = clock_get_frequency(BOARD_BLDC_MOTOR_CLOCK_SOURCE);
     init_pwm_pins(MOTOR0_BLDCPWM);
     printf("motor test example\n");
     motor_init();

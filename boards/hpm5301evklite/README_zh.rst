@@ -62,7 +62,7 @@ BOOT切换
 
 - UART引脚
   - UART0用于调试控制台串口或一些使用UART的功能测试
-  - UART3用于一些使用UART的功能测试，例如MICROROS_UART，USB_CDC_ACM_UART, MODBUS_RTU等。
+  - UART3用于一些使用UART的功能测试，例如USB_CDC_ACM_UART, MODBUS_RTU等。
 
 .. list-table::
    :header-rows: 1
@@ -163,7 +163,7 @@ BOOT切换
      - 备注
    * - GPTMR0.CAPT_1
      - J3[3]
-     -
+     - SENT解码输入引脚（空闲低电平）
    * - GPTMR0.COMP_1
      - J3[5]
      -
@@ -176,6 +176,9 @@ BOOT切换
    * - GPTMR1.COMP_1
      - J3[7]
      - SPI模拟I2S的MCLK
+   * - GPTMR0.CAPT_2
+     - J3[11]
+     - SENT解码输入引脚（空闲高电平）
 
 - SPI模拟I2S CS引脚
 

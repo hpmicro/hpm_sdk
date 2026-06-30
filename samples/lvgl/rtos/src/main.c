@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 hpmicro
+ * Copyright (c) 2024-2026 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -34,7 +34,7 @@ int main(void)
 {
     board_init();
 
-    if (xTaskCreate(lvgl_task, "lvgl", 2048, NULL, 5, NULL) != pdPASS) {
+    if (xTaskCreate(lvgl_task, "lvgl", 4096, NULL, 5, NULL) != pdPASS) {
         printf("Task creation failed!.\n");
         for (;;) {
         }

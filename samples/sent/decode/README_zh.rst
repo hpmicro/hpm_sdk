@@ -16,6 +16,11 @@ sent解码
 -  请参考具体开发板  :ref:`引脚描述 <board_resource>`  部分的描述。
 -  连接sent信号至GPTMR输入捕获引脚。sent信号可用sent/encode实例产生的信号。
 
+提示
+----
+- 缺省解码SENT的空闲极性是低电平，若需要更改为高电平，可重新定义\ ``SENT_IDLE_HIGH``\ 为\ ``1``\ 或者在工程的CMakeLists.txt中增加\ ``sdk_compile_definitions(-DSENT_IDLE_HIGH=1)``\ 。
+- 支持TRGM外设的SOC才能解析空闲极性为高电平的SENT信号，
+
 运行现象
 --------
 

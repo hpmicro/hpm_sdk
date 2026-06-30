@@ -466,5 +466,4 @@ GPTMR例子
   sent_signal_decode/README_zh
   t_shape_accel_decel/README_zh
   timer_basic/README_zh
-  qeimode/README_zh
 

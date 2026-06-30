@@ -878,6 +878,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = $(HPM_SDK_BASE)/docs/doxygen/mainpage.md \
+                         $(HPM_SDK_BASE)/docs/doxygen/groups.h \
                          $(HPM_SDK_BASE)/drivers/ \
                          $(HPM_SDK_BASE)/soc/ \
                          $(HPM_SDK_BASE)/arch/ \
@@ -2251,7 +2252,10 @@ PREDEFINED             = "HPM_EN_MATH_NN_LIB=1" \
                         "HPM_IP_FEATURE_SEI_HAVE_DAT10_31=1" \
                         "HPM_IP_FEATURE_SEI_HAVE_INTR64_255=1" \
                         "HPM_IP_FEATURE_SEI_HAVE_CTRL2_12=1" \
-                        "HPM_IP_FEATURE_SEI_HAVE_PTCD=1"
+                        "HPM_IP_FEATURE_SEI_HAVE_PTCD=1" \
+                        "HPMSOC_HAS_HPMSDK_ADC16=1" \
+                        "HPM_IP_FEATURE_ADC16_SEQ_STOP_POS_INT=1" \
+                        "HPM_IP_FEATURE_ADC16_HAS_MOT_EN=1"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

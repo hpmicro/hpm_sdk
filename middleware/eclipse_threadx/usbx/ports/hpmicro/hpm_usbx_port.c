@@ -24,6 +24,7 @@ enum {
 };
 
 usb_device_handle_t *deviceHandle;
+static uint8_t _setup_data[8];
 
 void hpm_usbd_send(usb_device_handle_t *handle, uint8_t endpointAddress, uint8_t *buffer, uint32_t length)
 {
@@ -66,6 +67,7 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
     if (int_status & INTR_URI) {
         _hpm_usbd_callback(handle, USBD_EVENT_BUS_RESET, NULL);
         usb_device_bus_reset(handle, 64);
+        return;
     }
 
     /* Suspend event!!!! */
@@ -126,7 +128,6 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
 
                     if (ep_cb_req) {
                         uint8_t const ep_addr = (ep_idx / 2) | ((ep_idx & 0x01) ? 0x80 : 0);
-                        dcd_qhd_t *qhd0 = usb_device_qhd_get(handle, 0);
                         if ((ep_addr & 0x0F) == 0) {
                             msg.is_setup_packet = 0;
                             msg.buffer = (uint8_t *)p_qhd->attached_buffer;
@@ -144,10 +145,18 @@ static void USBD_IRQHandler(usb_device_handle_t *handle)
         }
 
         if (edpt_setup_status) {
-            /*------------- Set up Received -------------*/
+            /*------------- Setup Received -------------*/
+            dcd_qhd_t *qhd0 = usb_device_qhd_get(handle, 0);
+
             usb_device_clear_setup_status(handle, edpt_setup_status);
+            do {
+                usb_dcd_set_sutw(handle->regs, true);
+                memcpy(_setup_data, (uint8_t *)(&qhd0->setup_request), 8);
+            } while (!usb_dcd_get_sutw(handle->regs));
+            usb_dcd_set_sutw(handle->regs, false);
+
             msg.is_setup_packet = 1;
-            msg.buffer = (uint8_t *)&usb_device_qhd_get(handle, 0)->setup_request;
+            msg.buffer = _setup_data;
             _hpm_usbd_ctl_control_callback(&msg, 0); /* When setup is set, ep_addr is not used */
         }
     }

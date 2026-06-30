@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,20 +18,26 @@ limitations under the License.
 #include <cstddef>
 #include <cstdint>
 
+#ifdef USE_TFLM_COMPRESSION
+
+#include <initializer_list>
+
+#endif  // USE_TFLM_COMPRESSION
+
 #include "flatbuffers/flatbuffers.h"  // from @flatbuffers
 #include "tensorflow/lite/c/c_api_types.h"
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/core/api/error_reporter.h"
 #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/micro/micro_allocator.h"
-#include "tensorflow/lite/micro/micro_context.h"
-#include "tensorflow/lite/micro/micro_graph.h"
+#include "tensorflow/lite/micro/micro_interpreter_context.h"
+#include "tensorflow/lite/micro/micro_interpreter_graph.h"
 #include "tensorflow/lite/micro/micro_op_resolver.h"
-#include "tensorflow/lite/micro/micro_profiler.h"
+#include "tensorflow/lite/micro/micro_profiler_interface.h"
 #include "tensorflow/lite/portable_type_to_tflitetype.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
-// Copied from tensorflow/lite/version.h to avoid a dependency chain into
+/// Copied from tensorflow/lite/version.h to avoid a dependency chain into
 // tensorflow/core.
 #define TFLITE_SCHEMA_VERSION (3)
 
@@ -49,9 +55,9 @@ class MicroInterpreter {
   // caller.
   MicroInterpreter(const Model* model, const MicroOpResolver& op_resolver,
                    uint8_t* tensor_arena, size_t tensor_arena_size,
-                   ErrorReporter* error_reporter,
                    MicroResourceVariables* resource_variables = nullptr,
-                   MicroProfiler* profiler = nullptr);
+                   MicroProfilerInterface* profiler = nullptr,
+                   bool preserve_all_tensors = false);
 
   // Create an interpreter instance using an existing MicroAllocator instance.
   // This constructor should be used when creating an allocator that needs to
@@ -59,9 +65,9 @@ class MicroInterpreter {
   // allocations inside the interpreter. The lifetime of the allocator must be
   // as long as that of the interpreter object.
   MicroInterpreter(const Model* model, const MicroOpResolver& op_resolver,
-                   MicroAllocator* allocator, ErrorReporter* error_reporter,
+                   MicroAllocator* allocator,
                    MicroResourceVariables* resource_variables = nullptr,
-                   MicroProfiler* profiler = nullptr);
+                   MicroProfilerInterface* profiler = nullptr);
 
   ~MicroInterpreter();
 
@@ -116,8 +122,15 @@ class MicroInterpreter {
     return nullptr;
   }
 
-  // Reset all variable tensors to the default value.
-  TfLiteStatus ResetVariableTensors();
+  // Returns a pointer to the tensor for the corresponding tensor_index
+  TfLiteEvalTensor* GetTensor(int tensor_index, int subgraph_index = 0);
+
+  // Zeros out a single variable tensor in a specified subgraph in the model.
+  TfLiteStatus ResetVariableTensor(int tensor_index, int subgraph_index = 0);
+
+  // Reset the state to be what you would expect when the interpreter is first
+  // created. i.e. after Init and Prepare is called for the very first time.
+  TfLiteStatus Reset();
 
   TfLiteStatus initialization_status() const { return initialization_status_; }
 
@@ -131,9 +144,35 @@ class MicroInterpreter {
   // Returns the actual used arena in bytes. This method gives the optimal arena
   // size. It's only available after `AllocateTensors` has been called.
   // Note that normally `tensor_arena` requires 16 bytes alignment to fully
-  // utilize the space. If it's not the case, the optimial arena size would be
+  // utilize the space. If it's not the case, the optimal arena size would be
   // arena_used_bytes() + 16.
   size_t arena_used_bytes() const { return allocator_.used_bytes(); }
+
+  // Returns True if all Tensors are being preserves
+  // TODO(b/297106074) : revisit making C++ example or test for
+  // preserve_all_tesnors
+  bool preserve_all_tensors() const {
+    return allocator_.preserves_all_tensor();
+  }
+
+  // Set the alternate MicroProfilerInterface.
+  // This value is passed through to the MicroContext.
+  // This can be used to profile subsystems simultaneously with the profiling
+  // of kernels during the Eval phase.  See (b/379584353).
+  // The alternate MicroProfilerInterface is currently used by the tensor
+  // decompression subsystem.
+  TfLiteStatus SetAlternateProfiler(MicroProfilerInterface* alt_profiler);
+
+  // Set the alternate decompression memory regions.
+  // Can only be called during the MicroInterpreter kInit state (i.e. must
+  // be called before MicroInterpreter::AllocateTensors).
+  // The regions pointer argument is the start of a
+  // MicroContext::AlternateMemoryRegion array where the length of the array is
+  // given by the count argument.
+  // The lifetime of the MicroContext::AlternateMemoryRegion array must be at
+  // least that of the MicroInterpreter.
+  TfLiteStatus SetDecompressionMemory(
+      const MicroContext::AlternateMemoryRegion* regions, size_t count);
 
  protected:
   const MicroAllocator& allocator() const { return allocator_; }
@@ -142,17 +181,16 @@ class MicroInterpreter {
  private:
   // TODO(b/158263161): Consider switching to Create() function to enable better
   // error reporting during initialization.
-  void Init(MicroProfiler* profiler);
+  void Init(MicroProfilerInterface* profiler);
 
   // Gets the current subgraph index used from within context methods.
   int get_subgraph_index() { return graph_.GetCurrentSubgraphIndex(); }
 
   const Model* model_;
   const MicroOpResolver& op_resolver_;
-  ErrorReporter* error_reporter_;
   TfLiteContext context_ = {};
   MicroAllocator& allocator_;
-  MicroGraph graph_;
+  MicroInterpreterGraph graph_;
   bool tensors_allocated_;
 
   TfLiteStatus initialization_status_;
@@ -164,7 +202,7 @@ class MicroInterpreter {
   TfLiteTensor** input_tensors_;
   TfLiteTensor** output_tensors_;
 
-  MicroContext micro_context_;
+  MicroInterpreterContext micro_context_;
 };
 
 }  // namespace tflite

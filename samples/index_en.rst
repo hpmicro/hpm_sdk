@@ -44,6 +44,7 @@ Samples
     rtos/index_en
     rvbacktrace/index_en
     segger_rtt/README_en
+    segger_sysview/README_en
     segment_led_key/README_en
     smbus/index_en
     spi_components/index_en
@@ -59,4 +60,6 @@ Samples
     vglite/index_en
     sent/index_en
     eeprom/index_en
+    spi_nor_flash/index_en
+    mquickjs/README_en
 

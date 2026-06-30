@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ limitations under the License.
 
 #include "tensorflow/lite/c/builtin_op_data.h"
 #include "tensorflow/lite/c/common.h"
+#include "tensorflow/lite/micro/micro_common.h"
 
 namespace tflite {
 
@@ -59,6 +60,19 @@ TfLiteStatus CalculateOpDataAdd(TfLiteContext* context, TfLiteAddParams* params,
 
 TfLiteStatus AddPrepare(TfLiteContext* context, TfLiteNode* node);
 
+// Generic must define registration function.
+TFLMRegistration Register_ADD();
+
+#if defined(CMSIS_NN)
+TFLMRegistration Register_ADD_INT8();
+
+TFLMRegistration Register_ADD_INT16();
+#else
+// Fallback registration
+inline TFLMRegistration Register_ADD_INT8() { return Register_ADD(); }
+
+inline TFLMRegistration Register_ADD_INT16() { return Register_ADD(); }
+#endif
 }  // namespace tflite
 
 #endif  // TENSORFLOW_LITE_MICRO_KERNELS_ADD_H_

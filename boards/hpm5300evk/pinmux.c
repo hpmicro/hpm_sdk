@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,6 +16,7 @@
 
 #include "pinmux.h"
 #include "board.h"
+#include "hpm_trgm_drv.h"
 
 
 /* Set PY00-PY05 default function to PGPIO */
@@ -382,4 +383,15 @@ void init_clk_ref_pin(void)
 void init_brownout_indicate_pin(void)
 {
     HPM_IOC->PAD[IOC_PAD_PB11].FUNC_CTL = IOC_PB11_FUNC_CTL_GPIO_B_11;
+}
+
+void init_trgm_gptmr0_cap2_invert_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PB06].FUNC_CTL = IOC_PB06_FUNC_CTL_TRGM0_P_02;
+
+    trgm_output_t trgm0_io_config0 = {0};
+    trgm0_io_config0.invert = 1;
+    trgm0_io_config0.type = trgm_output_same_as_input;
+    trgm0_io_config0.input = HPM_TRGM0_INPUT_SRC_TRGM0_P2;
+    trgm_output_config(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_GPTMR0_IN2, &trgm0_io_config0);
 }

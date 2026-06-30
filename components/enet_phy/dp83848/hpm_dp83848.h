@@ -119,7 +119,7 @@ bool dp83848_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, dp83848_config_t
  *          - Port speed (10 Mbps or 100 Mbps)
  *          - Duplex mode (half or full)
  */
-void dp83848_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
+hpm_stat_t dp83848_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
 
 #if defined(__cplusplus)
 }

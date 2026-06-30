@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,8 +10,11 @@
 void ppi_config_clk_pin(PPI_Type *ppi, ppi_clk_pin_config_t *config)
 {
     uint32_t tmp;
+    uint8_t cycle_num;
 
-    tmp = PPI_CLKPIN_CFG_CYCLE_SET(config->cycle_num)
+    cycle_num = (config->cycle_num > 0) ? (config->cycle_num - 1) : 0;
+
+    tmp = PPI_CLKPIN_CFG_CYCLE_SET(cycle_num)
         | PPI_CLKPIN_CFG_HIGH_SET(config->high_num)
         | PPI_CLKPIN_CFG_LOW_SET(config->low_num)
         | PPI_CLKPIN_CFG_INVERT_SET(config->revert)
@@ -110,6 +113,9 @@ uint32_t ppi_ns2cycle(uint32_t freq_in_hz, uint32_t ns)
 
     ns_per_cycle = (float)1000000000 / (float)freq_in_hz;
     cycle = (uint32_t)((float)ns / ns_per_cycle);
+    if (cycle > 0) {
+        cycle--;
+    }
     if (cycle > max_cycle) {
         cycle = max_cycle;
     }

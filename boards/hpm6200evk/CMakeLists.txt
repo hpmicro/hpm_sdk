@@ -5,4 +5,5 @@ sdk_compile_definitions_ifdef(BUILD_FOR_SECONDARY_CORE BOARD_RUNNING_CORE=HPM_CO
 
 sdk_inc(.)
 sdk_src(pinmux.c)
+sdk_src(clock.c)
 sdk_src(board.c)

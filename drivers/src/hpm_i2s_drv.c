@@ -529,6 +529,7 @@ uint32_t i2s_receive_buff(I2S_Type *ptr, i2s_line_num_t rx_line_index, uint8_t s
     return size - left;
 }
 
+#if defined(HPMSOC_HAS_HPMSDK_PDM) || defined(HPMSOC_HAS_HPMSDK_PDMLITE)
 void i2s_get_default_transfer_config_for_pdm(i2s_transfer_config_t *transfer)
 {
     transfer->sample_rate = PDM_SOC_SAMPLE_RATE_IN_HZ;
@@ -541,7 +542,9 @@ void i2s_get_default_transfer_config_for_pdm(i2s_transfer_config_t *transfer)
     transfer->data_line = I2S_DATA_LINE_0;
     transfer->channel_slot_mask = 0x11;
 }
+#endif
 
+#if defined(HPMSOC_HAS_HPMSDK_DAO)
 void i2s_get_default_transfer_config_for_dao(i2s_transfer_config_t *transfer)
 {
     transfer->sample_rate = DAO_SOC_SAMPLE_RATE_IN_HZ;
@@ -554,6 +557,7 @@ void i2s_get_default_transfer_config_for_dao(i2s_transfer_config_t *transfer)
     transfer->data_line = I2S_DATA_LINE_0;
     transfer->channel_slot_mask = 0x3;
 }
+#endif
 
 void i2s_get_default_transfer_config(i2s_transfer_config_t *transfer)
 {

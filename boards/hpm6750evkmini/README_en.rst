@@ -32,7 +32,7 @@ Hardware
 
 - USB
 
-  - USB type C (USB 2.0 OTG) connector x2
+  - USB type C (USB 2.0 OTG) connector x1
 
 - Audio
 
@@ -115,24 +115,6 @@ Pin Description
    * - I2C0.SDA
      - P1[15]
 
-- UART for core1 debug console
-
-.. list-table::
-   :header-rows: 1
-
-   * - Function
-     - Position
-     - Remark
-   * - UART13.TXD
-     - P1[8]
-     -
-   * - UART13.RXD
-     - P1[10]
-     -
-   * - UART13.break
-     - P1[24]
-     - generate uart break signal
-
 - ACMP Pin
 
 .. list-table::
@@ -155,7 +137,7 @@ Pin Description
      - Remark
    * - GPTMR5.CAPT_1
      - P1[12]
-     -
+     - SENT decode input pin (idle low level)
    * - GPTMR5.COMP_0
      - P1[31]
      - MCLK of i2s emulation
@@ -165,6 +147,9 @@ Pin Description
    * - GPTMR5.COMP_2
      - P2[38]
      - BLCK of i2s emulation
+   * - GPTMR5.CAPT_2
+     - P2[23]
+     - SENT decode input pin (idle high level)
 
 - ADC12 Pin
 
@@ -266,10 +251,16 @@ Pin Description
 
    * - Function
      - Position
+     - Remark
    * - UART13.TXD
      - P1[8]
+     -
    * - UART13.RXD
      - P1[10]
+     -
+   * - UART13.break
+     - P1[24]
+     - generate uart break signal
 
 - TRGMUX pin for uart_software_rx_idle sample
 

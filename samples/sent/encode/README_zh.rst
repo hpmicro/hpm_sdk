@@ -17,7 +17,7 @@ sent编码
 ----
 
 -  缺省产生的SENT带暂停信号，若不需要暂停信号，可重新定义\ ``SENT_ENABLE_PAUSE_NIBBLE``\ 为\ ``0``\ 或者在工程的CMakeLists.txt中增加\ ``sdk_compile_definitions(-DSENT_ENABLE_PAUSE_NIBBLE=0)``\ 。
--  缺省SENT的空闲极性是低电平，若需要更改为高电平，可重新定义\ ``SENT_IDLE_POLARITY``\ 为\ ``1``\ 或者在工程的CMakeLists.txt中增加\ ``sdk_compile_definitions(-DSENT_IDLE_POLARITY=1)``\ 。
+-  缺省SENT的空闲极性是低电平，若需要更改为高电平，可重新定义\ ``SENT_IDLE_HIGH``\ 为\ ``1``\ 或者在工程的CMakeLists.txt中增加\ ``sdk_compile_definitions(-DSENT_IDLE_HIGH=1)``\ 。
 
 运行现象
 --------

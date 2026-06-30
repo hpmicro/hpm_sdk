@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,7 +7,11 @@
 
 #include <stdio.h>
 #include "board.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 
 #define APP_BOARD_PWM                 BOARD_GPTMR_PWM
@@ -17,6 +21,10 @@
 #define APP_PWM_MIN_FREQ                  (10000U)
 #define APP_PWM_MAX_DUTY                  (100U)
 #define APP_PWM_MAX_DUTY_STEP             (2U)
+
+#ifndef APP_GPTMR_TARGET_FREQ
+#define APP_GPTMR_TARGET_FREQ         (10000000UL) /* 10MHz, for PWM resolution */
+#endif
 /**
  * @brief set waveform edge aligned pwm frequency
  *
@@ -61,11 +69,19 @@ static void set_pwm_waveform_edge_aligned_frequency(uint32_t freq)
 
     gptmr_freq = board_init_gptmr_clock(APP_BOARD_PWM);
     gptmr_channel_get_default_config(APP_BOARD_PWM, &config);
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+    config.prescaler = gptmr_freq / APP_GPTMR_TARGET_FREQ;
+    current_reload = (gptmr_freq / config.prescaler) / freq;
+#else
     current_reload = gptmr_freq / freq;
+#endif
     config.reload = current_reload;
     config.cmp_initial_polarity_high = false;
     gptmr_stop_counter(APP_BOARD_PWM, APP_BOARD_PWM_CH);
-    gptmr_channel_config(APP_BOARD_PWM, APP_BOARD_PWM_CH, &config, false);
+    if (gptmr_channel_config(APP_BOARD_PWM, APP_BOARD_PWM_CH, &config, false) != status_success) {
+        printf("config gptmr channel failed\n");
+        return;
+    }
     gptmr_channel_reset_count(APP_BOARD_PWM, APP_BOARD_PWM_CH);
     gptmr_start_counter(APP_BOARD_PWM, APP_BOARD_PWM_CH);
 }

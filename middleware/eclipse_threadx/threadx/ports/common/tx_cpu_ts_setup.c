@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -119,11 +119,14 @@ ATTR_RAMFUNC ULONG low_power_timer_adjust(VOID)
 }
 #endif
 #else
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 #ifdef TX_LOW_POWER
 #include "hpm_sysctl_drv.h"
-#include "hpm_pcfg_drv.h"
 
 #ifndef THREADX_TIMER_RESOURCE
     #define THREADX_TIMER_RESOURCE      BOARD_THREADX_LOWPOWER_TIMER
@@ -188,7 +191,6 @@ void tx_cpu_ts_setup(void)
     lowpower_timer_count_per_tick = gptmr_freq / TX_TIMER_TICKS_PER_SECOND;
     /* Only shut down CPU clock, enter cpu WAIT mode */
     sysctl_set_cpu0_lp_mode(HPM_SYSCTL, cpu_lp_mode_gate_cpu_clock);
-    pcfg_disable_power_trap(HPM_PCFG);
 #endif
 }
 #ifdef TX_LOW_POWER

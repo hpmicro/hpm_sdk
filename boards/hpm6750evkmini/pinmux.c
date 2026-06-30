@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -983,4 +983,15 @@ void init_brownout_indicate_pin(void)
 {
     HPM_IOC->PAD[IOC_PAD_PZ09].FUNC_CTL = IOC_PZ09_FUNC_CTL_GPIO_Z_09;
     HPM_BIOC->PAD[IOC_PAD_PZ09].FUNC_CTL = BIOC_PZ09_FUNC_CTL_SOC_PZ_09;
+}
+
+void init_trgm_gptmr5_cap2_invert_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PD16].FUNC_CTL = IOC_PD16_FUNC_CTL_TRGM2_P_06;
+
+    trgm_output_t trgm2_io_config0 = {0};
+    trgm2_io_config0.invert = 1;
+    trgm2_io_config0.type = trgm_output_same_as_input;
+    trgm2_io_config0.input = HPM_TRGM2_INPUT_SRC_TRGM2_P6;
+    trgm_output_config(HPM_TRGM2, HPM_TRGM2_OUTPUT_SRC_GPTMR5_IN2, &trgm2_io_config0);
 }

@@ -1,5 +1,5 @@
 /* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
-   Copyright (c) 2022 HPMicro
+   Copyright (c) 2022-2026 HPMicro
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/kernels/op_macros.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -46,9 +47,12 @@ void SoftmaxQuantized(const TfLiteEvalTensor* input, TfLiteEvalTensor* output,
       const int trailing_dim = input_shape.DimensionsCount() - 1;
       const int outer_size = MatchingFlatSizeSkipDim(input_shape, trailing_dim, output_shape);
       const int depth = MatchingDim(input_shape, trailing_dim, output_shape, trailing_dim);
-hpm_nn_softmax_s8_hp(tflite::micro::GetTensorData<int8_t>(input), outer_size, depth,
-                   op_data.input_multiplier, op_data.input_left_shift,
-                   op_data.diff_min, tflite::micro::GetTensorData<int8_t>(output));
+      hpm_nn_softmax_s8_hp(
+          tflite::micro::GetTensorData<int8_t>(input),
+          outer_size, depth,
+          op_data.input_multiplier, op_data.input_left_shift,
+          op_data.diff_min,
+          tflite::micro::GetTensorData<int8_t>(output));
     }
   } else {
     tflite::reference_ops::SoftmaxInt16(
@@ -81,22 +85,15 @@ TfLiteStatus SoftmaxEval(TfLiteContext* context, TfLiteNode* node) {
       return kTfLiteOk;
     }
     default:
-      TF_LITE_KERNEL_LOG(context, "Type %s (%d) not supported.",
-                         TfLiteTypeGetName(input->type), input->type);
+      MicroPrintf("Type %s (%d) not supported.",
+                  TfLiteTypeGetName(input->type), input->type);
       return kTfLiteError;
   }
 }
 }  // namespace
 
-TfLiteRegistration Register_SOFTMAX() {
-  return {/*init=*/SoftmaxInit,
-          /*free=*/nullptr,
-          /*prepare=*/SoftmaxPrepare,
-          /*invoke=*/SoftmaxEval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_SOFTMAX() {
+  return tflite::micro::RegisterOp(SoftmaxInit, SoftmaxPrepare, SoftmaxEval);
 }
 
 }  // namespace tflite

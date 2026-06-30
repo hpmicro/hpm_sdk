@@ -395,21 +395,22 @@ PMbus初始化
 
       - 多模式支持，处理三种标准读取操作：
 
-        - 字节读取：用于读取状态寄存器等单字节数据
-        - 字读取：用于读取电压/电流等16位测量值
-        - 块读取：用于获取日志信息等大数据块
+        - 字节读取：用于读取状态寄存器等单字节数据，固定返回1字节
+        - 字读取：用于读取电压/电流等16位测量值，固定返回2字节
+        - 块读取（固定长度）：使用命令表中预定义的长度
+        - 块读取（可变长度，data_length == 0xFFFFFFFF）：实际长度由从机第一个字节决定，
+          适用于 ``PMBUS_CODE_MFR_ID`` / ``PMBUS_CODE_MFR_MODEL`` /
+          ``PMBUS_CODE_MFR_REVISION`` / ``PMBUS_CODE_MFR_LOCATION`` 等各厂家字符串长度不同的命令
 
-      - 长度处理策略
+      - ``len`` 参数的双重语义：
 
-        - 字节/字读取：固定返回1/2字节
-        - 块读取：
-          - 0xFFFFFFFF表示动态长度模式，使用调用者传入的*len作为缓冲区容量
-          - 其他值表示使用预定义长度，自动校验数据完整性
+        - 输入：缓冲区容量（字节），用于可变长度块读取时防止溢出
+        - 输出：从机实际返回的数据长度（字节）
 
-        - 返回标准化的错误代码：
+      - 返回标准化的错误代码：
 
-          - status_pmbus_not_support_cmd: 遇到未实现的命令类型
-          - status_pmbus_not_transaction_type: 无效的事务类型配置
+          - ``status_pmbus_not_support_cmd``: 遇到未实现的命令类型（mfr_defined / extended_command）
+          - ``status_pmbus_not_transaction_type``: 无效的事务类型配置
 
     - API原型：
 
@@ -437,26 +438,40 @@ PMbus初始化
               - PMBus命令码
             * - data
               - uint8_t*
-              - 数据接收缓冲区指针
+              - 存储从机返回数据的缓冲区指针
             * - len
               - uint32_t*
-              - 输入：缓冲区最大容量 / 输出：实际读取长度
+              - 输入：缓冲区容量（字节），用于可变长度块读取；输出：从机实际返回的数据长度（字节）
 
     - 返回值：
         - ``status_success``: 操作成功
-        - ``status_pmbus_not_support_cmd``: 不支持的PMBus命令
+        - ``status_pmbus_not_support_cmd``: 不支持的PMBus命令（mfr_defined / extended_command）
         - ``status_pmbus_not_transaction_type``: 无效的事务类型
+        - 其他: 底层SMBus层返回的错误（如PEC校验错误、I2C超时等）
 
-    - 示例：读取输出电压值
+    - 示例1：读取固定长度的输出电压值
 
         .. code-block:: c
 
             /* PMbus初始化，不做举例 */
             uint8_t vout_data[2];
-            uint32_t read_len = 2;
+            uint32_t read_len = sizeof(vout_data);
             hpm_stat_t status = hpm_pmbus_master_read(I2C0, 0x5A, PMBUS_CODE_VOUT_COMMAND, vout_data, &read_len);
             if (status == status_success) {
                 float voltage = (vout_data[0] | (vout_data[1] << 8)) * 0.001; /* 转换为电压值 */
+            }
+
+    - 示例2：读取可变长度的厂家ID（各厂家字符串长度不同）
+
+        .. code-block:: c
+
+            /* PMbus初始化，不做举例 */
+            uint8_t mfr_id[32];
+            uint32_t read_len = sizeof(mfr_id); /* 输入：缓冲区容量 */
+            hpm_stat_t status = hpm_pmbus_master_read(I2C0, 0x5A, PMBUS_CODE_MFR_ID, mfr_id, &read_len);
+            if (status == status_success) {
+                /* read_len 已更新为实际字符串长度 */
+                printf("MFR_ID: %.*s\n", read_len, mfr_id);
             }
 
 从机模式

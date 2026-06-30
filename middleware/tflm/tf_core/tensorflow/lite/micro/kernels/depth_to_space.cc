@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/types.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -76,7 +77,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
   // because TfLiteTensor in the MicroInterpreter is a temporary
   // allocation.  For the KernelRunner interpreter, TfLiteEvalTensor
   // is a temporary allocation.  We must therefore relocate the dims
-  // from the FlatBuffer to the persistant storage arena.
+  // from the FlatBuffer to the persistent storage arena.
   TfLiteEvalTensor* output_eval =
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
   TF_LITE_ENSURE_OK(context, tflite::micro::CreateWritableTensorDimsWithCopy(
@@ -92,11 +93,11 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus DepthToSpacePrepare(TfLiteContext* context, TfLiteNode* node) {
   return CalculateOpData(context, node);
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus DepthToSpaceEval(TfLiteContext* context, TfLiteNode* node) {
   auto* params =
       reinterpret_cast<TfLiteDepthToSpaceParams*>(node->builtin_data);
 
@@ -124,9 +125,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                   tflite::micro::GetTensorData<int8_t>(output));
       break;
     default:
-      TF_LITE_KERNEL_LOG(
-          context, "DEPTH_TO_SPACE only supports FLOAT32 and INT8, got %s.",
-          TfLiteTypeGetName(output->type));
+      MicroPrintf("DEPTH_TO_SPACE only supports FLOAT32 and INT8, got %s.",
+                  TfLiteTypeGetName(output->type));
       return kTfLiteError;
   }
 
@@ -135,15 +135,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace
 
-TfLiteRegistration Register_DEPTH_TO_SPACE() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_DEPTH_TO_SPACE() {
+  return tflite::micro::RegisterOp(nullptr, DepthToSpacePrepare,
+                                   DepthToSpaceEval);
 }
 
 }  // namespace tflite

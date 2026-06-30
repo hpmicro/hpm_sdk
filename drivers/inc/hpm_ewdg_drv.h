@@ -123,7 +123,8 @@ typedef enum {
  */
 typedef enum {
     ewdg_cnt_clk_src_bus_clk,        /*!< Clock is from BUS clock */
-    ewdg_cnt_clk_src_ext_osc_clk,    /*!< Clock is from External OSC */
+    ewdg_cnt_clk_src_ext_osc_clk,    /*!< Clock is from External OSC (retained for compatibility) */
+    ewdg_cnt_src_clk_32k = ewdg_cnt_clk_src_ext_osc_clk,     /*!< Clock is from IRC 32K or OSC 32K(External), suggested option */
 } ewdg_cnt_clk_sel_t;
 
 /**

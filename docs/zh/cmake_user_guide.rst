@@ -893,7 +893,19 @@ SDK 提供了一个本地化机制，设计用于满足两个特定需求：
             - samples/motor_ctrl/bldc_hfi
             - samples/trace_recorder/rtthread-nano
 
-   **注意：** `feature` 和 `excluded_samples` 字段都用于 SDK 依赖关系维护，自定义板卡配置不需要这些字段。`feature` 字段指定板卡特定的硬件功能以支持示例应用程序兼容性，而 `excluded_samples` 指定了由于硬件限制或兼容性问题而不应为此板卡构建的示例应用程序。
+   **关于板卡 YAML 中的资源描述：**
+
+   上述 YAML 示例展示了一个 SDK 标准开发板的完整配置。以下字段描述的是**该开发板实际具备的硬件资源**：
+
+   - ``on-board-ram`` — 板上 RAM 的类型、容量和位宽
+   - ``on-board-flash`` — 板上 Flash 的类型和容量
+   - ``soc`` — 板上使用的 SoC 型号
+   - ``device`` — JLink 连接使用的设备名
+   - ``openocd-soc`` / ``openocd-probe`` — OpenOCD 配置文件名
+
+   如果您以 SDK 开发板为基础创建自定义板卡，请根据实际硬件情况更新这些字段（例如更换了不同容量的 Flash 芯片、使用了不同的调试探针等）。这些信息会直接影响链接脚本生成和调试配置。
+
+   ``feature`` 和 ``excluded_samples`` 字段用于 SDK 内部示例应用程序的依赖关系维护，自定义板卡配置不需要这些字段。
 
 3. **使用自定义板卡**
 
@@ -1395,6 +1407,101 @@ SDK 通过 CMakeLists.txt 中的 `generate_ide_projects()` 函数支持多个 ID
 
 最佳实践
 ********
+
+CMake 变量参考
+==============
+
+下表列出了所有可以在 ``find_package(hpm-sdk)`` 之前设置并传递到 SDK 构建系统的 CMake 变量。
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 35 40
+
+   * - 变量
+     - 可选值 / 默认值
+     - 说明
+   * - ``HPM_BUILD_TYPE``
+     - ``ram`` (默认), ``flash_xip``, ``flash_sdram_xip``, ``flash_hybrid_xip``, ``sec_core_img``
+     - 构建类型，决定链接器脚本和内存布局
+   * - ``CMAKE_BUILD_TYPE``
+     - ``debug`` (默认), ``release``
+     - 编译优化级别
+   * - ``APP_NAME``
+     - 字符串，默认 ``demo``
+     - 输出文件名前缀（``<name>.elf``, ``<name>.bin``, ``<name>.map``）
+   * - ``BOARD``
+     - 必须（如 ``hpm6200evk``）
+     - 目标板名称，通过 ``-DBOARD=<name>`` 在命令行指定
+   * - ``BOARD_SEARCH_PATH``
+     - 路径
+     - 自定义板卡目录的搜索路径
+
+   * - ``HEAP_SIZE``
+     - 十六进制数，默认 ``0x4000``
+     - 堆大小（字节）。支持 ``32K`` / ``1M`` 后缀格式
+   * - ``STACK_SIZE``
+     - 十六进制数，默认 ``0x4000``
+     - 栈大小（字节）。支持 ``32K`` / ``1M`` 后缀格式
+   * - ``CUSTOM_GCC_LINKER_FILE``
+     - 文件路径
+     - GCC 自定义链接脚本（``.ld``）
+   * - ``CUSTOM_SES_LINKER_FILE``
+     - 文件路径
+     - SEGGER Embedded Studio 自定义链接配置文件（``.icf``）
+
+   * - ``RV_ARCH``
+     - 字符串，默认 ``rv32imac``
+     - RISC-V 架构标志（如 ``rv32imafc``）
+   * - ``RV_ABI``
+     - 字符串，默认 ``ilp32``
+     - RISC-V ABI（``ilp32``, ``ilp32f``, ``ilp32d``）
+
+   * - ``EXTRA_C_FLAGS``
+     - 编译器标志字符串
+     - 额外的 C 编译器标志（如 ``-fstack-protector-strong``）
+   * - ``EXTRA_LD_FLAGS``
+     - 链接器标志字符串
+     - 额外的链接器标志（如 ``-Wl,--gc-sections``）
+   * - ``EXTRA_AS_FLAGS``
+     - 汇编器标志字符串
+     - 额外的汇编器标志
+   * - ``EXTRA_LD_SYMBOLS``
+     - 链接器符号字符串
+     - 额外的链接器符号定义（如 ``--defsym=...``）
+
+   * - ``GNURISCV_TOOLCHAIN_PATH``
+     - 路径
+     - RISC-V GCC 工具链路径（也可通过环境变量设置）
+   * - ``CUSTOM_TARGET_TRIPLET``
+     - 字符串，默认 ``riscv32-unknown-elf``
+     - 自定义交叉编译目标三元组
+   * - ``HPM_SDK_LD_NO_NANO_SPECS``
+     - ``1`` 禁用，默认未设置（启用）
+     - 禁用 nano.specs，使用完整标准库
+
+   * - ``SEC_CORE_IMG_C_ARRAY_OUTPUT``
+     - 文件路径，默认 ``sec_core_img.c``
+     - 多核应用中从核镜像 C 数组的输出路径
+   * - ``DISABLE_LINKED_PROJECT_BUILD``
+     - ``ON`` / ``OFF``
+     - 禁用关联项目编译（用于多核开发调试）
+
+   * - ``CONFIG_*``
+     - ``1`` / ``0``
+     - SDK 功能开关，如 ``CONFIG_FREERTOS``, ``CONFIG_LWIP``, ``CONFIG_LVGL``。可用的开关取决于 SoC 和 SDK 版本
+
+   * - ``SES_TOOLCHAIN_VARIANT``
+     - ``Standard``, ``Andes``
+     - SEGGER Embedded Studio 工具链变体
+   * - ``SES_COMPILER_VARIANT``
+     - ``gcc``, ``SEGGER``
+     - SES 编译器变体
+   * - ``SES_ASSEMBLER_VARIANT``
+     - ``gcc``, ``SEGGER``
+     - SES 汇编器变体
+   * - ``SES_LINKER_VARIANT``
+     - ``gnu``, ``SEGGER``
+     - SES 链接器变体
 
 项目组织
 ========

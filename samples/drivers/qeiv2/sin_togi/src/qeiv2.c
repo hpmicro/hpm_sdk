@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -119,7 +119,11 @@ static void pwm_init(void)
     pwmv2_select_cmp_source(BOARD_APP_PWM, PWMV2_CMP_INDEX(16), cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
     pwmv2_cmp_select_counter(BOARD_APP_PWM, PWMV2_CMP_INDEX(16), pwm_counter_0);
 
-    pwmv2_set_trigout_cmp_index(BOARD_APP_PWM, pwm_channel_0, PWMV2_CMP_INDEX(16));
+    if (status_success != pwmv2_set_trigout_cmp_index(BOARD_APP_PWM, pwm_channel_0, PWMV2_CMP_INDEX(16))) {
+        printf("failed to set PWMv2 trigger output compare index\n");
+        while (1) {
+        }
+    }
 
     pwmv2_enable_counter(BOARD_APP_PWM, pwm_counter_0);
     pwmv2_start_pwm_output(BOARD_APP_PWM, pwm_counter_0);
@@ -189,9 +193,10 @@ static void adc_init(void)
     cfg.res = adc16_res_16_bits;
     cfg.conv_mode = adc16_conv_mode_preemption;
     cfg.adc_clk_div = adc16_clock_divider_4;
+#if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb = true;
-    cfg.adc_ahb_en = true;
-    adc16_init(BOARD_APP_QEI_ADC_SIN_BASE, &cfg);
+#endif
+adc16_init(BOARD_APP_QEI_ADC_SIN_BASE, &cfg);
 
     /* initialize ADC channels */
     adc16_get_channel_default_config(&ch_cfg);

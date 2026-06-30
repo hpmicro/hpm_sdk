@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -43,9 +43,10 @@ void adc_init(void)
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = adc16_conv_mode_preemption;
     cfg.adc_clk_div    = adc16_clock_divider_4;
+#if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb   = true;
-    cfg.adc_ahb_en = true;
-    adc16_init(BOARD_RDC_ADC_I_BASE, &cfg);
+#endif
+adc16_init(BOARD_RDC_ADC_I_BASE, &cfg);
     adc16_init(BOARD_RDC_ADC_Q_BASE, &cfg);
 
     adc16_get_channel_default_config(&ch_cfg);

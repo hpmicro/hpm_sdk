@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -182,7 +182,6 @@ typedef enum {
 
 /**
  * @brief pwm compare config
- *
  */
 typedef struct pwmv2_cmp_config {
     uint32_t cmp;         /**< compare value */
@@ -798,15 +797,56 @@ static inline void pwmv2_set_dead_area_hrpwm(PWMV2_Type *pwm_x, pwm_channel_t ch
 }
 
 /**
+ * @brief Check whether a CMP event is invalid for cross-period trigger, IRQ or DMA use
+ *
+ * This function detects unsupported cross-period compare events for CMP0~CMP15.
+ * These events should not be used as trigger output, compare IRQ or compare DMA
+ * sources when the compare working value is greater than the related counter
+ * reload working value.
+ *
+ * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
+ * @param cmp_index cmp index
+ * @return true if the selected CMP event is unsupported for cross-period use
+ * @return false if the selected CMP event is supported or is not cross-period
+ */
+static inline bool pwmv2_is_cmp_cross_period_event_invalid(PWMV2_Type *pwm_x, uint8_t cmp_index)
+{
+    uint8_t counter_index;
+
+    if (cmp_index >= PWM_CMP_UNABLE_OUTPUT_INDEX) {
+        return false;
+    }
+
+    counter_index = cmp_index >> 2;
+    if ((cmp_index & 0x3U) == counter_index) {
+        return false;
+    }
+
+    return PWMV2_CMP_VAL_WORK_VALUE_GET(pwm_x->CMP_VAL_WORK[cmp_index]) >
+           PWMV2_CNT_RELOAD_WORK_VALUE_GET(pwm_x->CNT_RELOAD_WORK[counter_index]);
+}
+
+/**
  * @brief Setting the comparator as an input to trigmux
+ *
+ * @warning Check the return value. status_invalid_argument means an unsupported
+ *       cross-period trigger output is selected. Use CMP16~CMP23 for
+ *       cross-period trigger output if the compare value is greater than the
+ *       related counter reload value.
  *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param trigmux_chn @ref pwm_channel_t
  * @param cmp_index cmp index
+ * @retval status_success Set trigger output CMP index successfully
+ * @retval status_invalid_argument Unsupported CMP is selected for cross-period trigger output
  */
-static inline void pwmv2_set_trigout_cmp_index(PWMV2_Type *pwm_x, pwm_channel_t trigmux_chn, uint8_t cmp_index)
+static inline hpm_stat_t pwmv2_set_trigout_cmp_index(PWMV2_Type *pwm_x, pwm_channel_t trigmux_chn, uint8_t cmp_index)
 {
+    if (pwmv2_is_cmp_cross_period_event_invalid(pwm_x, cmp_index)) {
+        return status_invalid_argument;
+    }
     pwm_x->TRIGGER_CFG[trigmux_chn] = (pwm_x->TRIGGER_CFG[trigmux_chn] & ~PWMV2_TRIGGER_CFG_TRIGGER_OUT_SEL_MASK) | PWMV2_TRIGGER_CFG_TRIGGER_OUT_SEL_SET(cmp_index);
+    return status_success;
 }
 
 /**
@@ -1236,12 +1276,23 @@ static inline void pwmv2_clear_burstend__irq_status(PWMV2_Type *pwm_x, uint32_t 
 /**
  * @brief enable cmp irq
  *
+ * @warning Check the return value. status_invalid_argument means an unsupported
+ *       cross-period compare IRQ is selected. Use CMP16~CMP23 for
+ *       cross-period compare IRQ if the compare value is greater than the
+ *       related counter reload value.
+ *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param cmp_index cmp index
+ * @retval status_success Enable compare IRQ successfully
+ * @retval status_invalid_argument Unsupported CMP is selected for cross-period compare IRQ
  */
-static inline void pwmv2_enable_cmp_irq(PWMV2_Type *pwm_x, uint8_t cmp_index)
+static inline hpm_stat_t pwmv2_enable_cmp_irq(PWMV2_Type *pwm_x, uint8_t cmp_index)
 {
+    if (pwmv2_is_cmp_cross_period_event_invalid(pwm_x, cmp_index)) {
+        return status_invalid_argument;
+    }
     pwm_x->IRQ_EN_CMP |= PWMV2_IRQ_EN_CMP_IRQ_EN_CMP_SET(1 << cmp_index);
+    return status_success;
 }
 
 /**
@@ -1379,14 +1430,25 @@ static inline void pwmv2_disable_burstend_irq(PWMV2_Type *pwm_x, pwm_counter_t c
 /**
  * @brief enable dma at compare point
  *
+ * @warning Check the return value. status_invalid_argument means an unsupported
+ *       cross-period DMA compare event is selected. Use CMP16~CMP23 for
+ *       cross-period DMA compare event if the compare value is greater than the
+ *       related counter reload value.
+ *
  * @param pwm_x PWM base address, HPM_PWMx(x=0..n)
  * @param dma_channel @ref pwm_dma_chn_t
  * @param cmp_index cmp index
+ * @retval status_success Enable DMA at compare point successfully
+ * @retval status_invalid_argument Unsupported CMP is selected for cross-period DMA compare event
  */
-static inline void pwmv2_enable_dma_at_compare_point(PWMV2_Type *pwm_x, pwm_dma_chn_t dma_channel, uint8_t cmp_index)
+static inline hpm_stat_t pwmv2_enable_dma_at_compare_point(PWMV2_Type *pwm_x, pwm_dma_chn_t dma_channel, uint8_t cmp_index)
 {
+    if (pwmv2_is_cmp_cross_period_event_invalid(pwm_x, cmp_index)) {
+        return status_invalid_argument;
+    }
     pwm_x->DMA_EN = (pwm_x->DMA_EN & ~((PWMV2_DMA_EN_DMA0_SEL_MASK | PWMV2_DMA_EN_DMA0_EN_MASK) << (PWMV2_DMA_EN_DMA1_SEL_SHIFT * dma_channel))) |
     ((PWMV2_DMA_EN_DMA0_SEL_SET(cmp_index) | PWMV2_DMA_EN_DMA0_EN_MASK) << (PWMV2_DMA_EN_DMA1_SEL_SHIFT * dma_channel));
+    return status_success;
 }
 
 /**

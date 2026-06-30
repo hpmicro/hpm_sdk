@@ -6,7 +6,7 @@ HPM6800EVK
 Overview
 --------
 
-The HPM6800 is a single-core flashless MCU running 600Mhz. It has a 1MB continuous on-chip ram. Also, it provides various memory interfaces, including SDRAM, Quad SPI NOR Flash, SD/eMMC. It integrates rich audio and video interfaces, including LCD, pixel DMA, camera, and I2S audio interfaces.
+The HPM6800 is a single-core flashless MCU running 600MHz. It has a 1MB continuous on-chip ram. Also, it provides various memory interfaces, including SDRAM, Quad SPI NOR Flash, SD/eMMC. It integrates rich audio and video interfaces, including LCD, pixel DMA, camera, and I2S audio interfaces.
 
 .. image:: doc/hpm6800evk.png
    :alt: hpm6800evk
@@ -41,6 +41,7 @@ Hardware
 
   - Line in
   - Mic
+  - Speaker
   - DAO
 
 - Others
@@ -52,7 +53,7 @@ Hardware
 DIP Switch SW2
 --------------
 
-- Bit 1 and 2 controls boot mode
+- Bit 1 and 2 control the boot mode
 
 .. list-table::
    :header-rows: 1
@@ -77,7 +78,7 @@ Button
    * - Name
      - FUNCTIONS
    * - USER BUTTON(KEY1)
-     - User Button
+     - GPIO Button
    * - WBUTN (KEY2)
      - WAKE UP Button
    * - RESETN (SW1)
@@ -104,7 +105,7 @@ Plug-in
    * - Connection
      - Description
    * - J6
-     - eMMC voltage selection (3.8V / 1.8V)
+     - eMMC voltage selection (3.3V / 1.8V)
 
 .. note::
 
@@ -399,7 +400,7 @@ Pin Description
 
 .. _hpm6800evk_known_issues:
 
-Board Know Issue
+Board Known Issue
 ----------------------
 
 - USB VBUS pin resistance issue

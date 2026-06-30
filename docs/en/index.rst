@@ -20,6 +20,7 @@ Sections
    samples/index_en
    samples/drivers/index_en
    api_doc
+   cmake_quick_start
    cmake_user_guide
    docs/cmake_intro
    CHANGELOG

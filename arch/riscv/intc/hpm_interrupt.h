@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,6 +11,58 @@
 #include "hpm_csr_drv.h"
 #include "hpm_plic_drv.h"
 #include "hpm_soc_feature.h"
+
+#ifdef CONFIG_SEGGER_SYSVIEW
+#include "SEGGER_SYSVIEW.h"
+
+#ifdef CONFIG_SEGGER_SYSVIEW_BAREMETAL
+#define TRACE_EXT_ISR_ENTER(irq_num)    SEGGER_SYSVIEW_SET_INTERRUPT_ID(irq_num);\
+                                        SEGGER_SYSVIEW_RecordEnterISR();
+#define TRACE_EXT_ISR_EXIT(irq_num)     SEGGER_SYSVIEW_RecordExitISR();
+
+#define TRACE_MCHTMR_ISR_ENTER()        SEGGER_SYSVIEW_SET_INTERRUPT_ID(SEGGER_SYSVIEW_RISCV_IRQ_MTIMER);\
+                                        SEGGER_SYSVIEW_RecordEnterISR();
+#define TRACE_MCHTMR_ISR_EXIT()         SEGGER_SYSVIEW_RecordExitISR();
+
+#define TRACE_SWI_ISR_ENTER()           SEGGER_SYSVIEW_SET_INTERRUPT_ID(SEGGER_SYSVIEW_RISCV_IRQ_SOFTWARE);\
+                                        SEGGER_SYSVIEW_RecordEnterISR();
+#define TRACE_SWI_ISR_EXIT()            SEGGER_SYSVIEW_RecordExitISR();
+
+#elif defined(CONFIG_SEGGER_SYSVIEW_FREERTOS)
+#define TRACE_EXT_ISR_ENTER(irq_num)    SEGGER_SYSVIEW_SET_INTERRUPT_ID(irq_num);\
+                                        SEGGER_SYSVIEW_RecordEnterISR();
+#define TRACE_EXT_ISR_EXIT(irq_num)
+
+#define TRACE_MCHTMR_ISR_ENTER()
+#define TRACE_MCHTMR_ISR_EXIT()
+
+#define TRACE_SWI_ISR_ENTER()
+#define TRACE_SWI_ISR_EXIT()
+
+#elif defined(CONFIG_SEGGER_SYSVIEW_UCOSIII)
+#define TRACE_EXT_ISR_ENTER(irq_num)    SEGGER_SYSVIEW_SET_INTERRUPT_ID(irq_num);\
+                                        SEGGER_SYSVIEW_RecordEnterISR();
+#define TRACE_EXT_ISR_EXIT(irq_num)
+
+#define TRACE_MCHTMR_ISR_ENTER()
+#define TRACE_MCHTMR_ISR_EXIT()
+
+#define TRACE_SWI_ISR_ENTER()
+#define TRACE_SWI_ISR_EXIT()
+
+#endif
+
+#else
+
+#define TRACE_EXT_ISR_ENTER(irq_num)
+#define TRACE_EXT_ISR_EXIT(irq_num)
+#define TRACE_MCHTMR_ISR_ENTER()
+#define TRACE_MCHTMR_ISR_EXIT()
+#define TRACE_SWI_ISR_ENTER()
+#define TRACE_SWI_ISR_EXIT()
+
+
+#endif /*CONFIG_SEGGER_SYSVIEW*/
 
 /**
  * @brief INTERRUPT driver APIs
@@ -1150,7 +1202,9 @@ void isr(void) __attribute__((section(".isr_vector"))); \
 HPM_EXTERN_C void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) __attribute__((section(".isr_vector"))); \
 void FREERTOS_VECTOR_ISR_WRAPPER_NAME(irq_num)(void) \
 { \
+    TRACE_EXT_ISR_ENTER(irq_num); \
     isr();\
+    TRACE_EXT_ISR_EXIT(irq_num);\
 }
 
 #if defined SOC_HAS_S_MODE && SOC_HAS_S_MODE
@@ -1177,8 +1231,10 @@ HPM_ATTR_MACHINE_INTERRUPT void ISR_NAME_M(irq_num)(void) \
 { \
     SAVE_CALLER_CONTEXT(); \
     ENTER_NESTED_IRQ_HANDLING_M();\
+    TRACE_EXT_ISR_ENTER(irq_num); \
     __asm volatile("la t1, %0\n\t" : : "i" (isr) : );\
     __asm volatile("jalr t1\n");\
+    TRACE_EXT_ISR_EXIT(irq_num); \
     COMPLETE_IRQ_HANDLING_M(irq_num);\
     EXIT_NESTED_IRQ_HANDLING_M();\
     RESTORE_CALLER_CONTEXT();\
@@ -1214,7 +1270,9 @@ HPM_ATTR_SUPERVISOR_INTERRUPT void ISR_NAME_S(irq_num)(void) {\
 void isr(void) __attribute__((section(".isr_vector")));\
 HPM_EXTERN_C void ISR_NAME_M(irq_num)(void) __attribute__((section(".isr_vector")));\
 void ISR_NAME_M(irq_num)(void) {           \
+    TRACE_EXT_ISR_ENTER(irq_num); \
     isr();                                            \
+    TRACE_EXT_ISR_EXIT(irq_num); \
 }
 
 #if defined SOC_HAS_S_MODE && SOC_HAS_S_MODE
@@ -1238,7 +1296,9 @@ void ISR_NAME_S(irq_num)(void) {           \
 void isr(void) __attribute__((section(".isr_vector")));\
 HPM_EXTERN_C void mchtmr_isr(void) __attribute__((section(".isr_vector"))); \
 void mchtmr_isr(void) {\
+    TRACE_MCHTMR_ISR_ENTER();\
     isr();\
+    TRACE_MCHTMR_ISR_EXIT();\
 }
 
 /**
@@ -1250,7 +1310,9 @@ void mchtmr_isr(void) {\
 void isr(void) __attribute__((section(".isr_vector")));\
 HPM_EXTERN_C void swi_isr(void) __attribute__((section(".isr_vector"))); \
 void swi_isr(void) {\
+    TRACE_SWI_ISR_ENTER();\
     isr();\
+    TRACE_SWI_ISR_EXIT();\
 }
 
 #if defined SOC_HAS_S_MODE && SOC_HAS_S_MODE

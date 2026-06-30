@@ -1,4 +1,4 @@
-# Copyright (c) 2025 HPMicro
+# Copyright (c) 2025-2026 HPMicro
 # SPDX-Liceense-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -11,9 +11,9 @@ project(canopen_master_example)
 sdk_compile_definitions(-DCONFIG_CANOPEN_MASTER=1)
 
 sdk_inc(.)
-sdk_inc(../OD)
+sdk_inc(OD)
 
 sdk_app_src(src/master_canopen_demo.c)
-sdk_app_src(../OD/OD.c)
+sdk_app_src(OD/OD.c)
 
 generate_ide_projects()

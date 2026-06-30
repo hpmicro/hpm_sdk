@@ -21,6 +21,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/kernels/padding.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -75,7 +76,7 @@ TfLiteStatus L2Prepare(TfLiteContext* context, TfLiteNode* node) {
   // because TfLiteTensor in the MicroInterpreter is a temporary
   // allocation.  For the KernelRunner interpreter, TfLiteEvalTensor
   // is a temporary allocation.  We must therefore relocate the dims
-  // from the FlatBuffer to the persistant storage arena.
+  // from the FlatBuffer to the persistent storage arena.
   TfLiteEvalTensor* output_eval =
       tflite::micro::GetEvalOutput(context, node, kOutputTensor);
   TF_LITE_ENSURE_OK(context, tflite::micro::CreateWritableTensorDimsWithCopy(
@@ -125,9 +126,8 @@ TfLiteStatus L2Eval(TfLiteContext* context, TfLiteNode* node) {
       L2EvalFloat(*params, *input, &op_params, output);
       break;
     default:
-      TF_LITE_KERNEL_LOG(context,
-                         "L2_POOL_2D only supports float32 currently, got %s.",
-                         TfLiteTypeGetName(input->type));
+      MicroPrintf("L2_POOL_2D only supports float32 currently, got %s.",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
   }
   return kTfLiteOk;
@@ -135,15 +135,8 @@ TfLiteStatus L2Eval(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace
 
-TfLiteRegistration Register_L2_POOL_2D() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/L2Prepare,
-          /*invoke=*/L2Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_L2_POOL_2D() {
+  return tflite::micro::RegisterOp(nullptr, L2Prepare, L2Eval);
 }
 
 }  // namespace tflite

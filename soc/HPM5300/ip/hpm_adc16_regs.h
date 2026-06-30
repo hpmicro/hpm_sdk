@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -192,7 +192,8 @@ typedef struct {
  *
  * set after conversion finished if wait_dis is set, cleared after software read.
  * The first time read with 0 will trigger one new conversion.
- * If SW read other channel when one channel conversion is in progress, it will not trigger new conversion at other channel, and will get old result with valid 0, also with read_cflct interrupt status bit set.
+ * If SW read other channel when one channel conversion is in progress, it will not trigger new conversion at other channel,
+ * and will get old result with valid 0, also with read_cflct interrupt status bit set.
  * the result may not realtime if software read once and wait  long time to read again
  */
 #define ADC16_BUS_RESULT_VALID_MASK (0x10000UL)
@@ -203,8 +204,10 @@ typedef struct {
  * CHAN_RESULT (RO)
  *
  * read this register will trigger one adc conversion.
- * If wait_dis bit is set, SW will get the latest conversion result(not current one) with valid bit is 0, SW need polling valid bit till it's set to get current result
- * If wait_dis bit is 0, SW can get the current conversion result with holding the bus, valid bit is always set at this mode. this is not recommended if channel sample time is too long
+ * If wait_dis bit is set, SW will get the latest conversion result(not current one) with valid bit is 0,
+ *  SW need polling valid bit till it's set to get current result
+ * If wait_dis bit is 0, SW can get the current conversion result with holding the bus, valid bit is always set at this mode.
+ * this is not recommended if channel sample time is too long
  */
 #define ADC16_BUS_RESULT_CHAN_RESULT_MASK (0xFFFFU)
 #define ADC16_BUS_RESULT_CHAN_RESULT_SHIFT (0U)
@@ -328,7 +331,8 @@ typedef struct {
 /*
  * STOP_POS (RW)
  *
- * if stop_en is set, SW is responsible to update this field to the next read point, HW should not write data to this point since it's not read out by SW yet
+ * if stop_en is set, SW is responsible to update this field to the next read point,
+ * HW should not write data to this point since it's not read out by SW yet
  */
 #define ADC16_SEQ_DMA_CFG_STOP_POS_MASK (0xFFF0000UL)
 #define ADC16_SEQ_DMA_CFG_STOP_POS_SHIFT (16U)
@@ -489,7 +493,8 @@ typedef struct {
  *
  * convert clock numbers, set to 21 (0x15) for 16bit mode, which means convert need 21 adc clock cycles(based on clock after divider);
  * user can use small value to get faster conversion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
- * Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).
+ * Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0,
+ * covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).
  */
 #define ADC16_CONV_CFG1_CONVERT_CLOCK_NUMBER_MASK (0x1F0U)
 #define ADC16_CONV_CFG1_CONVERT_CLOCK_NUMBER_SHIFT (4U)

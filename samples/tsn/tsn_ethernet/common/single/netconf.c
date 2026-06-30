@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,6 +17,7 @@
 #include "netif/etharp.h"
 #include "ethernetif.h"
 #include "common.h"
+#include "netinfo.h"
 
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 #include "FreeRTOS.h"
@@ -73,9 +74,9 @@ void netif_config(struct netif *netif)
     ip4_addr_set_zero(&ipaddr);
     ip4_addr_set_zero(&netmask);
 #else
-    ip4addr_aton(HPM_STRINGIFY(IP_CONFIG), &ipaddr);
-    ip4addr_aton(HPM_STRINGIFY(NETMASK_CONFIG), &netmask);
-    ip4addr_aton(HPM_STRINGIFY(GW_CONFIG), &gw);
+    ip4addr_aton(HPM_STRINGIFY(IP0_CONFIG), &ipaddr);
+    ip4addr_aton(HPM_STRINGIFY(NETMASK0_CONFIG), &netmask);
+    ip4addr_aton(HPM_STRINGIFY(GW0_CONFIG), &gw);
 #endif
 
 #if defined(NO_SYS) && NO_SYS

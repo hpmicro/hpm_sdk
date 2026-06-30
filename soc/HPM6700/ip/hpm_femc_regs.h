@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -495,7 +495,8 @@ typedef struct {
  * WRC (RW)
  *
  * Write recovery time
- * It is promised WRC+1 clock cycles delay between WRITE command to PRECHARGE/PRECHARGE_ALL command. This could help to meet tWR timing requirement by SDRAM device.
+ * It is promised WRC+1 clock cycles delay between WRITE command to PRECHARGE/PRECHARGE_ALL command.
+ * This could help to meet tWR timing requirement by SDRAM device.
  */
 #define FEMC_SDRCTRL1_WRC_MASK (0xE000U)
 #define FEMC_SDRCTRL1_WRC_SHIFT (13U)
@@ -506,7 +507,8 @@ typedef struct {
  * RFRC (RW)
  *
  * Refresh recovery time
- * It is promised RFRC+1 clock cycles delay between REFRESH command to ACTIVE command. Thiscould help to meet tRFC timing requirement by SDRAM device.
+ * It is promised RFRC+1 clock cycles delay between REFRESH command to ACTIVE command.
+ * This could help to meet tRFC timing requirement by SDRAM device.
  */
 #define FEMC_SDRCTRL1_RFRC_MASK (0x1F00U)
 #define FEMC_SDRCTRL1_RFRC_SHIFT (8U)
@@ -517,7 +519,8 @@ typedef struct {
  * ACT2RW (RW)
  *
  * ACT to Read/Write wait time
- * It is promised ACT2RW+1 clock cycles delay between ACTIVE command to READ/WRITE command.This could help to meet tRCD timing requirement by SDRAM device.
+ * It is promised ACT2RW+1 clock cycles delay between ACTIVE command to READ/WRITE command.
+ * This could help to meet tRCD timing requirement by SDRAM device.
  */
 #define FEMC_SDRCTRL1_ACT2RW_MASK (0xF0U)
 #define FEMC_SDRCTRL1_ACT2RW_SHIFT (4U)
@@ -528,7 +531,8 @@ typedef struct {
  * PRE2ACT (RW)
  *
  * PRECHARGE to ACT/Refresh wait time
- * It is promised PRE2ACT+1 clock cycles delay between PRECHARGE/PRECHARGE_ALL commandto ACTIVE/REFRESH command. This could help to meet tRP timing requirement by SDRAM device.
+ * It is promised PRE2ACT+1 clock cycles delay between PRECHARGE/PRECHARGE_ALL commandto ACTIVE/REFRESH command.
+ * This could help to meet tRP timing requirement by SDRAM device.
  */
 #define FEMC_SDRCTRL1_PRE2ACT_MASK (0xFU)
 #define FEMC_SDRCTRL1_PRE2ACT_SHIFT (0U)

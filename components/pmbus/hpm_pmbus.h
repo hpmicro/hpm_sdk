@@ -120,16 +120,27 @@ hpm_stat_t hpm_pmbus_slave_init(I2C_Type *ptr, uint8_t slave_addr);
 /**
  * @brief Reads data from a PMBus slave device
  *
- * This function reads data from a specified PMBus slave device over the I2C bus. It first sends a command and then reads the response data.
- * Primarily used for communication with PMBus-compatible power management devices to retrieve device status or measurement data.
+ * @details This function reads data from a specified PMBus slave device over the I2C bus.
+ *          It sends the command code first, then reads the response based on the command type:
+ *          - read_byte:  always returns 1 byte, *len is set to 1
+ *          - read_word:  always returns 2 bytes, *len is set to 2
+ *          - read_block (fixed length):   uses the predefined length from the PMBus command table,
+ *                                         *len is set to that length
+ *          - read_block (variable length, data_length == 0xFFFFFFFF):
+ *                                         *len is used as input buffer capacity,
+ *                                         and updated to actual bytes returned by slave.
+ *                                         Suitable for variable-length responses such as
+ *                                         PMBUS_CODE_MFR_ID, PMBUS_CODE_MFR_MODEL,
+ *                                         PMBUS_CODE_MFR_REVISION, PMBUS_CODE_MFR_LOCATION.
  *
- * @param ptr Pointer to the base address of the I2C controller
- * @param slave_address The 7-bit PMBus address of the slave device, used to select the correct slave device
- * @param command The PMBus command sent to the slave device, specifying the type of data or register to read
- * @param data Pointer to store the data returned from the slave device; this function will store the read data into the buffer pointed to by this pointer
- * @param len Pointer to a variable that specifies the maximum read length; this function will write the actual read length into this variable
+ * @param [in]     ptr           Pointer to the base address of the I2C controller
+ * @param [in]     slave_address 7-bit PMBus slave device address
+ * @param [in]     command       PMBus command code, specifying the data type or register to read
+ * @param [out]    data          Pointer to the buffer to store data read from slave device
+ * @param [in,out] len           Input:  capacity of the data buffer in bytes (used for variable-length block read)
+ *                               Output: actual number of bytes read from slave device
  *
- * @return hpm_stat_t Returns the status of the read operation, indicating success or various error states
+ * @return hpm_stat_t Returns the status of the read operation, indicating success or failure reasons
  */
 hpm_stat_t hpm_pmbus_master_read(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t *len);
 

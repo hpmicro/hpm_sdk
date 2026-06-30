@@ -23,6 +23,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/prelu.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 
@@ -60,23 +61,25 @@ TfLiteStatus PreluEval(TfLiteContext* context, TfLiteNode* node) {
           tflite::micro::GetTensorData<int8_t>(output));
       return kTfLiteOk;
     } break;
+    case kTfLiteInt16: {
+      reference_ops::BroadcastPrelu4DSlow(
+          params, tflite::micro::GetTensorShape(input),
+          tflite::micro::GetTensorData<int16_t>(input),
+          tflite::micro::GetTensorShape(alpha),
+          tflite::micro::GetTensorData<int8_t>(alpha),
+          tflite::micro::GetTensorShape(output),
+          tflite::micro::GetTensorData<int16_t>(output));
+      return kTfLiteOk;
+    } break;
     default:
-      TF_LITE_KERNEL_LOG(
-          context, "Only float32 and uint8_t are supported currently, got %d.",
-          TfLiteTypeGetName(input->type));
+      MicroPrintf("Input type '%s' is not supported.",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
   }
 }
 
-TfLiteRegistration Register_PRELU() {
-  return {/*init=*/PreluInit,
-          /*free=*/nullptr,
-          /*prepare=*/PreluPrepare,
-          /*invoke=*/PreluEval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_PRELU() {
+  return tflite::micro::RegisterOp(PreluInit, PreluPrepare, PreluEval);
 }
 
 }  // namespace tflite

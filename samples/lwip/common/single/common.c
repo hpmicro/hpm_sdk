@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,6 +17,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "osal.h"
+#include "enet_phy_adaptive_lwip.h"
 
 #ifndef ENET_RETRY_CONTROLLER_INIT_CNT
 #define ENET_RETRY_CONTROLLER_INIT_CNT   (3U) /**< Enet retry count for controller initialization */
@@ -90,24 +91,6 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     uint8_t init_retry_cnt = 0;
     hpm_stat_t stat;
 
-    #if defined(RGMII) && RGMII
-        #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_config_t phy_config;
-        #elif defined(__USE_RTL8211) && __USE_RTL8211
-        rtl8211_config_t phy_config;
-        #endif
-    #elif defined(RMII) && RMII
-        #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_config_t phy_config;
-        #elif defined(__USE_RTL8201) && __USE_RTL8201
-        rtl8201_config_t phy_config;
-        #elif defined(__USE_JL1111) && __USE_JL1111
-        jl1111_config_t phy_config;
-        #endif
-    #elif defined(MII) && MII
-        jl1111_config_t phy_config;
-    #endif
-
     /* Initialize GPIOs */
     board_init_enet_pins(ENET);
 
@@ -115,13 +98,13 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     board_reset_enet_phy(ENET);
 
     /* Set RGMII clock delay */
-    #if defined(RGMII) && RGMII
+    #if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
     board_init_enet_rgmii_clock_delay(ENET);
-    #elif defined(RMII) && RMII
+    #elif defined(HPM_ENET_RMII) && HPM_ENET_RMII
     /* Set RMII reference clock */
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
-    #elif defined(MII) && MII
+    #elif defined(HPM_ENET_MII) && HPM_ENET_MII
     board_init_enet_mii_clock(ENET);
     #endif
 
@@ -144,9 +127,6 @@ hpm_stat_t enet_init(ENET_Type *ptr)
 
     /*Get a default control config for tx descriptor */
     enet_get_default_tx_control_config(ENET, &enet_tx_control_config);
-    #if defined(LWIP_PTP) && LWIP_PTP
-    enet_tx_control_config.enable_ttse = true;
-    #endif
 
     /* Set the control config for tx descriptor */
     memcpy(&desc.tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
@@ -187,47 +167,13 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_disable_lpi_interrupt(ENET);
     #endif
 
-    /* Initialize phy */
-    #if defined(RGMII) && RGMII
-        #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_reset(ptr, DP83867_ADDR);
-        #if defined(__DISABLE_AUTO_NEGO) && __DISABLE_AUTO_NEGO
-        dp83867_set_mdi_crossover_mode(ENET, DP83867_ADDR, enet_phy_mdi_crossover_manual_mdix);
-        #endif
-        dp83867_basic_mode_default_config(ptr, &phy_config);
-        if (dp83867_basic_mode_init(ptr, DP83867_ADDR, &phy_config) == true) {
-        #elif defined(__USE_RTL8211) && __USE_RTL8211
-        rtl8211_reset(ptr, RTL8211_ADDR);
-        rtl8211_basic_mode_default_config(ptr, &phy_config);
-        if (rtl8211_basic_mode_init(ptr, RTL8211_ADDR, &phy_config) == true) {
-        #endif
-    #elif defined(RMII) && RMII
-        #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_reset(ptr, DP83848_ADDR);
-        dp83848_basic_mode_default_config(ptr, &phy_config);
-        if (dp83848_basic_mode_init(ptr, DP83848_ADDR, &phy_config) == true) {
-        #elif defined(__USE_RTL8201) && __USE_RTL8201
-        rtl8201_reset(ptr, RTL8201_ADDR);
-        rtl8201_basic_mode_default_config(ptr, &phy_config);
-        phy_config.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
-        if (rtl8201_basic_mode_init(ptr, RTL8201_ADDR, &phy_config) == true) {
-        #elif defined(__USE_JL1111) && __USE_JL1111
-        jl1111_reset(ptr, JL1111_ADDR);
-        jl1111_basic_mode_default_config(ptr, &phy_config);
-        phy_config.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
-        if (jl1111_basic_mode_init(ptr, JL1111_ADDR, &phy_config) == true) {
-        #endif
-    #elif defined(MII) && MII
-        jl1111_reset(ptr, JL1111_ADDR);
-        jl1111_basic_mode_default_config(ptr, &phy_config);
-        if (jl1111_basic_mode_init(ptr, JL1111_ADDR, &phy_config) == true) {
-    #endif
-            printf("Enet phy init passed !\n");
-            return status_success;
-        } else {
-            printf("Enet phy init failed !\n");
-            return status_fail;
-        }
+    if (board_init_enet_phy(ptr) == status_success) {
+        printf("Enet phy init passed !\n");
+        return status_success;
+    } else {
+        printf("Enet phy init failed !\n");
+        return status_fail;
+    }
 }
 
 #if defined(NO_SYS) && !NO_SYS
@@ -251,6 +197,7 @@ void timer_callback(void *parameter)
 #endif
 
 /* Log task to handle unified log printing */
+#if defined(LWIP_DHCP) && LWIP_DHCP
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 static void log_task(void *pvParameters) /* NOLINT */
 {
@@ -275,6 +222,7 @@ static void log_task(void *parameter) /* NOLINT */
         }
     }
 }
+#endif
 #endif
 
 /* Function to send log message to queue */
@@ -442,54 +390,21 @@ bool enet_get_dhcp_ready_status(void)
 
 void enet_self_adaptive_port_speed(void)
 {
-    enet_phy_status_t status = {0};
-
-    enet_line_speed_t line_speed[] = {enet_line_speed_10mbps, enet_line_speed_100mbps, enet_line_speed_1000mbps};
-    char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
-    char *duplex_str[] = {"Half duplex", "Full duplex"};
-
-#if defined(RGMII) && RGMII
-    #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_get_phy_status(ENET, DP83867_ADDR, &status);
-    #elif defined(__USE_RTL8211) && __USE_RTL8211
-        rtl8211_get_phy_status(ENET, RTL8211_ADDR, &status);
-    #endif
-#else
-    #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_get_phy_status(ENET, DP83848_ADDR, &status);
-    #elif defined(__USE_RTL8201) && __USE_RTL8201
-        rtl8201_get_phy_status(ENET, RTL8201_ADDR, &status);
-    #elif defined(__USE_JL1111) && __USE_JL1111
-        jl1111_get_phy_status(ENET, JL1111_ADDR, &status);
-    #endif
+    lwip_enet_phy_adaptive_binding_t binding = {
+        .last = &last_status,
+        .enet_base = ENET,
+        .phy_port = 0,
+        .log_prefix = NULL,
+        .print_port_banner = false,
+        .notify_netif = true,
+        .netif_idx = LWIP_NETIF_IDX,
+#if defined(NO_SYS) && !NO_SYS
+        .status_mbox = (void *)&netif_status_mbox,
+        .link_msg = &msg,
 #endif
+    };
 
-    if (status.enet_phy_link || (status.enet_phy_link != last_status.enet_phy_link)) {
-        if (memcmp(&last_status, &status, sizeof(enet_phy_status_t)) != 0) {
-            memcpy(&last_status, &status, sizeof(enet_phy_status_t));
-            if (status.enet_phy_link) {
-                printf("Link Status: Up\n");
-                printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
-                printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
-                enet_set_line_speed(ENET, line_speed[status.enet_phy_speed]);
-                enet_set_duplex_mode(ENET, status.enet_phy_duplex);
-                #if defined(NO_SYS) && !NO_SYS
-                msg = enet_phy_link_up;
-                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-                #else
-                netif_set_link_up(netif_get_by_index(LWIP_NETIF_IDX));
-                #endif
-            } else {
-                printf("Link Status: Down\n");
-                #if defined(NO_SYS) && !NO_SYS
-                msg = enet_phy_link_down;
-                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-                #else
-                netif_set_link_down(netif_get_by_index(LWIP_NETIF_IDX));
-                #endif
-            }
-        }
-    }
+    lwip_enet_phy_adaptive_poll(&binding);
 }
 
 void enet_services(struct netif *netif)

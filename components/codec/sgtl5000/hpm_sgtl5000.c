@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015, Freescale Semiconductor, Inc.
  * Copyright 2016-2019 NXP
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,7 +13,24 @@
 #define HPM_SGTL5000_MCLK_TOLERANCE (4U)
 #endif
 
-hpm_stat_t sgtl_init(sgtl_context_t *context, sgtl_config_t *config)
+void sgtl_get_default_config(sgtl_config_t *config)
+{
+    assert(config != NULL);
+
+    /* Initializes the configure structure to zero. */
+    memset(config, 0, sizeof(*config));
+
+    config->route = sgtl_route_playback_record;
+    config->bus = sgtl_bus_left_justified;
+    config->lrclk_polarity = sgtl_lrclk_polarity_low_for_left_channel;
+    config->master = false;
+    config->format.mclk_hz = 0U;
+    config->format.sample_rate = 48000U;
+    config->format.bit_width = 32U;
+    config->format.sclk_edge = sgtl_sclk_valid_edge_rising;
+}
+
+hpm_stat_t sgtl_init(codec_control_t *context, sgtl_config_t *config)
 {
     assert(context != NULL);
     assert(config != NULL);
@@ -130,7 +147,7 @@ hpm_stat_t sgtl_init(sgtl_context_t *context, sgtl_config_t *config)
     return status_success;
 }
 
-hpm_stat_t sgtl_deinit(sgtl_context_t *context)
+hpm_stat_t sgtl_deinit(codec_control_t *context)
 {
     hpm_stat_t stat = status_success;
 
@@ -144,7 +161,7 @@ hpm_stat_t sgtl_deinit(sgtl_context_t *context)
     return stat;
 }
 
-void sgtl_set_master_mode(sgtl_context_t *context, bool master)
+void sgtl_set_master_mode(codec_control_t *context, bool master)
 {
     if (master == true) {
         (void)sgtl_modify_reg(context, CHIP_I2S_CTRL, SGTL5000_I2S_MS_CLR_MASK, SGTL5000_I2S_MASTER);
@@ -153,7 +170,7 @@ void sgtl_set_master_mode(sgtl_context_t *context, bool master)
     }
 }
 
-hpm_stat_t sgtl_enable_module(sgtl_context_t *context, sgtl_module_t module)
+hpm_stat_t sgtl_enable_module(codec_control_t *context, sgtl_module_t module)
 {
     hpm_stat_t stat = status_success;
     switch (module) {
@@ -198,7 +215,7 @@ hpm_stat_t sgtl_enable_module(sgtl_context_t *context, sgtl_module_t module)
     return stat;
 }
 
-hpm_stat_t sgtl_disable_module(sgtl_context_t *context, sgtl_module_t module)
+hpm_stat_t sgtl_disable_module(codec_control_t *context, sgtl_module_t module)
 {
     hpm_stat_t stat = status_success;
     switch (module) {
@@ -243,7 +260,7 @@ hpm_stat_t sgtl_disable_module(sgtl_context_t *context, sgtl_module_t module)
     return stat;
 }
 
-hpm_stat_t sgtl_set_data_route(sgtl_context_t *context, sgtl_route_t route)
+hpm_stat_t sgtl_set_data_route(codec_control_t *context, sgtl_route_t route)
 {
     hpm_stat_t stat = status_success;
     switch (route) {
@@ -312,7 +329,7 @@ hpm_stat_t sgtl_set_data_route(sgtl_context_t *context, sgtl_route_t route)
     return stat;
 }
 
-hpm_stat_t sgtl_set_protocol(sgtl_context_t *context, sgtl_protocol_t protocol)
+hpm_stat_t sgtl_set_protocol(codec_control_t *context, sgtl_protocol_t protocol)
 {
     hpm_stat_t stat = status_success;
     switch (protocol) {
@@ -347,7 +364,7 @@ hpm_stat_t sgtl_set_protocol(sgtl_context_t *context, sgtl_protocol_t protocol)
     return stat;
 }
 
-hpm_stat_t sgtl_invert_lrclk_polarity(sgtl_context_t *context, bool invert)
+hpm_stat_t sgtl_invert_lrclk_polarity(codec_control_t *context, bool invert)
 {
     if (invert) {
         return sgtl_modify_reg(context, CHIP_I2S_CTRL, SGTL5000_I2S_LRPOL_CLR_MASK, SGTL5000_I2S_LRPOL_GET_MASK);
@@ -356,7 +373,7 @@ hpm_stat_t sgtl_invert_lrclk_polarity(sgtl_context_t *context, bool invert)
     }
 }
 
-hpm_stat_t sgtl_set_volume(sgtl_context_t *context, sgtl_module_t module, uint32_t volume)
+hpm_stat_t sgtl_set_volume(codec_control_t *context, sgtl_module_t module, uint32_t volume)
 {
     uint16_t vol = 0;
     hpm_stat_t stat = status_success;
@@ -398,7 +415,7 @@ hpm_stat_t sgtl_set_volume(sgtl_context_t *context, sgtl_module_t module, uint32
     return stat;
 }
 
-uint32_t sgtl_get_volume(sgtl_context_t *context, sgtl_module_t module)
+uint32_t sgtl_get_volume(codec_control_t *context, sgtl_module_t module)
 {
     uint16_t vol = 0;
     hpm_stat_t stat = status_success;
@@ -427,7 +444,7 @@ uint32_t sgtl_get_volume(sgtl_context_t *context, sgtl_module_t module)
     return stat == status_success ? vol : 0U;
 }
 
-hpm_stat_t sgtl_set_mute(sgtl_context_t *context, sgtl_module_t module, bool mute)
+hpm_stat_t sgtl_set_mute(codec_control_t *context, sgtl_module_t module, bool mute)
 {
     hpm_stat_t stat = status_success;
     switch (module) {
@@ -467,7 +484,7 @@ static bool sgtl_check_clock_tolerance(uint32_t source, uint32_t target)
     return false;
 }
 
-hpm_stat_t sgtl_config_data_format(sgtl_context_t *context, uint32_t mclk, uint32_t sample_rate, uint32_t bits)
+hpm_stat_t sgtl_config_data_format(codec_control_t *context, uint32_t mclk, uint32_t sample_rate, uint32_t bits)
 {
     uint16_t val     = 0;
     uint16_t regVal  = 0;
@@ -598,7 +615,7 @@ hpm_stat_t sgtl_config_data_format(sgtl_context_t *context, uint32_t mclk, uint3
     return stat;
 }
 
-hpm_stat_t sgtl_set_pay(sgtl_context_t *context, uint32_t playSource)
+hpm_stat_t sgtl_set_pay(codec_control_t *context, uint32_t playSource)
 {
     uint16_t regValue = 0U, regBitMask = 0x40U;
 
@@ -613,7 +630,7 @@ hpm_stat_t sgtl_set_pay(sgtl_context_t *context, uint32_t playSource)
     return sgtl_modify_reg(context, CHIP_ANA_CTRL, regBitMask, regValue);
 }
 
-hpm_stat_t sgtl_set_record(sgtl_context_t *context, uint32_t recordSource)
+hpm_stat_t sgtl_set_record(codec_control_t *context, uint32_t recordSource)
 {
     uint16_t regValue = 0U, regBitMask = 0x4U;
 
@@ -628,7 +645,7 @@ hpm_stat_t sgtl_set_record(sgtl_context_t *context, uint32_t recordSource)
     return sgtl_modify_reg(context, CHIP_ANA_CTRL, regBitMask, regValue);
 }
 
-hpm_stat_t sgtl_write_reg(sgtl_context_t *context, uint16_t reg, uint16_t val)
+hpm_stat_t sgtl_write_reg(codec_control_t *context, uint16_t reg, uint16_t val)
 {
     uint8_t r[2];
     uint8_t d[2];
@@ -640,7 +657,7 @@ hpm_stat_t sgtl_write_reg(sgtl_context_t *context, uint16_t reg, uint16_t val)
     return i2c_master_address_write(context->ptr, context->slave_address, r, 2U, d, 2U);
 }
 
-hpm_stat_t sgtl_read_reg(sgtl_context_t *context, uint16_t reg, uint16_t *val)
+hpm_stat_t sgtl_read_reg(codec_control_t *context, uint16_t reg, uint16_t *val)
 {
     hpm_stat_t stat = status_success;
     uint8_t r[2];
@@ -655,7 +672,7 @@ hpm_stat_t sgtl_read_reg(sgtl_context_t *context, uint16_t reg, uint16_t *val)
     return stat;
 }
 
-hpm_stat_t sgtl_modify_reg(sgtl_context_t *context, uint16_t reg, uint16_t clr_mask, uint16_t val)
+hpm_stat_t sgtl_modify_reg(codec_control_t *context, uint16_t reg, uint16_t clr_mask, uint16_t val)
 {
     hpm_stat_t retval = 0;
     uint16_t reg_val;

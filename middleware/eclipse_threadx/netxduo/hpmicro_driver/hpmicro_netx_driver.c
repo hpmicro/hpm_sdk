@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,7 +9,7 @@
 #include "hpm_common.h"
 #include "hpm_enet_drv.h"
 #include "hpm_enet_phy.h"
-#include "hpm_enet_phy_common.h"
+#include "hpm_enet_phy_adaptive_glue.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_otp_drv.h"
 #include "nx_api.h"
@@ -135,41 +135,26 @@ static VOID _nx_driver_packet_send(NX_IP_DRIVER *driver_req_ptr);
 static VOID _nx_driver_link_enable(NX_IP_DRIVER *driver_req_ptr);
 static VOID _nx_driver_link_disable(NX_IP_DRIVER *driver_req_ptr);
 
-static enet_phy_status_t last_status;
+static enet_phy_status_t last_status = {.enet_phy_link = enet_phy_link_unknown};
 VOID enet_self_adaptive_port_speed(VOID)
 {
-    enet_phy_status_t status;
+    enet_phy_adaptive_binding_t binding = {
+        .last = &last_status,
+        .enet_base = ENET,
+        .phy_port = 0,
+        .log_prefix = NULL,
+        .print_port_banner = false,
+        .notify_netif = false,
+        .netif_idx = 0,
+        .notify_link = NULL,
+        .status_mbox = NULL,
+        .link_msg = NULL,
+    };
 
-    enet_line_speed_t line_speed[] = {enet_line_speed_10mbps, enet_line_speed_100mbps, enet_line_speed_1000mbps};
-    CHAR *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
-    CHAR *duplex_str[] = {"Half duplex", "Full duplex"};
+    enet_phy_status_t status = {0};
 
-#if defined(RGMII) && RGMII
-#if defined(__USE_DP83867) && __USE_DP83867
-    dp83867_get_phy_status(ENET, DP83867_ADDR, &status);
-#else
-    rtl8211_get_phy_status(ENET, RTL8211_ADDR, &status);
-#endif
-#else
-#if defined(__USE_DP83848) && __USE_DP83848
-    dp83848_get_phy_status(ENET, DP83848_ADDR, &status);
-#else
-    rtl8201_get_phy_status(ENET, RTL8201_ADDR, &status);
-#endif
-#endif
-
-    if (memcmp(&last_status, &status, sizeof(enet_phy_status_t)) != 0) {
-        memcpy(&last_status, &status, sizeof(enet_phy_status_t));
-        if (status.enet_phy_link) {
-            printf("Link Status: Up\n");
-            printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
-            printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
-            enet_set_line_speed(ENET, line_speed[status.enet_phy_speed]);
-            enet_set_duplex_mode(ENET, status.enet_phy_duplex);
-        } else {
-            printf("Link Status: Down\n");
-        }
-    }
+    board_get_enet_phy_status(binding.phy_port, &status);
+    enet_phy_adaptive_binding_poll(&binding, &status);
 }
 VOID sys_timer_callback(VOID)
 {
@@ -446,19 +431,6 @@ NX_PACKET *_nx_driver_hardware_get_frame(enet_rx_desc_t **parent_rx_desc_list_cu
 static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
 {
     enet_tx_control_config_t enet_tx_control_config;
-#if defined(RGMII) && RGMII
-#if defined(__USE_DP83867) && __USE_DP83867
-    dp83867_config_t phy_config;
-#else
-    rtl8211_config_t phy_config;
-#endif
-#else
-#if defined(__USE_DP83848) && __USE_DP83848
-    dp83848_config_t phy_config;
-#else
-    rtl8201_config_t phy_config;
-#endif
-#endif
 
     /* Default to successful return.  */
     driver_req_ptr->nx_ip_driver_status = NX_SUCCESS;
@@ -527,32 +499,8 @@ static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
         return NX_DRIVER_ERROR;
     }
 
-/* Initialize phy */
-#if defined(RGMII) && RGMII
-#if defined(__USE_DP83867) && __USE_DP83867
-    dp83867_reset(ENET, DP83867_ADDR);
-#if __DISABLE_AUTO_NEGO
-    dp83867_set_mdi_crossover_mode(ENET, DP83867_ADDR, enet_phy_mdi_crossover_manual_mdix);
-#endif
-    dp83867_basic_mode_default_config(ENET, &phy_config);
-    if (dp83867_basic_mode_init(ENET, DP83867_ADDR, &phy_config) == true) {
-#else
-    rtl8211_reset(ENET, RTL8211_ADDR);
-    rtl8211_basic_mode_default_config(ENET, &phy_config);
-    if (rtl8211_basic_mode_init(ENET, RTL8211_ADDR, &phy_config) == true) {
-#endif
-#else
-#if defined(__USE_DP83848) && __USE_DP83848
-    dp83848_reset(ENET, DP83848_ADDR);
-    dp83848_basic_mode_default_config(ENET, &phy_config);
-    if (dp83848_basic_mode_init(ENET, DP83848_ADDR, &phy_config) == true) {
-#else
-    rtl8201_reset(ENET, RTL8201_ADDR);
-    rtl8201_basic_mode_default_config(ENET, &phy_config);
-    phy_config.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
-    if (rtl8201_basic_mode_init(ENET, RTL8201_ADDR, &phy_config) == true) {
-#endif
-#endif
+    /* Initialize phy */
+    if (board_init_enet_phy(ENET) == status_success) {
         printf("Enet phy init passed !\n");
         return status_success;
     } else {
@@ -717,19 +665,7 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
     enet_disable_lpi_interrupt(ENET);
 
     while (1) {
-#if defined(RGMII) && RGMII
-#if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_get_phy_status(ENET, DP83867_ADDR, &status);
-#else
-        rtl8211_get_phy_status(ENET, RTL8211_ADDR, &status);
-#endif
-#else
-#if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_get_phy_status(ENET, DP83848_ADDR, &status);
-#else
-        rtl8201_get_phy_status(ENET, RTL8201_ADDR, &status);
-#endif
-#endif
+        board_get_enet_phy_status(0, &status);
         if (status.enet_phy_link)
             break;
         tx_thread_sleep(10);

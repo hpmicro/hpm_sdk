@@ -62,7 +62,7 @@ hpm_stat_t otp_program(uint32_t addr, const uint32_t *src, uint32_t num_of_words
         uint32_t reg_val = (HPM_PCFG->LDO2P5 & ~PCFG_LDO2P5_VOLT_MASK) | PCFG_LDO2P5_ENABLE_MASK | PCFG_LDO2P5_VOLT_SET(2500);
         HPM_PCFG->LDO2P5 = reg_val;
         /* Wait until LDO is ready */
-        while (!IS_HPM_BITMASK_SET(HPM_PCFG->LDO2P5, PCFG_DCDC_MODE_READY_MASK)) {
+        while (!IS_HPM_BITMASK_SET(HPM_PCFG->LDO2P5, PCFG_LDO2P5_READY_MASK)) {
         }
         HPM_OTP->UNLOCK = OTP_UNLOCK_MAGIC_NUM;
         for (uint32_t i = 0; i < num_of_words; i++) {

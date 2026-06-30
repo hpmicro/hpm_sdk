@@ -6,7 +6,7 @@ HPM5300EVK
 Overview
 --------
 
-The HPM5300EVK provides a series of interfaces for the characteristic peripherals of the HPM5300 series microcontrollers, including an ADC input SMA interface, a first-class motor control interface, an ABZ output interface, and an RS485/422 interface. HPM5300EVK also integrates one 2x20 pin IO expansion interface, which connects most of the IOs of the HPM5300 MCU for users to freely evaluate. HPM5300EVK expands NOR Flash storage for MCU and integrates an on-board debugger.
+The HPM5300EVK provides a series of interfaces for the characteristic peripherals of the HPM5300 series microcontrollers, including an ADC input SMA interface, an HPMicro standard motor control interface, an ABZ output interface, and an RS485/422 interface. HPM5300EVK also integrates one 2x20 pin IO expansion interface, which connects most of the IOs of the HPM5300 MCU for users to freely evaluate. HPM5300EVK expands NOR Flash storage for MCU and integrates an on-board debugger.
 
 .. image:: doc/hpm5300evk.png
    :alt: hpm5300evk
@@ -52,6 +52,16 @@ Button
 Pin Description
 ---------------
 
+- LIN Pin (UART_LIN case):
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - LIN
+     - J9[5]
+
 - UART Pin: modbus_rtu sample
 
   The UART2 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, etc.
@@ -74,16 +84,6 @@ Pin Description
    * - UART2.break
      - P1[24]
      - generate uart break signal
-
-- LIN Pin (UART_LIN case):
-
-.. list-table::
-   :header-rows: 1
-
-   * - Function
-     - Position
-   * - LIN
-     - J9[5]
 
 - SPI Pin:
 
@@ -135,7 +135,7 @@ Pin Description
      - Remark
    * - GPTMR0.CAPT_0
      - P1[3]
-     -
+     - SENT decode input pin (idle high and low levels share the same pin)
    * - GPTMR0.COMP_0
      - P1[5]
      - BLCK of i2s emulation
@@ -182,6 +182,18 @@ Pin Description
    * - PWM0.P3
      - J7[12]
 
+- CAN Pin:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Function
+     - Position
+   * - CAN_L
+     - J9[1]
+   * - CAN_H
+     - J9[3]
+
 - PLB Pulse Output Pin:
 
 .. list-table::
@@ -189,7 +201,7 @@ Pin Description
 
    * - Function
      - Position
-   * - PLB.PLUSE_OUT
+   * - PLB.PULSE_OUT
      - P1[24]
 
 - PLB Filter Output Pin:
@@ -203,18 +215,6 @@ Pin Description
      - J7[9]
    * - PLB.FILTER_OUT
      - J7[11]
-
-- CAN Pin:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Function
-     - Position
-   * - CAN_L
-     - J9[1]
-   * - CAN_H
-     - J9[3]
 
 - OPAMP Pin:
 
@@ -390,7 +390,7 @@ Pin Description
 
 .. _hpm5300evk_known_issues:
 
-Board Know Issue
+Board Known Issue
 ----------------------
 
 - USB VBUS pin resistance issue

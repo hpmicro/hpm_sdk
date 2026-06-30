@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,7 +26,7 @@ void rt_hw_board_init(void)
 int main(void)
 {
     printf("Start usb host task...\r\n");
-    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE, NULL);
     usbh_class_test();
 
     return 0;

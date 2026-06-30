@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -33,7 +33,7 @@ static void task1(void *pvParameters)
     while (u < 2) {
         if (dtr_enable) {
             u++;
-            vTaskDelay(50);
+            vTaskDelay(500);
             cdc_acm_data_send_with_dtr_test(0);
         } else {
             vTaskDelay(100);

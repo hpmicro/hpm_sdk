@@ -16,6 +16,8 @@
 #include "hpm_ptpc_drv.h"
 #elif defined(HPMSOC_HAS_HPMSDK_GPTMR)
 #include "hpm_gptmr_drv.h"
+#elif defined(HPMSOC_HAS_HPMSDK_GPTMRV2)
+#include "hpm_gptmrv2_drv.h"
 #endif
 
 #if defined(USE_S_MODE_IRQ) && USE_S_MODE_IRQ && (!defined(SOC_HAS_S_MODE) || !SOC_HAS_S_MODE)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -57,6 +57,7 @@ void ffa_start_fft(FFA_Type *ptr, fft_xfer_t *fft_xfer)
     ptr->OP_REG1 = 0;
     ptr->OP_REG2 = (uint32_t) fft_xfer->src;
     ptr->OP_REG4 = (uint32_t) fft_xfer->dst;
+
 
     ffa_enable(ptr);
 }
@@ -201,6 +202,142 @@ hpm_stat_t ffa_calculate_fir_blocking(FFA_Type *ptr, fir_xfer_t *fir_xfer)
             uint32_t ffa_status = ptr->STATUS;
             status = get_fft_error_kind(ffa_status);
         }
+    } while (false);
+
+    return status;
+}
+
+void ffa_build_fir_chained_desc(ffa_chained_desc_t *desc,
+                                fir_xfer_t *fir_xfer,
+                                ffa_chained_desc_t *next_desc,
+                                uint8_t cmd_len)
+{
+    assert((desc != NULL) && (fir_xfer != NULL));
+
+    uint32_t op_ctrl = FFA_OP_CTRL_EN_MASK;
+    uint32_t op_cmd = FFA_OP_CMD_CMD_SET(FFA_OPCMD_FIR) |
+                      FFA_OP_CMD_IND_TYPE_SET(fir_xfer->data_type) |
+                      FFA_OP_CMD_OUTD_TYPE_SET(fir_xfer->data_type) |
+                      FFA_OP_CMD_COEF_TYPE_SET(fir_xfer->data_type);
+
+    if (next_desc != NULL) {
+        /* NXT_ADDR is at bit[31:2], address is already 4-byte aligned */
+        op_ctrl |= FFA_OP_CTRL_NXT_EN_MASK | ((uint32_t)next_desc & FFA_OP_CTRL_NXT_ADDR_MASK);
+        op_cmd |= FFA_OP_CMD_NXT_CMD_LEN_SET(cmd_len);
+    }
+    desc->op_ctrl = op_ctrl;
+    desc->op_cmd = op_cmd;
+
+    desc->op_reg0 = FFA_OP_FIR_MISC_FIR_COEF_TAPS_SET(fir_xfer->coef_taps);
+
+#if defined(HPM_IP_FEATURE_FFA_FP32) && HPM_IP_FEATURE_FFA_FP32
+    desc->op_reg1 = FFA_OP_FIR_MISC1_OUTD_MEM_BLK_SET(0) |
+                    FFA_OP_FIR_MISC1_COEF_MEM_BLK_SET(0) |
+                    FFA_OP_FIR_MISC1_IND_MEM_BLK_SET(1) |
+                    FFA_OP_FIR_MISC1_FIR_DATA_TAPS_SET(fir_xfer->input_taps);
+#else
+    desc->op_reg1 = FFA_OP_FIR_MISC1_OUTD_MEM_BLK_SET(0) |
+                    FFA_OP_FIR_MISC1_COEF_MEM_BLK_SET(1) |
+                    FFA_OP_FIR_MISC1_IND_MEM_BLK_SET(2) |
+                    FFA_OP_FIR_MISC1_FIR_DATA_TAPS_SET(fir_xfer->input_taps);
+#endif
+
+    desc->op_reg2 = 0xFFFFFFFFUL;
+    desc->op_reg3 = (uint32_t)fir_xfer->src;
+    desc->op_reg4 = (uint32_t)fir_xfer->coeff;
+    desc->op_reg5 = (uint32_t)fir_xfer->dst;
+    desc->op_reg6 = 0;
+    desc->op_reg7 = 0;
+    /* op_reg6~7 not used by FIR, keep consistent with ffa_start_fir */
+}
+
+void ffa_build_fft_chained_desc(ffa_chained_desc_t *desc,
+                                fft_xfer_t *fft_xfer,
+                                ffa_chained_desc_t *next_desc,
+                                uint8_t cmd_len)
+{
+    assert((desc != NULL) && (fft_xfer != NULL) && is_point_num_valid(fft_xfer->num_points));
+
+    uint32_t op_ctrl = FFA_OP_CTRL_EN_MASK;
+    uint32_t op_cmd = FFA_OP_CMD_CMD_SET(FFA_OPCMD_FFT) |
+                      FFA_OP_CMD_IND_TYPE_SET(fft_xfer->src_data_type) |
+                      FFA_OP_CMD_OUTD_TYPE_SET(fft_xfer->dst_data_type);
+
+    if (next_desc != NULL) {
+        /* NXT_ADDR is at bit[31:2], address is already 4-byte aligned */
+        op_ctrl |= FFA_OP_CTRL_NXT_EN_MASK | ((uint32_t)next_desc & FFA_OP_CTRL_NXT_ADDR_MASK);
+        op_cmd |= FFA_OP_CMD_NXT_CMD_LEN_SET(cmd_len);
+    }
+    desc->op_ctrl = op_ctrl;
+    desc->op_cmd = op_cmd;
+
+    uint32_t fft_len = get_fft_misc_reg_fft_len(fft_xfer->num_points);
+    uint32_t fft_misc = FFA_OP_FFT_MISC_FFT_LEN_SET(fft_len) |
+                        FFA_OP_FFT_MISC_TMP_BLK_SET(1) |
+                        FFA_OP_FFT_MISC_IND_BLK_SET(0);
+    if (fft_xfer->is_ifft) {
+        fft_misc |= FFA_OP_FFT_MISC_IFFT_MASK;
+    }
+    desc->op_reg0 = fft_misc;
+    desc->op_reg1 = 0;
+    desc->op_reg2 = (uint32_t)fft_xfer->src;
+    desc->op_reg3 = 0;
+    desc->op_reg4 = (uint32_t)fft_xfer->dst;
+    desc->op_reg5 = 0;
+    desc->op_reg6 = 0;
+    desc->op_reg7 = 0;
+    /* op_reg5~7 not used by FFT, keep consistent with ffa_start_fft */
+}
+
+void ffa_start_chained(FFA_Type *ptr, ffa_chained_desc_t *first_desc)
+{
+    assert((ptr != NULL) && (first_desc != NULL));
+
+    /* Disable FFA without soft reset to preserve register state */
+    ptr->CTRL &= ~FFA_CTRL_EN_MASK;
+
+    /*
+     * Write registers according to operation type to keep consistent with normal mode.
+     * FFT: uses op_reg0~4 (but op_reg3 is not written in ffa_start_fft)
+     * FIR: uses op_reg0~5
+     */
+    ptr->OP_CTRL = first_desc->op_ctrl;
+    ptr->OP_CMD = first_desc->op_cmd;
+    ptr->OP_REG0 = first_desc->op_reg0;
+    ptr->OP_REG1 = first_desc->op_reg1;
+    ptr->OP_REG2 = first_desc->op_reg2;
+
+    if (FFA_OP_CMD_CMD_GET(first_desc->op_cmd) == FFA_OPCMD_FIR) {
+        /* FIR uses op_reg3~5 */
+        ptr->OP_REG3 = first_desc->op_reg3;
+        ptr->OP_REG4 = first_desc->op_reg4;
+        ptr->OP_REG5 = first_desc->op_reg5;
+    } else {
+        /* FFT uses op_reg4 only (op_reg3 not used) */
+        ptr->OP_REG4 = first_desc->op_reg4;
+    }
+    /* op_reg6~7 reserved for future use */
+
+    ffa_enable(ptr);
+}
+
+hpm_stat_t ffa_calculate_chained_blocking(FFA_Type *ptr, ffa_chained_desc_t *first_desc)
+{
+    hpm_stat_t status = status_invalid_argument;
+
+    do {
+        HPM_BREAK_IF((ptr == NULL) || (first_desc == NULL));
+
+        ffa_start_chained(ptr, first_desc);
+        while (!IS_HPM_BITMASK_SET(ptr->STATUS, FFA_STATUS_OP_CMD_DONE_MASK)) {
+        }
+        while (ptr->OP_CTRL & FFA_OP_CTRL_NXT_ADDR_MASK) {
+        }
+        while (!IS_HPM_BITMASK_SET(ptr->STATUS, FFA_STATUS_OP_CMD_DONE_MASK)) {
+        }
+
+        uint32_t ffa_status = ptr->STATUS;
+        status = get_fft_error_kind(ffa_status);
     } while (false);
 
     return status;

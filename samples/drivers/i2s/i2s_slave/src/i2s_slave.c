@@ -32,7 +32,7 @@ volatile bool dma_transfer_error;        /* Indicates if DMA transfer encountere
  * DMA Interrupt Service Routine
  * Handles DMA transfer completion and error events
  */
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA1_IRQ, isr_dma)
 void isr_dma(void)
 {
     uint32_t stat;
@@ -59,7 +59,7 @@ void dma_transfer_config(uint32_t size, uint32_t *ptr)
     dma_channel_config_t ch_config = {0};
 
     /* Enable DMA interrupt with specified priority */
-    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, ISR_PRIORITY_LEVEL);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, ISR_PRIORITY_LEVEL);
 
     /* Configure DMA channel parameters */
     dma_default_channel_config(APP_DMA, &ch_config);

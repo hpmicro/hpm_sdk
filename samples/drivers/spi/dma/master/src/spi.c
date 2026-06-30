@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,7 +18,7 @@
 
 #define TEST_SPI               BOARD_APP_SPI_BASE
 #define TEST_SPI_SCLK_FREQ     BOARD_APP_SPI_SCLK_FREQ
-#define TEST_SPI_DMA           BOARD_APP_HDMA
+#define TEST_SPI_DMA           BOARD_APP_DMA0
 #define TEST_SPI_DMAMUX        BOARD_APP_DMAMUX
 #define TEST_SPI_RX_DMA_REQ    BOARD_APP_SPI_RX_DMA
 #define TEST_SPI_TX_DMA_REQ    BOARD_APP_SPI_TX_DMA
@@ -26,6 +26,7 @@
 #define TEST_SPI_TX_DMA_CH     1
 #define TEST_SPI_RX_DMAMUX_CH  DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_SPI_DMA, TEST_SPI_RX_DMA_CH)
 #define TEST_SPI_TX_DMAMUX_CH  DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_SPI_DMA, TEST_SPI_TX_DMA_CH)
+#define TEST_SPI_IRQ           BOARD_APP_SPI_IRQ
 
 /* data width definition */
 #define TEST_SPI_DATA_LEN_IN_BIT          (8U)
@@ -45,6 +46,22 @@ ATTR_PLACE_AT_NONCACHEABLE uint8_t sent_buff[TEST_TRANSFER_DATA_IN_BYTE];
 ATTR_PLACE_AT_NONCACHEABLE uint8_t receive_buff[TEST_TRANSFER_DATA_IN_BYTE];
 #endif
 
+volatile bool spi_transfer_done;
+
+SDK_DECLARE_EXT_ISR_M(TEST_SPI_IRQ, spi_isr)
+void spi_isr(void)
+{
+    volatile uint32_t irq_status;
+
+    /* get interrupt stat */
+    irq_status = spi_get_interrupt_status(TEST_SPI);
+
+    if (irq_status & spi_end_int) {
+        spi_transfer_done = true;
+        spi_clear_interrupt_status(TEST_SPI, spi_end_int);
+    }
+}
+
 void prepare_transfer_data(void)
 {
     for (uint32_t i = 0; i < TEST_TRANSFER_DATA_IN_BYTE; i++) {
@@ -55,13 +72,7 @@ void prepare_transfer_data(void)
 void spi_master_check_transfer_data(SPI_Type *ptr)
 {
     uint32_t i = 0U, error_count = 0U;
-
-    /* Wait for the spi master transfer to complete */
-    while (spi_is_active(ptr)) {
-    }
-    /* disable spi dma before starting next dma transaction */
-    spi_disable_tx_dma(ptr);
-    spi_disable_rx_dma(ptr);
+    (void) ptr;
 
     printf("The sent data are:");
     for (i = 0; i < TEST_TRANSFER_DATA_IN_BYTE; i++) {
@@ -198,7 +209,7 @@ int main(void)
         }
     }
 
-    /* setup spi rx trigger dma transfer*/
+    /* setup spi rx trigger dma transfer */
     dmamux_config(TEST_SPI_DMAMUX, TEST_SPI_RX_DMAMUX_CH, TEST_SPI_RX_DMA_REQ, true);
     stat = spi_rx_trigger_dma(TEST_SPI_DMA,
                             TEST_SPI_RX_DMA_CH,
@@ -220,6 +231,8 @@ int main(void)
         l1c_dc_invalidate(aligned_start, aligned_size);
     }
 #endif
+
+    /* start SPI transfer */
     stat = spi_setup_dma_transfer(TEST_SPI,
                         &control_config,
                         &cmd, &addr,
@@ -228,6 +241,14 @@ int main(void)
         printf("spi setup dma transfer failed\n");
         while (1) {
         }
+    }
+
+    /* Enable SPI transmission completion interrupt */
+    spi_enable_interrupt(TEST_SPI, spi_end_int);
+    intc_m_enable_irq_with_priority(TEST_SPI_IRQ, 1);
+
+    /* Wait for the spi master transfer to complete */
+    while (!spi_transfer_done) {
     }
 
     spi_master_check_transfer_data(TEST_SPI);

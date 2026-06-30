@@ -30,6 +30,7 @@ Hardware
 - Audio
   - Line in
   - Mic
+  - Speaker
   - DAO
 - Others
   - TF Slot
@@ -67,7 +68,7 @@ Button
      - Power Button, TinyUF2 Boot Button, GPIO Button
    * - WBUTN (SW2)
      - WAKE UP Button
-   * - RESET (SW3)
+   * - RESETN (SW3)
      - Reset Button
 
 Plug-in
@@ -242,10 +243,10 @@ Pin Description
      * - GPTMR4.CAPT_1
        - PE25
        - J10[6]
-       -
+       - SENT decode input pin (idle low level)
      * - GPTMR3.COMP_1
        - PE24
-       - J10[8]
+       - J10[7]
        - MCLK of i2s emulation
      * - GPTMR5.COMP_2
        - PD24
@@ -255,6 +256,10 @@ Pin Description
        - PD23
        - J10[16]
        - BLCK of i2s emulation
+     * - GPTMR4.CAPT_2
+       - PD16
+       - J10[17]
+       - SENT decode input pin (idle high level)
 
 - ADC12 Pin
 
@@ -415,7 +420,7 @@ Pin Description
 
 .. _hpm6750evk2_known_issues:
 
-Board Know Issue
+Board Known Issue
 ----------------------
 
 - USB VBUS pin resistance issue

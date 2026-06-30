@@ -131,7 +131,7 @@ bool dp83867_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, dp83867_config_t
  *          - Port speed (10 Mbps, 100 Mbps, or 1000 Mbps)
  *          - Duplex mode (half or full)
  */
-void dp83867_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
+hpm_stat_t dp83867_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
 
 /**
  * @brief Set MDI crossover mode for DP83867 PHY

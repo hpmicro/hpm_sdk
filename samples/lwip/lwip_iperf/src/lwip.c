@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,7 +20,7 @@
 #include "lwip/prot/dhcp.h"
 
 #ifndef IPERF_UDP_CLIENT_RATE
-#if defined(RGMII) && RGMII
+#if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
     #define IPERF_UDP_CLIENT_RATE (1000 * 1024 * 1024)
 #else
     #define IPERF_UDP_CLIENT_RATE (100 * 1024 * 1024)

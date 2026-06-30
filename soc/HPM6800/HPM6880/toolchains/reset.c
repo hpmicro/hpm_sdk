@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2024,2026 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -31,9 +31,71 @@ __attribute__((weak)) void _clean_up(void)
     }
 }
 
-__attribute__((weak)) void c_startup(void)
+/* Clear a memory section with word-aligned optimization */
+static void section_clear(uint8_t *dst_start, uint8_t *dst_end)
 {
     uint32_t i, size;
+    uint32_t *dst_word;
+    uint8_t *dst_byte;
+    uint32_t word_count, byte_count;
+
+    size = dst_end - dst_start;
+    dst_byte = dst_start;
+    if (((uintptr_t)dst_byte & 0x3) == 0) {
+        /* Word-aligned, use word clear */
+        word_count = size / 4;
+        byte_count = size % 4;
+        dst_word = (uint32_t *)dst_byte;
+        for (i = 0; i < word_count; i++) {
+            dst_word[i] = 0;
+        }
+        dst_byte = (uint8_t *)(dst_word + word_count);
+        for (i = 0; i < byte_count; i++) {
+            dst_byte[i] = 0;
+        }
+    } else {
+        /* Not word-aligned, use byte clear */
+        for (i = 0; i < size; i++) {
+            dst_byte[i] = 0;
+        }
+    }
+}
+
+/* Copy a memory section with word-aligned optimization */
+static void section_copy(uint8_t *dst_start, uint8_t *dst_end, uint8_t *src_start)
+{
+    uint32_t i, size;
+    uint32_t *dst_word, *src_word;
+    uint8_t *dst_byte, *src_byte;
+    uint32_t word_count, byte_count;
+
+    size = dst_end - dst_start;
+    dst_byte = dst_start;
+    src_byte = src_start;
+    if ((((uintptr_t)dst_byte & 0x3) == 0) && (((uintptr_t)src_byte & 0x3) == 0)) {
+        /* Both addresses are word-aligned, use word copy */
+        word_count = size / 4;
+        byte_count = size % 4;
+        dst_word = (uint32_t *)dst_byte;
+        src_word = (uint32_t *)src_byte;
+        for (i = 0; i < word_count; i++) {
+            dst_word[i] = src_word[i];
+        }
+        dst_byte = (uint8_t *)(dst_word + word_count);
+        src_byte = (uint8_t *)(src_word + word_count);
+        for (i = 0; i < byte_count; i++) {
+            dst_byte[i] = src_byte[i];
+        }
+    } else {
+        /* Not word-aligned, use byte copy */
+        for (i = 0; i < size; i++) {
+            dst_byte[i] = src_byte[i];
+        }
+    }
+}
+
+__attribute__((weak)) void c_startup(void)
+{
     extern uint8_t __bss_start__[], __bss_end__[];
     extern uint8_t __tdata_start__[], __tdata_end__[];
     extern uint8_t __data_start__[], __data_end__[];
@@ -45,61 +107,34 @@ __attribute__((weak)) void c_startup(void)
     extern uint8_t __fast_ram_bss_start__[], __fast_ram_bss_end__[];
     extern uint8_t __fast_ram_init_start__[], __fast_ram_init_end__[], __fast_ram_init_load_addr__[];
 
-#if defined(FLASH_XIP) || defined(FLASH_UF2)
+#if defined(FLASH_XIP) || defined(FLASH_UF2) || defined(FLASH_DFU)
     extern uint8_t __vector_ram_start__[], __vector_ram_end__[], __vector_load_addr__[];
-    size = __vector_ram_end__ - __vector_ram_start__;
-    for (i = 0; i < size; i++) {
-        *(__vector_ram_start__ + i) = *(__vector_load_addr__ + i);
-    }
+    section_copy(__vector_ram_start__, __vector_ram_end__, __vector_load_addr__);
 #endif
 
     /* bss section */
-    size = __bss_end__ - __bss_start__;
-    for (i = 0; i < size; i++) {
-        *(__bss_start__ + i) = 0;
-    }
+    section_clear(__bss_start__, __bss_end__);
 
     /* noncacheable bss section */
-    size = __noncacheable_bss_end__ - __noncacheable_bss_start__;
-    for (i = 0; i < size; i++) {
-        *(__noncacheable_bss_start__ + i) = 0;
-    }
+    section_clear(__noncacheable_bss_start__, __noncacheable_bss_end__);
 
     /* fast_ram bss section */
-    size = __fast_ram_bss_end__ - __fast_ram_bss_start__;
-    for (i = 0; i < size; i++) {
-        *(__fast_ram_bss_start__ + i) = 0;
-    }
+    section_clear(__fast_ram_bss_start__, __fast_ram_bss_end__);
 
     /* data section LMA: etext */
-    size = __data_end__ - __data_start__;
-    for (i = 0; i < size; i++) {
-        *(__data_start__ + i) = *(__data_load_addr__ + i);
-    }
+    section_copy(__data_start__, __data_end__, __data_load_addr__);
 
     /* ramfunc section LMA: etext + data length */
-    size = __ramfunc_end__ - __ramfunc_start__;
-    for (i = 0; i < size; i++) {
-        *(__ramfunc_start__ + i) = *(__fast_load_addr__ + i);
-    }
+    section_copy(__ramfunc_start__, __ramfunc_end__, __fast_load_addr__);
 
     /* tdata section LMA: etext + data length + ramfunc length */
-    size = __tdata_end__ - __tdata_start__;
-    for (i = 0; i < size; i++) {
-        *(__tdata_start__ + i) = *(__tdata_load_addr__ + i);
-    }
+    section_copy(__tdata_start__, __tdata_end__, __tdata_load_addr__);
 
-    /* noncacheable init section LMA: etext + data length + ramfunc legnth + tdata length*/
-    size = __noncacheable_init_end__ - __noncacheable_init_start__;
-    for (i = 0; i < size; i++) {
-        *(__noncacheable_init_start__ + i) = *(__noncacheable_init_load_addr__ + i);
-    }
+    /* noncacheable init section LMA: etext + data length + ramfunc length + tdata length*/
+    section_copy(__noncacheable_init_start__, __noncacheable_init_end__, __noncacheable_init_load_addr__);
 
-    /* fast_ram init section LMA: etext + data length + ramfunc legnth + tdata length*/
-    size = __fast_ram_init_end__ - __fast_ram_init_start__;
-    for (i = 0; i < size; i++) {
-        *(__fast_ram_init_start__ + i) = *(__fast_ram_init_load_addr__ + i);
-    }
+    /* fast_ram init section LMA: etext + data length + ramfunc length + tdata length*/
+    section_copy(__fast_ram_init_start__, __fast_ram_init_end__, __fast_ram_init_load_addr__);
 }
 
 __attribute__((weak)) int main(void)

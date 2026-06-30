@@ -1,0 +1,7 @@
+# Copyright (c) 2026 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+dependency:
+  - adc16
+  - ip_feature_adc16_has_diff_mode
+  - board_adc16_diff

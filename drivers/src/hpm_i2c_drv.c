@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -107,20 +107,58 @@ static hpm_stat_t i2c_configure_timing(uint32_t src_clk_in_hz,
     temp1 = (timing->t_high - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp;
 
     /*
-     * SCLK High period = (2 * tpclk) + (2 + T_SP + T_SCLHi) * tpclk * (TPM + 1) > period / (1 + ratio);
-     */
-    temp2 = (period / (1 + timing->t_sclratio) - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp;
-
-    /*
      * SCLK Low period = (2 * tpclk) + (2 + T_SP + T_SCLHi * ratio) * tpclk * (TPM + 1) > t_low;
      */
-    temp3 = ((timing->t_low - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp) / (timing->t_sclratio);
+    temp2 = ((timing->t_low - 2 * tpclk) / tpclk / (HPM_I2C_DRV_DEFAULT_TPM + 1) - 2 - timing->t_sp) / (timing->t_sclratio);
+
+    /*
+     * Adjust T_SCLHi so that (High + Low) is as close as possible to the
+     * target "period" (derived from requested SCL frequency).
+     *
+     * From HW timing definition:
+     *   High = (2 * tpclk) + (2 + T_SP + T_SCLHi) * tpclk * (TPM + 1)
+     *   Low  = (2 * tpclk) + (2 + T_SP + T_SCLHi * ratio) * tpclk * (TPM + 1)
+     *
+     * Therefore:
+     *   High + Low = 4 * tpclk + (4 + 2*T_SP + T_SCLHi*(1 + ratio)) * tpclk * (TPM + 1)
+     *
+     * solve the above equation for T_SCLHi using integer arithmetic:
+     *   T_SCLHi ~= (period - 4*tpclk - (4 + 2*T_SP) * tpclk*(TPM+1)) / (tpclk*(TPM+1)*(1+ratio))
+     *
+     */
+    /* temp3 is the candidate value of T_SCLHi derived from (High+Low)=period */
+    {
+        /*
+         * Integer inverse solution for:
+         *   High + Low = period
+         * where:
+         *   High = 2*tpclk + (2 + T_SP + T_SCLHi) * tpclk * (TPM+1)
+         *   Low  = 2*tpclk + (2 + T_SP + T_SCLHi*ratio) * tpclk * (TPM+1)
+         *
+         * Rearranged:
+         *   T_SCLHi ~= (period - 4*tpclk - (4 + 2*T_SP)*tpclk*(TPM+1)) / (tpclk*(TPM+1)*(1+ratio))
+         *
+         * Notes on integer division error:
+         * - Use round-to-nearest instead of truncation.
+         */
+        int32_t numerator = period - (4 * tpclk) - ((4 + 2 * timing->t_sp) * tpclk * (HPM_I2C_DRV_DEFAULT_TPM + 1));
+        int32_t denom = tpclk * (HPM_I2C_DRV_DEFAULT_TPM + 1) * (1 + timing->t_sclratio);
+
+        temp3 = (numerator + denom / 2) / denom;
+
+    }
 
     timing->t_sclhi = MAX(MAX(temp1, temp2), temp3);
 
-    /* update high_period and low_period to calculated value */
-    timing->t_high = 2 * tpclk + (2 + timing->t_sp + timing->t_sclhi) * tpclk;
-    timing->t_low = timing->t_high * timing->t_sclratio;
+    /*
+     * Update the actual High/Low periods based on the selected T_SCLHi.
+     * The selected T_SCLHi is the maximum of the candidates required by:
+     *   - t_high minimum constraint (temp1)
+     *   - t_low minimum constraint (temp2)
+     *   - (High+Low) closeness to period (temp3)
+     */
+    timing->t_high = 2 * tpclk + (2 + timing->t_sp + timing->t_sclhi) * tpclk * (HPM_I2C_DRV_DEFAULT_TPM + 1);
+    timing->t_low = 2 * tpclk + (2 + timing->t_sp + timing->t_sclhi * timing->t_sclratio) * tpclk * (HPM_I2C_DRV_DEFAULT_TPM + 1);
 
     return status_success;
 }
@@ -968,9 +1006,6 @@ hpm_stat_t i2c_master_seq_transmit_check_ack(I2C_Type *ptr, const uint16_t devic
             }
         }
 
-    }
-    if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {
-        return status_timeout;
     }
 
     if (retry > HPM_I2C_DRV_DEFAULT_RETRY_COUNT) {

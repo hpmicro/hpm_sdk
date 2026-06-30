@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2025 HPMicro
+# Copyright (c) 2021-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -27,12 +27,11 @@ project(lvgl_baremetal)
 sdk_compile_definitions(-DLV_USE_DEMO_MUSIC=1)
 sdk_compile_definitions(-DLV_USE_DEMO_WIDGETS=1)
 sdk_compile_definitions(-DLV_USE_DEMO_BENCHMARK=1)
-sdk_compile_definitions(-DLV_USE_DEMO_RENDER=0)
 sdk_compile_definitions(-DLV_USE_DEMO_STRESS=1)
-sdk_compile_definitions(-DLV_USE_DEMO_FLEX_LAYOUT=1)
 
 # LVGL CONF
 sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
+sdk_compile_definitions(-DLV_USE_SYSMON=1)
 
 sdk_inc(src)
 sdk_app_src(src/main.c)

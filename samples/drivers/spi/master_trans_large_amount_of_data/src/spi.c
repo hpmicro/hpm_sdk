@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,7 +12,7 @@
 
 #define TEST_SPI               BOARD_APP_SPI_BASE
 #define TEST_SPI_SCLK_FREQ     BOARD_APP_SPI_SCLK_FREQ
-#define TEST_SPI_DMA           BOARD_APP_HDMA
+#define TEST_SPI_DMA           BOARD_APP_DMA0
 #define TEST_SPI_RX_DMA_CH     0
 #define TEST_SPI_TX_DMA_CH     1
 #define TEST_SPI_DMAMUX        BOARD_APP_DMAMUX
@@ -20,7 +20,7 @@
 #define TEST_SPI_RX_DMAMUX_CH  DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_SPI_DMA, TEST_SPI_RX_DMA_CH)
 #define TEST_SPI_TX_DMA_REQ    BOARD_APP_SPI_TX_DMA
 #define TEST_SPI_TX_DMAMUX_CH  DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_SPI_DMA, TEST_SPI_TX_DMA_CH)
-#define TEST_SPI_DMA_IRQ       BOARD_APP_HDMA_IRQ
+#define TEST_SPI_DMA_IRQ       BOARD_APP_DMA0_IRQ
 #define TEST_SPI_GPIO_CS_PIN   BOARD_SPI_CS_PIN
 
 /* data width definition */
@@ -48,8 +48,8 @@ ATTR_PLACE_AT_NONCACHEABLE uint8_t receive_buff[SPI_TRANS_DATA_BUFF_SIZE];
 /* Suitable for SOCs where SPI single transmission supports only 512-unit data length */
 #if (SPI_SOC_TRANSFER_COUNT_MAX == 512)
 #define SPI_TRANS_COUNT2    ((SPI_TRANS_COUNT + SPI_SOC_TRANSFER_COUNT_MAX - 1) / SPI_SOC_TRANSFER_COUNT_MAX)
-/* dma descriptors need align 8 bytes */
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t dma_linked_descriptor[SPI_TRANS_COUNT2 * SPI_DMA_DESC_COUNT_PER_TRANS];
+/* descriptor should be DMA_LINKED_DESCRIPTOR_ALIGN aligned */
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(DMA_LINKED_DESCRIPTOR_ALIGN) dma_linked_descriptor_t dma_linked_descriptor[SPI_TRANS_COUNT2 * SPI_DMA_DESC_COUNT_PER_TRANS];
 ATTR_PLACE_AT_NONCACHEABLE uint32_t spi_transctrl[SPI_TRANS_COUNT2];
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,6 +25,8 @@ static void init_parallel_adc_config(void)
     config.cs_valid_polarity = false;
     config.dm_valid_polarity = false;
     config.addr_valid_polarity = false;
+    config.cs_sync_clk_en = true;           /* need to enable cs sync clk */
+    config.cs_sync_clk_sel = 0;
     config.adv_ctrl_pin = 7;
     config.rel_ctrl_pin = 1;
     config.wel_ctrl_pin = 0;
@@ -40,23 +42,19 @@ static void init_parallel_adc_config(void)
     config.dq_sig_sel[3] = BOARD_PPI_ASYNC_SRAM_SIG_DQ24_31;
     ppi_config_async_sram(HPM_PPI, BOARD_PPI_ADC_CS_INDEX, 8, &config);
 
-    clk_config.cycle_num = 6;
-    clk_config.high_num = 3;
+    clk_config.cycle_num = 10;    /* 50ns */
+    clk_config.high_num = 5;
     clk_config.low_num = 0;
     clk_config.mode = ppi_clk_always_output;
-    clk_config.revert = false;
+    clk_config.revert = true;
     ppi_config_clk_pin(HPM_PPI, &clk_config);
-}
-
-static void read_adc_data(void)
-{
-    uint16_t *data_ptr = (uint16_t *)ADC_DATA_BASE_ADDR;
-
-    printf("adc data: %#x\n", (*data_ptr) & 0x03FF);
 }
 
 int main(void)
 {
+    uint16_t *data_ptr = (uint16_t *)ADC_DATA_BASE_ADDR;
+    volatile uint16_t adc_data;
+
     board_init();
     clock_add_to_group(clock_ppi0, 0);
     init_ppi_pins();
@@ -64,9 +62,12 @@ int main(void)
 
     printf("ppi parallel adc example\n");
 
+    adc_data = *data_ptr;    /* Dummy Read, trigger adc output */
+
     while (1) {
-        read_adc_data();
         board_delay_ms(300);
+        adc_data = *data_ptr;
+        printf("adc data: %#x\n", adc_data & 0x03FF);
     }
     return 0;
 }

@@ -55,14 +55,19 @@ typedef struct hpm_can_data {
     uint32_t std_filter_count;
     mcan_filter_t std_filters[HPM_CAN_STD_FILTER_NUM_MAX];
 
+    /* Unique filter ID allocator for remove-by-id search */
+    uint32_t next_filter_id;
+
     /* RX callback */
     can_rx_callback_t rx_cb_ext[HPM_CAN_EXT_FILTER_NUM_MAX];
     void *rx_cb_arg_ext[HPM_CAN_EXT_FILTER_NUM_MAX];
     can_rx_callback_t rx_cb_std[HPM_CAN_STD_FILTER_NUM_MAX];
     void *rx_cb_arg_std[HPM_CAN_STD_FILTER_NUM_MAX];
 
-    uint32_t filter_rtr;
-    uint32_t filter_rtr_mask;
+    uint32_t filter_rtr_ext;
+    uint32_t filter_rtr_mask_ext;
+    uint32_t filter_rtr_std;
+    uint32_t filter_rtr_mask_std;
 
     volatile bool has_sent_out;
     bool started;

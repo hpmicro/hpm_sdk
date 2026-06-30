@@ -450,7 +450,7 @@ hpm6e00evk的HALL引脚需要单独接线
      - 备注
    * - GPTMR4.CAPT_0
      - J4[3]
-     -
+     - SENT解码输入引脚（空闲高低电平共用同一引脚）
    * - GPTMR4.COMP_3
      - P5[36]
      - SPI模拟I2S的BLCK

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -62,11 +62,12 @@ extern  int32_t qei_clock_hz;
 
 #ifndef BOARD_BLDC_ADC_U_BASE
 
-#define BOARD_BLDC_ADC_MODULE                  ADCX_MODULE_ADC12
 #define BOARD_BLDC_ADC_U_BASE                  HPM_ADC0
+#define BOARD_BLDC_ADC_RES_BITS                (12U)
+#define BOARD_BLDC_ADC_CLOCK_DIV               (3U)
+#define BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE    (15U)
 #define BOARD_BLDC_ADC_V_BASE                  HPM_ADC1
 #define BOARD_BLDC_ADC_W_BASE                  HPM_ADC2
-#define BOARD_BLDC_ADC_TRIG_FLAG               adc12_event_trig_complete
 
 #define BOARD_BLDC_ADC_CH_U                    (7U)
 #define BOARD_BLDC_ADC_CH_V                    (10U)

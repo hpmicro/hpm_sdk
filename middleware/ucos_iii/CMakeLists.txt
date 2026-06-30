@@ -14,7 +14,7 @@ else()
 endif()
 
 if (DEFINED CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR)
-    sdk_compile_definitions(-DCONFIG_UCOS_III_TIMER_RESOURCE_NOT_MCHTMR=1)
+    sdk_compile_definitions(-DCONFIG_UCOS_III_TIMER_RESOURCE_GPTMR=1)
 endif()
 
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)

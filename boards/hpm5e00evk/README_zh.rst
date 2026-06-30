@@ -174,6 +174,23 @@ PPI接口
      - J4
      - 需要连接跳帽JP2、JP4、JP5
 
+- ADC16 差分输入
+
+  用于 ``samples/drivers/adc/adc16_differential`` 等差分采样示例。HPM5E31 仅集成 ADC0 与 ADC1，差分模式使用 ADC0（master）与 ADC1（slave）配对。
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 引脚
+     - 位置
+   * - ADC16 差分 master (ADC0)
+     - PF28 (ADC0.IN05)
+     - J3[13]（ADC_IU）
+   * - ADC16 差分 slave (ADC1)
+     - PF30 (ADC1.IN06)
+     - J3[15]（ADC_IW）
+
 - ACMP
 
 .. list-table::
@@ -308,7 +325,7 @@ PPI接口
    * - GPTMR0.CAPT_2
      - PC00
      - P5[7]
-     -
+     - SENT解码输入引脚（空闲高低电平共用同一引脚）
    * - GPTMR0.CAPT_3
      - PC08
      - P5[5]

@@ -484,7 +484,7 @@ static hpm_stat_t prepare_quad_mode_enable_sequence(hpm_serial_nor_t *flash, jed
                     write_status_reg = SERIALNOR_CMD_WRITE_STATUS_REG1;
                     status_val |= HPM_BITSMASK(1U, 1);
                     /* QE bit will be programmed after status1 register, so need to left shit 8 bit */
-                    status_val <<= 8;
+                    /* status_val <<= 8; */
                     status = hpm_spi_nor_write_status_register(flash, status_val, write_status_reg);
                     HPM_BREAK_IF(status != status_success);
                     flash->flash_info.en_dev_mode_cfg = 1U;
@@ -1056,8 +1056,6 @@ hpm_stat_t hpm_serial_nor_page_program_nonblocking(hpm_serial_nor_t *flash, uint
     }
 
     do {
-        offset_in_page = address % flash->flash_info.page_size;
-        remaining_page_size = flash->flash_info.page_size - offset_in_page;
         address_bits = (flash->flash_info.size_in_kbytes > MAX_24BIT_ADDR_SIZE_IN_KBYTES) ? 32U : 24U;
         if (address_bits == 32) {
             command_seq.addr_phase.addr_bit = flash_addrlen_32bit;

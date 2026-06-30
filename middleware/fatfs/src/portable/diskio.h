@@ -34,6 +34,7 @@ typedef enum {
 #define DEV_USB     (0U)    /* Example: Map USB MSD to physical drive 0 */
 #define DEV_USB_MSC_0   (5U)    /* Example: Map USB MSD to physical drive 5 */
 #define DEV_USB_MSC_1   (6U)    /* Example: Map USB MSD to physical drive 6 */
+#define DEV_SPI_NOR     (7U)    /* Example: Map SPI NOR to physical drive 7 */
 
 /* Definition of logic unit number for each drive */
 #define LUN_USB	    (0U)    /* lun 0 of usb drive */

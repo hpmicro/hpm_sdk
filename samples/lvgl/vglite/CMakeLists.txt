@@ -1,10 +1,10 @@
-# Copyright 2024 hpmicro
+# Copyright 2024-2026 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_HPM_PANEL 1)
-set(CONFIG_VGLITE 1)
+#set(CONFIG_VGLITE 1)
 
 # ENABLE LVGL
 set(CONFIG_LVGL 1)
@@ -31,14 +31,16 @@ sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
 sdk_compile_definitions(-DLV_USE_DEMO_MUSIC=1)
 sdk_compile_definitions(-DLV_USE_DEMO_WIDGETS=1)
 sdk_compile_definitions(-DLV_USE_DEMO_BENCHMARK=1)
-sdk_compile_definitions(-DLV_USE_DEMO_RENDER=1)
 sdk_compile_definitions(-DLV_USE_DEMO_STRESS=1)
-sdk_compile_definitions(-DLV_USE_DEMO_FLEX_LAYOUT=1)
 
 # LVGL CONF
 sdk_compile_definitions(-DLV_USE_OS=LV_OS_FREERTOS)
 sdk_compile_definitions(-DLV_USE_DRAW_VG_LITE=1)
+sdk_compile_definitions(-DLV_USE_VG_LITE_DRIVER=1)
+sdk_compile_definitions(-DLV_VG_LITE_USE_GPU_INIT=1)
+sdk_compile_definitions(-DLV_USE_VECTOR_GRAPHIC=1)
 sdk_compile_definitions(-DCONFIG_LV_HAS_EXTRA_CONFIG="lv_app_conf.h")
+sdk_compile_definitions(-DLV_USE_SYSMON=1)
 
 sdk_inc(src)
 sdk_app_src(src/main.c)

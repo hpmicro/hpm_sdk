@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -71,12 +71,16 @@ void hosted_wifi_event_callback(hpm_esp_hosted_wifi_event_t event, void *data, u
         printf("SSID:%s\r\n", ap_info->ssid);
     } else if (event == hosted_wifi_evt_scan_done) {
         printf("\r\n Scan wifi done\r\n");
-    } else if ((event == hosted_wifi_evt_disconnect) && (data_len != 0) && (is_wifi_stopped == false)) {
+    } else if ((event == hosted_wifi_evt_disconnect) && (data_len != 0)) {
         disconnect_info = (wifi_event_sta_disconnected_t *)data;
-        if ((disconnect_info->reason == WIFI_REASON_ASSOC_NOT_AUTHED) || (disconnect_info->reason == WIFI_REASON_ASSOC_LEAVE)) {
-            if (wifi_reconnect_sem) {
-                xSemaphoreGive(wifi_reconnect_sem);
+        if (is_wifi_stopped == false) {
+            if ((disconnect_info->reason == WIFI_REASON_ASSOC_NOT_AUTHED) || (disconnect_info->reason == WIFI_REASON_ASSOC_LEAVE)) {
+                if (wifi_reconnect_sem) {
+                    xSemaphoreGive(wifi_reconnect_sem);
+                }
             }
+        } else {
+            printf("Wi-Fi disconnected\r\n");
         }
     } else if (event == hosted_wifi_evt_connect) {
         is_wifi_stopped = false;
@@ -90,6 +94,7 @@ static int wifi(uint32_t argc, char **argv)
     if (argc > 3 && strcmp(argv[1], "join") == 0) {
         wifi_ssid = argv[2];
         wifi_password = argv[3];
+        is_wifi_stopped = false;
     }
     if (argc > 1 && strcmp(argv[1], "stop") == 0) {
         is_wifi_stopped = true;

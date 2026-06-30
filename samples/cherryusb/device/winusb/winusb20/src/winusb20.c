@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,174 +20,39 @@
     #define USBD_PID_WINUSB20 0x1236
     #define USB_CONFIG_SIZE (9 + 9 + 7 + 7)
     #define INTF_NUM 1
-    /* WinUSB Microsoft OS 2.0 descriptor sizes */
-    #define DEVICE_INTERFACE_GUID_FEATURE_LEN  128
-    #define USBD_WINUSB_DESC_SET_LEN (WINUSB_DESCRIPTOR_SET_HEADER_SIZE + WINUSB_FEATURE_COMPATIBLE_ID_SIZE + DEVICE_INTERFACE_GUID_FEATURE_LEN)
 #else
     #define USBD_PID_WINUSB20 0x1237
     #define WINUSB_IN_EP2  0x82
     #define WINUSB_OUT_EP2 0x02
     #define USB_CONFIG_SIZE (9 + 9 + 7 + 7 + 9 + 7 + 7)
     #define INTF_NUM 2
-    /* WinUSB Microsoft OS 2.0 descriptor sizes */
-    #define DEVICE_INTERFACE_GUIDS_FEATURE_LEN 132
-    #define FUNCTION_SUBSET_LEN      (WINUSB_FUNCTION_SUBSET_HEADER_SIZE + WINUSB_FEATURE_COMPATIBLE_ID_SIZE + DEVICE_INTERFACE_GUIDS_FEATURE_LEN)
-    #define USBD_WINUSB_DESC_SET_LEN (WINUSB_DESCRIPTOR_SET_HEADER_SIZE + (2 * FUNCTION_SUBSET_LEN))
 #endif
 
 static const uint8_t USBD_WinUSBDescriptorSetDescriptor[] = {
-    /*
-     * WCID20 descriptor set descriptor
-     */
-    WBVAL(WINUSB_DESCRIPTOR_SET_HEADER_SIZE), /* wLength */
-    WBVAL(WINUSB_SET_HEADER_DESCRIPTOR_TYPE), /* wDescriptorType */
-    0x00, 0x00, 0x03, 0x06,                   /* >= Win 8.1 */  /* dwWindowsVersion*/
-    WBVAL(USBD_WINUSB_DESC_SET_LEN),          /* wDescriptorSetTotalLength */
-
-#if DOUBLE_WINUSB == 0
-    /*
-     * WCID20 compatible ID descriptor
-     */
-    WBVAL(WINUSB_FEATURE_COMPATIBLE_ID_SIZE),  /* wLength */
-    WBVAL(WINUSB_FEATURE_COMPATIBLE_ID_TYPE),  /* wDescriptorType */
-    'W', 'I', 'N', 'U', 'S', 'B', 0, 0,        /* cCID_8 */
-    0, 0, 0, 0, 0, 0, 0, 0,                    /* cSubCID_8 */
-
-    /*
-     * WCID20 registry property descriptor
-     */
-    WBVAL(DEVICE_INTERFACE_GUID_FEATURE_LEN),  /* wLength */
-    WBVAL(WINUSB_FEATURE_REG_PROPERTY_TYPE),   /* wDescriptorType */
-    WBVAL(WINUSB_PROP_DATA_TYPE_REG_SZ),       /* wPropertyDataType */
-    WBVAL(40),                                 /* wPropertyNameLength */
-    /* DeviceInterfaceGUID */
-    'D', 0, 'e', 0, 'v', 0, 'i', 0, 'c', 0, 'e', 0,
-    'I', 0, 'n', 0, 't', 0, 'e', 0, 'r', 0, 'f', 0, 'a', 0, 'c', 0, 'e', 0,
-    'G', 0, 'U', 0, 'I', 0, 'D', 0, 0, 0,
-    WBVAL(78),                                 /* wPropertyDataLength*/
-    '{', 0,
-    'C', 0, 'D', 0, 'B', 0, '3', 0, 'B', 0, '5', 0, 'A', 0, 'D', 0, '-', 0,
-    '2', 0, '9', 0, '3', 0, 'B', 0, '-', 0,
-    '4', 0, '6', 0, '6', 0, '3', 0, '-', 0,
-    'A', 0, 'A', 0, '3', 0, '6', 0, '-', 0,
-    '1', 0, 'A', 0, 'A', 0, 'E', 0, '4', 0, '6', 0, '4', 0, '6', 0, '3', 0, '7', 0, '7', 0, '6', 0,
-    '}', 0, 0, 0,
+#if INTF_NUM == 1
+    USB_MSOSV2_COMP_ID_SET_HEADER_DESCRIPTOR_INIT(WINUSB_DESCRIPTOR_SET_HEADER_SIZE + USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_SINGLE_DESCRIPTOR_LEN),
+    USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_SINGLE_DESCRIPTOR_INIT(),
 #else
-    /*
-     * WCID20 function subset descriptor
-     */
-    WBVAL(WINUSB_FUNCTION_SUBSET_HEADER_SIZE), /* wLength */
-    WBVAL(WINUSB_SUBSET_HEADER_FUNCTION_TYPE), /* wDescriptorType */
-    0,                                         /* bFirstInterface */
-    0,                                         /* bReserved */
-    WBVAL(FUNCTION_SUBSET_LEN),                /* wSubsetLength */
-
-    /*
-     * WCID20 compatible ID descriptor
-     */
-    WBVAL(WINUSB_FEATURE_COMPATIBLE_ID_SIZE),  /* wLength */
-    WBVAL(WINUSB_FEATURE_COMPATIBLE_ID_TYPE),  /* wDescriptorType */
-    'W', 'I', 'N', 'U', 'S', 'B', 0, 0,        /* cCID_8 */
-    0, 0, 0, 0, 0, 0, 0, 0,                    /* cSubCID_8 */
-
-    /*
-     * WCID20 registry property descriptor
-     */
-    WBVAL(DEVICE_INTERFACE_GUIDS_FEATURE_LEN), /* wLength */
-    WBVAL(WINUSB_FEATURE_REG_PROPERTY_TYPE),   /* wDescriptorType */
-    WBVAL(WINUSB_PROP_DATA_TYPE_REG_MULTI_SZ), /* wPropertyDataType */
-    WBVAL(42),                                 /* wPropertyNameLength */
-    /* DeviceInterfaceGUIDs */
-    'D', 0, 'e', 0, 'v', 0, 'i', 0, 'c', 0, 'e', 0,
-    'I', 0, 'n', 0, 't', 0, 'e', 0, 'r', 0, 'f', 0, 'a', 0, 'c', 0, 'e', 0,
-    'G', 0, 'U', 0, 'I', 0, 'D', 0, 's', 0, 0, 0,
-    WBVAL(80),                                 /* wPropertyDataLength*/
-    '{', 0,
-    'C', 0, 'D', 0, 'B', 0, '3', 0, 'B', 0, '5', 0, 'A', 0, 'D', 0, '-', 0,
-    '2', 0, '9', 0, '3', 0, 'B', 0, '-', 0,
-    '4', 0, '6', 0, '6', 0, '3', 0, '-', 0,
-    'A', 0, 'A', 0, '3', 0, '6', 0, '-', 0,
-    '1', 0, 'A', 0, 'A', 0, 'E', 0, '4', 0, '6', 0, '4', 0, '6', 0, '3', 0, '7', 0, '7', 0, '6', 0,
-    '}', 0, 0, 0, 0, 0,
-
-    /*
-     * WCID20 function subset descriptor
-     */
-    WBVAL(WINUSB_FUNCTION_SUBSET_HEADER_SIZE), /* wLength */
-    WBVAL(WINUSB_SUBSET_HEADER_FUNCTION_TYPE), /* wDescriptorType */
-    1,                                         /* bFirstInterface */
-    0,                                         /* bReserved */
-    WBVAL(FUNCTION_SUBSET_LEN),                /* wSubsetLength */
-
-    /*
-     * WCID20 compatible ID descriptor
-     */
-    WBVAL(WINUSB_FEATURE_COMPATIBLE_ID_SIZE),  /* wLength */
-    WBVAL(WINUSB_FEATURE_COMPATIBLE_ID_TYPE),  /* wDescriptorType */
-    'W', 'I', 'N', 'U', 'S', 'B', 0, 0,        /* cCID_8 */
-    0, 0, 0, 0, 0, 0, 0, 0,                    /* cSubCID_8 */
-
-    /*
-     * WCID20 registry property descriptor
-     */
-    WBVAL(DEVICE_INTERFACE_GUIDS_FEATURE_LEN), /* wLength */
-    WBVAL(WINUSB_FEATURE_REG_PROPERTY_TYPE),   /* wDescriptorType */
-    WBVAL(WINUSB_PROP_DATA_TYPE_REG_MULTI_SZ), /* wPropertyDataType */
-    WBVAL(42),                                 /* wPropertyNameLength */
-    /* DeviceInterfaceGUIDs */
-    'D', 0, 'e', 0, 'v', 0, 'i', 0, 'c', 0, 'e', 0,
-    'I', 0, 'n', 0, 't', 0, 'e', 0, 'r', 0, 'f', 0, 'a', 0, 'c', 0, 'e', 0,
-    'G', 0, 'U', 0, 'I', 0, 'D', 0, 's', 0, 0, 0,
-    WBVAL(80),                                 /* wPropertyDataLength*/
-    '{', 0,
-    'C', 0, 'D', 0, 'B', 0, '3', 0, 'B', 0, '5', 0, 'A', 0, 'D', 0, '-', 0,
-    '2', 0, '9', 0, '3', 0, 'B', 0, '-', 0,
-    '4', 0, '6', 0, '6', 0, '3', 0, '-', 0,
-    'A', 0, 'A', 0, '3', 0, '6', 0, '-', 0,
-    '1', 0, 'A', 0, 'A', 0, 'E', 0, '4', 0, '6', 0, '4', 0, '6', 0, '3', 0, '7', 0, '7', 0, '6', 0,
-    '}', 0, 0, 0, 0, 0,
+    USB_MSOSV2_COMP_ID_SET_HEADER_DESCRIPTOR_INIT(WINUSB_DESCRIPTOR_SET_HEADER_SIZE + INTF_NUM * USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_MULTI_DESCRIPTOR_LEN),
+    USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_MULTI_DESCRIPTOR_INIT(0x00),
+    USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_MULTI_DESCRIPTOR_INIT(0x01),
 #endif
 };
 
-#define USBD_NUM_DEV_CAPABILITIES (1)
-#define USBD_WINUSB_DESC_LEN 28
-#define USBD_BOS_WTOTALLENGTH (0x05 + USBD_WINUSB_DESC_LEN)
-
 static const uint8_t USBD_BinaryObjectStoreDescriptor[] = {
-    /*
-     * WCID20 BOS descriptor
-     */
-    0x05,                         /* bLength */
-    0x0f,                         /* bDescriptorType */
-    WBVAL(USBD_BOS_WTOTALLENGTH), /* wTotalLength */
-    USBD_NUM_DEV_CAPABILITIES,    /* bNumDeviceCaps */
-
-    /*
-     *WCID20 device capability descriptor
-     */
-    USBD_WINUSB_DESC_LEN,           /* bLength */
-    0x10,                           /* bDescriptorType */
-    USB_DEVICE_CAPABILITY_PLATFORM, /* bDevCapabilityType */
-    0x00,                           /* bReserved */
-    0xDF, 0x60, 0xDD, 0xD8,         /* PlatformCapabilityUUID */
-    0x89, 0x45, 0xC7, 0x4C,
-    0x9C, 0xD2, 0x65, 0x9D,
-    0x9E, 0x64, 0x8A, 0x9F,
-    0x00, 0x00, 0x03, 0x06,                  /* >= Win 8.1 */ /* dwWindowsVersion*/
-    WBVAL(USBD_WINUSB_DESC_SET_LEN),         /* wDescriptorSetTotalLength */
-    USBD_WINUSB_VENDOR_CODE,                 /* bVendorCode */
-    0,                                       /* bAltEnumCode */
+    USB_BOS_HEADER_DESCRIPTOR_INIT(5 + USB_BOS_CAP_PLATFORM_WINUSB_DESCRIPTOR_LEN, 1),
+    USB_BOS_CAP_PLATFORM_WINUSB_DESCRIPTOR_INIT(USBD_WINUSB_VENDOR_CODE, sizeof(USBD_WinUSBDescriptorSetDescriptor)),
 };
 
 const struct usb_msosv2_descriptor msosv2_desc = {
     .vendor_code = USBD_WINUSB_VENDOR_CODE,
     .compat_id = USBD_WinUSBDescriptorSetDescriptor,
-    .compat_id_len = USBD_WINUSB_DESC_SET_LEN,
+    .compat_id_len = sizeof(USBD_WinUSBDescriptorSetDescriptor),
 };
 
 const struct usb_bos_descriptor bos_desc = {
     .string = USBD_BinaryObjectStoreDescriptor,
-    .string_len = USBD_BOS_WTOTALLENGTH
+    .string_len = sizeof(USBD_BinaryObjectStoreDescriptor)
 };
 
 static const uint8_t device_descriptor[] = {

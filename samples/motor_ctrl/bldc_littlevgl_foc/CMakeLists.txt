@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 HPMicro
+# Copyright (c) 2021-2023,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.13)
 
@@ -10,7 +10,7 @@ if(NOT DEFINED CONFIG_TOUCH)
 set(CONFIG_TOUCH "gt9xx")
 endif()
 set(CONFIG_HPM_TOUCH 1)
-set(CONFIG_HPM_ADC 1)
+set(CONFIG_HPM_ADC_V2 1)
 # set(HPM_MATH_DSP_SES_LIB "libdspf")
 set(STACK_SIZE 0x10000)
 set(RV_ABI "ilp32f")

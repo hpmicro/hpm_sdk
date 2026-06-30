@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -34,13 +34,15 @@
 #define AUDIO_IN_FU_ID 0x02
 
 /* AUDIO Class Config */
-#define AUDIO_FREQ 16000U
+#define AUDIO_FREQ                  16000U
+#define AUDIO_MIC_FRAME_SIZE_BYTE   2u
+#define AUDIO_MIC_RESOLUTION_BIT    16u
 
 #define IN_CHANNEL_NUM 1
 
 #if IN_CHANNEL_NUM == 1
 #define INPUT_CTRL      0x03, 0x03
-#define INPUT_CH_ENABLE 0x0000
+#define INPUT_CH_ENABLE 0x0001
 #elif IN_CHANNEL_NUM == 2
 #define INPUT_CTRL      0x03, 0x03, 0x03
 #define INPUT_CH_ENABLE 0x0003
@@ -69,11 +71,11 @@
 #define AUDIO_IN_PACKET ((uint32_t)((AUDIO_FREQ * 2 * IN_CHANNEL_NUM) / 1000))
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (unsigned long)(9 +                                                    \
-                                                  AUDIO_AC_DESCRIPTOR_INIT_LEN(1) +                      \
+                                                  AUDIO_AC_DESCRIPTOR_LEN(1) +                           \
                                                   AUDIO_SIZEOF_AC_INPUT_TERMINAL_DESC +                  \
                                                   AUDIO_SIZEOF_AC_FEATURE_UNIT_DESC(IN_CHANNEL_NUM, 1) + \
                                                   AUDIO_SIZEOF_AC_OUTPUT_TERMINAL_DESC +                 \
-                                                  AUDIO_AS_DESCRIPTOR_INIT_LEN(1))
+                                                  AUDIO_AS_DESCRIPTOR_LEN(1))
 
 #define AUDIO_AC_SIZ (AUDIO_SIZEOF_AC_HEADER_DESC(1) +                       \
                       AUDIO_SIZEOF_AC_INPUT_TERMINAL_DESC +                  \
@@ -90,7 +92,7 @@ static const uint8_t config_descriptor_hs[] = {
     AUDIO_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x01, AUDIO_INTERM_MIC, IN_CHANNEL_NUM, INPUT_CH_ENABLE),
     AUDIO_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_IN_FU_ID, 0x01, 0x01, INPUT_CTRL),
     AUDIO_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x03, AUDIO_TERMINAL_STREAMING, AUDIO_IN_FU_ID),
-    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, 2, 16, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_HS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
+    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, AUDIO_MIC_FRAME_SIZE_BYTE, AUDIO_MIC_RESOLUTION_BIT, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_HS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
 };
 
 static const uint8_t config_descriptor_fs[] = {
@@ -99,7 +101,7 @@ static const uint8_t config_descriptor_fs[] = {
     AUDIO_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x01, AUDIO_INTERM_MIC, IN_CHANNEL_NUM, INPUT_CH_ENABLE),
     AUDIO_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_IN_FU_ID, 0x01, 0x01, INPUT_CTRL),
     AUDIO_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x03, AUDIO_TERMINAL_STREAMING, AUDIO_IN_FU_ID),
-    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, 2, 16, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_FS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
+    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, AUDIO_MIC_FRAME_SIZE_BYTE, AUDIO_MIC_RESOLUTION_BIT, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_FS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
 };
 
 static const uint8_t device_quality_descriptor[] = {
@@ -112,7 +114,7 @@ static const uint8_t other_speed_config_descriptor_hs[] = {
     AUDIO_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x01, AUDIO_INTERM_MIC, IN_CHANNEL_NUM, INPUT_CH_ENABLE),
     AUDIO_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_IN_FU_ID, 0x01, 0x01, INPUT_CTRL),
     AUDIO_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x03, AUDIO_TERMINAL_STREAMING, AUDIO_IN_FU_ID),
-    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, 2, 16, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_FS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
+    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, AUDIO_MIC_FRAME_SIZE_BYTE, AUDIO_MIC_RESOLUTION_BIT, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_FS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
 };
 
 static const uint8_t other_speed_config_descriptor_fs[] = {
@@ -121,7 +123,7 @@ static const uint8_t other_speed_config_descriptor_fs[] = {
     AUDIO_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x01, AUDIO_INTERM_MIC, IN_CHANNEL_NUM, INPUT_CH_ENABLE),
     AUDIO_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_IN_FU_ID, 0x01, 0x01, INPUT_CTRL),
     AUDIO_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x03, AUDIO_TERMINAL_STREAMING, AUDIO_IN_FU_ID),
-    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, 2, 16, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_HS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
+    AUDIO_AS_DESCRIPTOR_INIT(0x01, 0x03, IN_CHANNEL_NUM, AUDIO_MIC_FRAME_SIZE_BYTE, AUDIO_MIC_RESOLUTION_BIT, AUDIO_IN_EP, 0x05, AUDIO_IN_PACKET, EP_INTERVAL_HS, AUDIO_SAMPLE_FREQ_3B(AUDIO_FREQ)),
 };
 
 static const char *string_descriptors[] = {
@@ -186,7 +188,7 @@ const struct usb_descriptor audio_v1_descriptor = {
 };
 
 #define MIC_DMA_CHANNEL       1U
-#define MIC_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, MIC_DMA_CHANNEL)
+#define MIC_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA1, MIC_DMA_CHANNEL)
 
 #define MIC_I2S               BOARD_MIC_I2S
 #define MIC_I2S_CLK_NAME      BOARD_MIC_I2S_CLK_NAME
@@ -403,7 +405,7 @@ void i2s_enable_dma_irq_with_priority(int32_t priority)
 {
     i2s_enable_rx_dma_request(MIC_I2S);
     dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, MIC_I2S_RX_DMAMUX_SRC, true);
-    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, priority);
 }
 
 void init_mic_i2s_pdm(void)
@@ -436,12 +438,12 @@ void init_mic_i2s_pdm(void)
     pdm_init(HPM_PDM, &pdm_config);
 }
 
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA1_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
 
-    stat = dma_check_transfer_status(BOARD_APP_XDMA, MIC_DMA_CHANNEL);
+    stat = dma_check_transfer_status(BOARD_APP_DMA1, MIC_DMA_CHANNEL);
 
     if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
         s_dma_transfer_done = true;
@@ -462,7 +464,7 @@ static void i2s_pdm_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = (uint32_t)(&MIC_I2S->RXD[MIC_I2S_DATA_LINE]) + 2u;
     ch_config.dst_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -473,7 +475,7 @@ static void i2s_pdm_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_XDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_DMA1, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" pdm dma setup channel failed\n");
     }
 }

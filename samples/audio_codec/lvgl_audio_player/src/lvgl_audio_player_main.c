@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -106,12 +106,12 @@ void lv_audio_codec_task_isr(void)
     }
 }
 
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA1_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
 
-    stat = dma_check_transfer_status(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
+    stat = dma_check_transfer_status(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
 
     if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
         if (!is_i2s_buff_empty()) {
@@ -217,7 +217,7 @@ static void lv_audio_codec_task(void)
     switch (s_ctrl_state) {
     case 1:
         if (!is_music_playing()) {
-            dma_disable_channel(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
+            dma_disable_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
             if ((I2S_STA_TX_DN_GET(i2s_get_irq_status(TARGET_I2S)) & (0x01 << TARGET_I2S_TX_DATA_LINE)) != 0u) {
 #if defined(USING_DAO) && USING_DAO
                 dao_stop(HPM_DAO);
@@ -233,7 +233,7 @@ static void lv_audio_codec_task(void)
 #if defined(USING_DAO) && USING_DAO
             dao_start(HPM_DAO);
 #endif
-            dma_enable_channel(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
+            dma_enable_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
             s_ctrl_state = 1;
         }
         break;
@@ -248,9 +248,9 @@ static void init_audio_player(char *fname)
 {
     hpm_stat_t res;
 
-    dma_abort_channel(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
-    dma_disable_channel(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
-    dma_clear_transfer_status(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
+    dma_abort_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
+    dma_disable_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
+    dma_clear_transfer_status(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
     i2s_stop(TARGET_I2S);
 #if defined(USING_DAO) && USING_DAO
     dao_stop(HPM_DAO);

@@ -75,8 +75,13 @@ a lot of data that needs to be copied, this should be set high. */
    order. Define to 0 if your device is low on memory. */
 #define TCP_QUEUE_OOSEQ         0
 
+/* Required by shared ethernetif.c (TSW_NETIF_MTU via lwip/opt.h). */
+#ifndef TSW_NETIF_MTU
+#define TSW_NETIF_MTU                   1500
+#endif
+
 /* TCP Maximum segment size. */
-#define TCP_MSS                 (1500 - 40)	  /* TCP_MSS = (Ethernet MTU - IP header size - TCP header size) */
+#define TCP_MSS                 (TSW_NETIF_MTU - 40)
 
 /* TCP sender buffer space (bytes). */
 #define TCP_SND_BUF             (20*TCP_MSS)

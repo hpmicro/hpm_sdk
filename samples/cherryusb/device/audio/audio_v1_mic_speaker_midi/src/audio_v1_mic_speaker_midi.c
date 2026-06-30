@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -57,16 +57,16 @@
 #define AUDIO_MS_SIZ (7 + MIDI_SIZEOF_JACK_DESC + 9 + 5 + 9 + 5)
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (unsigned long)(9 +                                       \
-                                                  AUDIO_AC_DESCRIPTOR_INIT_LEN(3) +         \
+                                                  AUDIO_AC_DESCRIPTOR_LEN(3) +              \
                                                   AUDIO_SIZEOF_AC_INPUT_TERMINAL_DESC +     \
                                                   AUDIO_SIZEOF_AC_FEATURE_UNIT_DESC(2, 1) + \
                                                   AUDIO_SIZEOF_AC_OUTPUT_TERMINAL_DESC +    \
                                                   AUDIO_SIZEOF_AC_INPUT_TERMINAL_DESC +     \
                                                   AUDIO_SIZEOF_AC_FEATURE_UNIT_DESC(2, 1) + \
                                                   AUDIO_SIZEOF_AC_OUTPUT_TERMINAL_DESC +    \
-                                                  AUDIO_AS_DESCRIPTOR_INIT_LEN(1) +         \
-                                                  AUDIO_AS_DESCRIPTOR_INIT_LEN(1) +         \
-                                                  AUDIO_MS_STANDARD_DESCRIPTOR_INIT_LEN +   \
+                                                  AUDIO_AS_DESCRIPTOR_LEN(1) +              \
+                                                  AUDIO_AS_DESCRIPTOR_LEN(1) +              \
+                                                  MIDI_STANDARD_DESCRIPTOR_LEN +            \
                                                   AUDIO_MS_SIZ)
 
 #define AUDIO_AC_SIZ (AUDIO_SIZEOF_AC_HEADER_DESC(3) +          \
@@ -97,7 +97,7 @@ static const uint8_t config_descriptor_hs[] = {
     /*
      * Add Midi descriptor
      */
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
@@ -124,7 +124,7 @@ static const uint8_t config_descriptor_fs[] = {
     /*
      * Add Midi descriptor
      */
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
@@ -155,7 +155,7 @@ static const uint8_t other_speed_config_descriptor_hs[] = {
     /*
      * Add Midi descriptor
      */
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
@@ -182,7 +182,7 @@ static const uint8_t other_speed_config_descriptor_fs[] = {
     /*
      * Add Midi descriptor
      */
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x03, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
@@ -257,8 +257,8 @@ const struct usb_descriptor audio_v1_descriptor = {
 /* static variable definition */
 #define SPEAKER_DMA_CHANNEL 1U
 #define MIC_DMA_CHANNEL     2U
-#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL)
-#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, MIC_DMA_CHANNEL)
+#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL)
+#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA1, MIC_DMA_CHANNEL)
 
 #define MIC_I2S               BOARD_MIC_I2S
 #define MIC_I2S_CLK_NAME      BOARD_MIC_I2S_CLK_NAME
@@ -656,7 +656,7 @@ void i2s_enable_dma_irq_with_priority(int32_t priority)
     dmamux_config(BOARD_APP_DMAMUX, SPEAKER_DMAMUX_CHANNEL, SPEAKER_I2S_TX_DMAMUX_SRC, true);
     dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, MIC_I2S_RX_DMAMUX_SRC, true);
 
-    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, priority);
 }
 
 void mic_init_i2s_pdm(void)
@@ -724,14 +724,14 @@ void speaker_init_i2s_dao(void)
     dao_init(HPM_DAO, &dao_config);
 }
 
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA1_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
     volatile uint32_t mic_status;
 
-    speaker_status = dma_check_transfer_status(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL);
-    mic_status = dma_check_transfer_status(BOARD_APP_XDMA, MIC_DMA_CHANNEL);
+    speaker_status = dma_check_transfer_status(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL);
+    mic_status = dma_check_transfer_status(BOARD_APP_DMA1, MIC_DMA_CHANNEL);
 
     if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
         s_speaker_dma_transfer_done = true;
@@ -784,7 +784,7 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.dst_addr = (uint32_t)(&SPEAKER_I2S->TXD[SPEAKER_I2S_DATA_LINE]) + 2u;
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -796,7 +796,7 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
     }
 }
@@ -805,7 +805,7 @@ static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = (uint32_t)(&MIC_I2S->RXD[MIC_I2S_DATA_LINE]) + 2u;
     ch_config.dst_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
@@ -817,7 +817,7 @@ static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_XDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_DMA1, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" pdm dma setup channel failed\n");
     }
 }

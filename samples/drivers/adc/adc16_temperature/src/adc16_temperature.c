@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -54,14 +54,10 @@ hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = adc16_clock_divider_4;
+#if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb   = (clk_adc_src_ahb0 == clock_get_source(BOARD_APP_ADC16_CLK_NAME)) ? true : false;
+#endif
 
-    if (cfg.conv_mode == adc16_conv_mode_sequence ||
-        cfg.conv_mode == adc16_conv_mode_preemption) {
-        cfg.adc_ahb_en = true;
-    }
-
-    adc16_init(APP_ADC_TEMP_ADC16_BASE, &cfg);
 	/* adc16 initialization */
     if (adc16_init(BOARD_APP_ADC16_BASE, &cfg) == status_success) {
         /* enable irq */

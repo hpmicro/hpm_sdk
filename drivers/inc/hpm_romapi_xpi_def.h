@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -155,16 +155,41 @@ enum {
 };
 
 /**
+ * @brief Options for XPI AHB read/write alignment
+ */
+enum {
+    xpi_ahb_access_alignment_no_limit = 0,  /*!< No alignment boundary enforced on AHB transfers */
+    xpi_ahb_access_alignment_1kbytes = 1,   /*!< AHB transfers are split at 1 KB boundaries */
+    xpi_ahb_access_alignment_512bytes = 2,  /*!< AHB transfers are split at 512-byte boundaries */
+    xpi_ahb_access_alignment_256bytes = 3,  /*!< AHB transfers are split at 256-byte boundaries */
+};
+
+/**
  * @brief XPI configuration structure
  */
 typedef struct {
     uint8_t rxclk_src;                      /**< Read sample clock source */
-    uint8_t reserved0[7];                   /**< Reserved */
+    uint8_t reserved0[2];                   /**< Reserved */
+    uint8_t enable_octal_mode;              /**< Enable Octal mode */
+    uint8_t reserved1[4];
     uint8_t tx_watermark_in_dwords;         /**< Tx watermark in double words */
     uint8_t rx_watermark_in_dwords;         /**< Rx watermark in double words */
     uint8_t enable_differential_clk;        /**< Enable differential clock */
-    uint8_t reserved1[5];                   /**< Reserved */
-    uint32_t access_flags;                  /**< Access flags */
+    uint8_t reserved2;
+    struct {
+        uint8_t enable_burst_enhance;      /**< Enable AHB Burst enhancement */
+        uint8_t ahb_access_align_boundary; /**< AHB access alignment boundary */
+        uint8_t reserved3[2];
+    };
+    union {
+        struct {
+            uint8_t enable_aligned_ahb_read;     /**< Non-zero to enable aligned AHB read mode. Offset: 0x10 */
+            uint8_t enable_ahb_read_prefetch;    /**< Non-zero to enable AHB read prefetch. Offset: 0x11 */
+            uint8_t enable_ahb_write_bufferable; /**< Non-zero to mark AHB writes as bufferable. Offset: 0x12 */
+            uint8_t enable_ahb_cacheable;        /**< Non-zero to mark AHB reads as cacheable. Offset: 0x13 */
+        };
+        uint32_t access_flags;                  /**< Access flags */
+    };
 } xpi_config_t;
 
 /**

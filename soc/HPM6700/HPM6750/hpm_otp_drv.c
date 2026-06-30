@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2021-2024 HPMicro
+* Copyright (c) 2021-2026 HPMicro
 *
 * SPDX-License-Identifier: BSD-3-Clause
 *
@@ -99,7 +99,7 @@ hpm_stat_t otp_lock_otp(uint32_t addr, otp_lock_option_t lock_option)
     do {
         HPM_BREAK_IF(addr >= ARRAY_SIZE(HPM_OTP->SHADOW) || (lock_option > otp_lock_option_max));
 
-        OTP_Type *otp_base = (addr <= SHADOW_INDEX_IN_PMIC_OTP_END) ? HPM_OTP : HPM_OTPSHW;
+        OTP_Type *otp_base = HPM_OTP;
 
         uint32_t lock_reg_idx = (addr << 1) / 32;
         uint32_t lock_reg_offset = (addr << 1) % 32;

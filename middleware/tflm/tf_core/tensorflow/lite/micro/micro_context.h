@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,11 +16,23 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_MICRO_MICRO_CONTEXT_H_
 #define TENSORFLOW_LITE_MICRO_MICRO_CONTEXT_H_
 
+#include <cstddef>
+#include <initializer_list>
+
 #include "tensorflow/lite/c/common.h"
-#include "tensorflow/lite/micro/micro_allocator.h"
 #include "tensorflow/lite/micro/micro_graph.h"
+#include "tensorflow/lite/micro/micro_profiler_interface.h"
+
+#ifdef USE_TFLM_COMPRESSION
+
+#include "tensorflow/lite/micro/compression.h"
+
+#endif  // USE_TFLM_COMPRESSION
 
 namespace tflite {
+// TODO(b/149795762): kTfLiteAbort cannot be part of the tflite TfLiteStatus.
+const TfLiteStatus kTfLiteAbort = static_cast<TfLiteStatus>(15);
+
 // MicroContext is eventually going to become the API between TFLM and the
 // kernels, replacing all the functions in TfLiteContext. The end state is code
 // kernels to have code like:
@@ -29,83 +41,139 @@ namespace tflite {
 // micro_context-><TFLM kernel API>
 class MicroContext {
  public:
-  // Does not take any ownership, and all pointers must refer to valid objects
-  // that outlive the one constructed.
-  explicit MicroContext(MicroAllocator* allocator, const Model* model,
-                        MicroGraph* graph);
-  virtual ~MicroContext();
+  virtual ~MicroContext() = default;
 
   // Allocate persistent buffer which has the same life time as the interpreter.
   // Returns nullptr on failure.
   // The memory is allocated from the tail.
   // This method is only available in Init or Prepare stage.
-  // Virtual so that it can be faked for kernel tests.
-  virtual void* AllocatePersistentBuffer(size_t bytes);
+  virtual void* AllocatePersistentBuffer(size_t bytes) = 0;
 
   // Request a scratch buffer in the arena through static memory planning.
   // This method is only available in Prepare stage and the buffer is allocated
   // by the interpreter between Prepare and Eval stage. In Eval stage,
   // GetScratchBuffer API can be used to fetch the address.
-  // Virtual so that it can be faked for kernel tests.
   virtual TfLiteStatus RequestScratchBufferInArena(size_t bytes,
-                                                   int* buffer_idx);
+                                                   int* buffer_idx) = 0;
 
   // Get the scratch buffer pointer.
   // This method is only available in Eval stage.
-  // Virtual so that it can be faked for kernel tests.
-  virtual void* GetScratchBuffer(int buffer_idx);
+  virtual void* GetScratchBuffer(int buffer_idx) = 0;
 
   // Returns a temporary TfLiteTensor struct for a given index.
-  // Virtual so that it can be faked for kernel tests.
-  virtual TfLiteTensor* AllocateTempTfLiteTensor(int tensor_idx);
+  virtual TfLiteTensor* AllocateTempTfLiteTensor(int tensor_idx) = 0;
 
   // Returns a temporary TfLiteTensor struct for the specified input tensor of a
   // given mode. This is the recommended API over the deprecated
   // GetInput/GetInputSafe to get a temp input tensor. The returned tensor shall
   // be freed via calling DeallocateTempTfLiteTensor.
-  virtual TfLiteTensor* AllocateTempInputTensor(const TfLiteNode* node,
-                                                int index);
+  TfLiteTensor* AllocateTempInputTensor(const TfLiteNode* node, int index);
 
   // Returns a temporary TfLiteTensor struct for the specified output tensor of
   // a given mode. This is the recommended API over the deprecated
   // GetOutput/GetOutputSafe to get a temp output tensor. The returned tensor
   // shall be freed via calling DeallocateTempTfLiteTensor.
-  virtual TfLiteTensor* AllocateTempOutputTensor(const TfLiteNode* node,
-                                                 int index);
+  TfLiteTensor* AllocateTempOutputTensor(const TfLiteNode* node, int index);
+
+  // Returns a temporary TfLiteTensor struct for the specified intermediate
+  // tensor of a given mode. This is the recommended API over the deprecated
+  // GetIntermediates/GetIntermediatesSafe to get a temp intermediate tensor.
+  // The returned tensor shall be freed via calling DeallocateTempTfLiteTensor.
+  TfLiteTensor* AllocateTempIntermediateTensor(const TfLiteNode* node,
+                                               int index);
 
   // Deallocates a temp TfLiteTensor.
-  // Virtual so that it can be faked for kernel tests.
-  virtual void DeallocateTempTfLiteTensor(TfLiteTensor* tensor);
+  virtual void DeallocateTempTfLiteTensor(TfLiteTensor* tensor) = 0;
+
+  // Returns a pointer to a temporary buffer (from the arena).
+  // This API is only valid from the kernel's Prepare function and
+  // the buffer's lifetime is also that of the Prepare function.
+  virtual uint8_t* AllocateTempBuffer(size_t size, size_t alignment) = 0;
+
+  // Signals that the temporary buffer is no longer needed.
+  virtual void DeallocateTempBuffer(uint8_t* buffer) = 0;
 
   // Returns a TfLiteEvalTensor struct for a given index.
-  // Virtual so that it can be faked for kernel tests.
-  virtual TfLiteEvalTensor* GetEvalTensor(int tensor_idx);
+  virtual TfLiteEvalTensor* GetEvalTensor(int tensor_idx) = 0;
 
   // Does not take ownership of the pointer and the pointer must refer to valid
   // an object that outlive this class instance.
   // This can only be called once to set one external context.
-  TfLiteStatus set_external_context(void* external_context_payload);
+  virtual TfLiteStatus set_external_context(void* external_context_payload) = 0;
 
-  void* external_context() { return external_context_payload_; }
+  virtual void* external_context() = 0;
 
-  MicroGraph& graph() { return graph_; }
+  virtual MicroGraph& graph() = 0;
 
-  // Sets the pointer to a list of ScratchBufferHandle instances.
-  // Not API between TFLM and kernels. Primarily used by the framework for
-  // housekeeping in MicroContext.
-  void SetScratchBufferHandles(ScratchBufferHandle* scratch_buffer_handles);
+#ifdef USE_TFLM_COMPRESSION
+
+  // Available during Prepare & Eval. Returns false if tensor is not
+  // compressed.
+  virtual bool IsTensorCompressed(const TfLiteNode* node, int tensor_idx) = 0;
+
+  // Only available during Prepare. The kernel is responsible for storing the
+  // scratch buffer handle.
+  virtual int AllocateDecompressionScratchBuffer(const TfLiteNode* node,
+                                                 int tensor_idx) = 0;
+
+  // Available during Prepare & Eval. Returns nullptr if tensor is not
+  // compressed.
+  virtual const CompressionTensorData* GetTensorCompressionData(
+      const TfLiteNode* node, int tensor_idx) = 0;
+
+  // Only available during Prepare & Eval. Returns nullptr on failure, otherwise
+  // returns a pointer to the buffer.
+  virtual void* DecompressTensorToBuffer(
+      const TfLiteEvalTensor& tensor,
+      const CompressionTensorData& compression_data, void* buffer);
+
+#endif  // USE_TFLM_COMPRESSION
+
+  // Used for configuring alternate decompression memory
+  struct AlternateMemoryRegion {
+    void* address;
+    size_t bytes;
+  };
+
+  // Set the alternate decompression memory regions.
+  // Can only be called during the MicroInterpreter kInit state.
+  virtual TfLiteStatus SetDecompressionMemory(
+      const AlternateMemoryRegion* regions, size_t count);
+
+  // Return a pointer to memory that can be used for decompression.
+  // The pointer will be aligned to the <alignment> value.
+  // Return nullptr if the requested size is not available.
+  // Can be called during kPrepare state.
+  virtual void* AllocateDecompressionMemory(size_t bytes, size_t alignment);
+
+  // Reset all allocation tracking.
+  // Can be called during kPrepare state.
+  virtual void ResetDecompressionMemoryAllocations();
+
+  // Set the alternate MicroProfilerInterface.
+  // This can be used to profile subsystems simultaneously with the profiling
+  // of kernels during the Eval phase.  See (b/379584353).
+  // The alternate MicroProfilerInterface is currently used by the tensor
+  // decompression subsystem.
+  virtual TfLiteStatus SetAlternateProfiler(
+      MicroProfilerInterface* alt_profiler) {
+    return kTfLiteError;
+  }
+
+  // Get the alternate MicroProfilerInterface.
+  // This can be used to profile subsystems simultaneously with the profiling
+  // of kernels during the Eval phase.  See (b/379584353).
+  // The alternate MicroProfilerInterface is currently used by the tensor
+  // decompression subsystem.
+  virtual MicroProfilerInterface* GetAlternateProfiler() const {
+    return nullptr;
+  }
 
  private:
-  // Return the tensor index as tensor_indices[index]. tensor_indices is of
-  // max_size. Return -1 if index is not in the valid range of tensor_indices.
-  int GetTensorIndex(int index, int max_size, const int* tensor_indices);
-
-  MicroAllocator& allocator_;
-  MicroGraph& graph_;
-  const Model* model_;
-
-  ScratchBufferHandle* scratch_buffer_handles_ = nullptr;
-  void* external_context_payload_ = nullptr;
+  const AlternateMemoryRegion* decompress_regions_ = nullptr;
+  size_t decompress_regions_size_ = 0;
+  // array of size_t elements with length equal to decompress_regions_size_
+  size_t* decompress_regions_allocations_ = nullptr;
 
   TF_LITE_REMOVE_VIRTUAL_DELETE
 };

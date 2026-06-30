@@ -50,7 +50,7 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 
 - UART引脚
 
-  UART2用于CORE1调试串口或一些使用UART的功能测试，例如USB_CDC_ACM_UART, MODBUS_RTU等。
+  UART2用于CORE1调试串口或一些使用UART的功能测试，例如MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU等。
 
   .. list-table::
      :header-rows: 1
@@ -115,9 +115,9 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 
      * - 功能
        - 位置
-     * - I2C0.SCL
+     * - I2C3.SCL
        - P2[7]
-     * - I2C0.SDA
+     * - I2C3.SDA
        - P2[10]
 
 - ACMP引脚
@@ -142,7 +142,7 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
        - 备注
      * - GPTMR1.CAPT_0
        - P2[3]
-       -
+       - SENT解码输入引脚（空闲高低电平共用同一引脚）
      * - GPTMR1.COMP_0
        - P2[23]
        - SPI模拟I2S的MCLK

@@ -15,3 +15,6 @@ else()
 sdk_inc_ifdef(CONFIG_HPM_SPI_SDCARD spi_sd)
 sdk_src_ifdef(CONFIG_HPM_SPI_SDCARD spi_sd/hpm_spi_sd_disk.c)
 endif()
+
+sdk_inc_ifdef(CONFIG_SPI_NOR_FLASH spi_nor)
+sdk_src_ifdef(CONFIG_SPI_NOR_FLASH spi_nor/hpm_spi_nor_disk.c)

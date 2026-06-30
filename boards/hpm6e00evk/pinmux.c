@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,6 +16,7 @@
 
 #include "pinmux.h"
 #include "board.h"
+#include "hpm_trgm_drv.h"
 
 
 void init_uart0_pins(void)
@@ -986,4 +987,15 @@ void board_init_i2c_eeprom_pin(void)
 
     HPM_IOC->PAD[IOC_PAD_PA12].FUNC_CTL = IOC_PA12_FUNC_CTL_I2C1_SDA | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
     HPM_IOC->PAD[IOC_PAD_PA12].PAD_CTL = IOC_PAD_PAD_CTL_OD_SET(1);
+}
+
+void init_trgm_gptmr4_cap2_invert_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PB06].FUNC_CTL = IOC_PB06_FUNC_CTL_TRGM_P_06;
+
+    trgm_output_t trgm0_io_config0 = {0};
+    trgm0_io_config0.invert = 1;
+    trgm0_io_config0.type = trgm_output_same_as_input;
+    trgm0_io_config0.input = HPM_TRGM0_INPUT_SRC_TRGM0_P06;
+    trgm_output_config(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_GPTMR4_IN2, &trgm0_io_config0);
 }

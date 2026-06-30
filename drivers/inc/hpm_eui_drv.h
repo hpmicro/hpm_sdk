@@ -15,7 +15,7 @@
 /**
  * @brief EUI driver APIs
  * @defgroup eui_interface EUI driver APIs
- * @ingroup eui_interface
+ * @ingroup io_interfaces
  * @{
  */
 

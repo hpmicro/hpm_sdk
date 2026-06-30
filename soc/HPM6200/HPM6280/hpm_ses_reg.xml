@@ -17211,7 +17211,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH0_LLPOINTER" start="+0x58" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH0_LLPOINTERH" start="+0x5c" size="0x4">
@@ -17249,7 +17249,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH1_LLPOINTER" start="+0x78" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH1_LLPOINTERH" start="+0x7c" size="0x4">
@@ -17287,7 +17287,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH2_LLPOINTER" start="+0x98" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH2_LLPOINTERH" start="+0x9c" size="0x4">
@@ -17325,7 +17325,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH3_LLPOINTER" start="+0xb8" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH3_LLPOINTERH" start="+0xbc" size="0x4">
@@ -17363,7 +17363,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH4_LLPOINTER" start="+0xd8" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH4_LLPOINTERH" start="+0xdc" size="0x4">
@@ -17401,7 +17401,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH5_LLPOINTER" start="+0xf8" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH5_LLPOINTERH" start="+0xfc" size="0x4">
@@ -17439,7 +17439,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH6_LLPOINTER" start="+0x118" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH6_LLPOINTERH" start="+0x11c" size="0x4">
@@ -17477,7 +17477,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH7_LLPOINTER" start="+0x138" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH7_LLPOINTERH" start="+0x13c" size="0x4">
@@ -17545,7 +17545,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH0_LLPOINTER" start="+0x58" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH0_LLPOINTERH" start="+0x5c" size="0x4">
@@ -17583,7 +17583,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH1_LLPOINTER" start="+0x78" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH1_LLPOINTERH" start="+0x7c" size="0x4">
@@ -17621,7 +17621,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH2_LLPOINTER" start="+0x98" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH2_LLPOINTERH" start="+0x9c" size="0x4">
@@ -17659,7 +17659,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH3_LLPOINTER" start="+0xb8" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH3_LLPOINTERH" start="+0xbc" size="0x4">
@@ -17697,7 +17697,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH4_LLPOINTER" start="+0xd8" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH4_LLPOINTERH" start="+0xdc" size="0x4">
@@ -17735,7 +17735,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH5_LLPOINTER" start="+0xf8" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH5_LLPOINTERH" start="+0xfc" size="0x4">
@@ -17773,7 +17773,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH6_LLPOINTER" start="+0x118" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH6_LLPOINTERH" start="+0x11c" size="0x4">
@@ -17811,7 +17811,7 @@
       <BitField name="DSTADDRH" start="0" size="32"/>
     </Register>
     <Register name="CHCTRL_CH7_LLPOINTER" start="+0x138" size="0x4">
-      <BitField name="LLPOINTERL" start="3" size="29"/>
+      <BitField name="LLPOINTERL" start="5" size="27"/>
       <BitField name="LLDBUSINFIDX" start="0" size="1"/>
     </Register>
     <Register name="CHCTRL_CH7_LLPOINTERH" start="+0x13c" size="0x4">

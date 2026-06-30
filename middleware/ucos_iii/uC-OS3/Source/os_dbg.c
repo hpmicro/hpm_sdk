@@ -246,7 +246,7 @@ CPU_INT32U  const  OSDbg_DataSize = sizeof(OSIntNestingCtr)
                                   + OS_CFG_IDLE_TASK_STK_SIZE * sizeof(CPU_STK)
 #endif
 
-#if (OS_CFG_TASK_STAT_EN > 0u)
+#if (OS_CFG_STAT_TASK_EN > 0u)
                                   + OS_CFG_STAT_TASK_STK_SIZE * sizeof(CPU_STK)
 #endif
 

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2023-2026 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include "usbd_core.h"
 #include "usb_audio.h"
 #include "usb_midi.h"
@@ -10,8 +17,8 @@
 #define AUDIO_MS_SIZ (7 + MIDI_SIZEOF_JACK_DESC + 9 + 5 + 9 + 5)
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (unsigned long)(9 +                                       \
-                                                  AUDIO_AC_DESCRIPTOR_INIT_LEN(1) +         \
-                                                  AUDIO_MS_STANDARD_DESCRIPTOR_INIT_LEN +   \
+                                                  AUDIO_AC_DESCRIPTOR_LEN(1) +              \
+                                                  MIDI_STANDARD_DESCRIPTOR_LEN +            \
                                                   AUDIO_MS_SIZ)
 
 #define AUDIO_AC_SIZ (AUDIO_SIZEOF_AC_HEADER_DESC(1))
@@ -23,7 +30,7 @@ static const uint8_t device_descriptor[] = {
 static const uint8_t config_descriptor_hs[] = {
     USB_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
     AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x02, AUDIO_AC_SIZ, 0x00, 0x01),
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
@@ -38,7 +45,7 @@ static const uint8_t config_descriptor_hs[] = {
 static const uint8_t config_descriptor_fs[] = {
     USB_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
     AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x01, AUDIO_AC_SIZ, 0x00, 0x01),
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
@@ -57,7 +64,7 @@ static const uint8_t device_quality_descriptor[] = {
 static const uint8_t other_speed_config_descriptor_hs[] = {
     USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
     AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x01, AUDIO_AC_SIZ, 0x00, 0x01),
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */
@@ -72,7 +79,7 @@ static const uint8_t other_speed_config_descriptor_hs[] = {
 static const uint8_t other_speed_config_descriptor_fs[] = {
     USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(USB_AUDIO_CONFIG_DESC_SIZ, 0x02, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
     AUDIO_AC_DESCRIPTOR_INIT(0x00, 0x01, AUDIO_AC_SIZ, 0x00, 0x01),
-    AUDIO_MS_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
+    MIDI_STANDARD_DESCRIPTOR_INIT(0x01, 0x02),
     MIDI_CS_HEADER_DESCRIPTOR_INIT(AUDIO_MS_SIZ),
     MIDI_JACK_DESCRIPTOR_INIT(0x01),
     /* OUT endpoint descriptor */

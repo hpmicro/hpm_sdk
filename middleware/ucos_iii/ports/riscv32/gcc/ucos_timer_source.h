@@ -7,7 +7,11 @@
 
 #else /* CONFIG_UCOS_III_TIMER_RESOURCE_GPTMR */
 
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 
 #ifndef UCOS_TIMER_RESOURCE

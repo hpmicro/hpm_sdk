@@ -13,8 +13,8 @@ limitations under the License.
 /// \brief Model runner for TF Micro.
 
 #include "tensorflow/lite/micro/kernels/micro_ops.h"
-#include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/micro/all_ops_resolver.h"
@@ -30,23 +30,19 @@ class MicroModelRunner {
 				   //AllOpsResolver resolver,
                    uint8_t* tensor_arena, int tensor_arena_size)
       : model_(tflite::GetModel(model)),
-        reporter_(&micro_reporter_),
-        interpreter_(model_, resolver, tensor_arena, tensor_arena_size,
-                     reporter_) {
-    	//interpreter_.AllocateTensors();
+        interpreter_(model_, resolver, tensor_arena, tensor_arena_size) {
 		TfLiteStatus allocate_status = interpreter_.AllocateTensors();
 		if (allocate_status != kTfLiteOk) {
-			TF_LITE_REPORT_ERROR(reporter_, "AllocateTensors() failed");
+			MicroPrintf("AllocateTensors() failed");
 			return;
 		}
-
   }
 
   void Invoke() {
     // Run the model on this input and make sure it succeeds.
     TfLiteStatus invoke_status = interpreter_.Invoke();
     if (invoke_status != kTfLiteOk) {
-      TF_LITE_REPORT_ERROR(reporter_, "Invoke failed.");
+      MicroPrintf("Invoke failed.");
     }
   }
 
@@ -78,8 +74,6 @@ class MicroModelRunner {
 
  private:
   const tflite::Model* model_;
-  tflite::MicroErrorReporter micro_reporter_;
-  tflite::ErrorReporter* reporter_;
   tflite::MicroInterpreter interpreter_;
 };
 

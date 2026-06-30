@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -54,8 +54,8 @@ const test_number_t test_table[] = {
 };
 
 ATTR_PLACE_AT(".ahb_sram") dma_resource_t dma_resource_pools[2];
-/* descriptor should be 8-byte aligned */
-ATTR_PLACE_AT_WITH_ALIGNMENT(".ahb_sram", 8) dma_linked_descriptor_t rx_descriptors[2];
+/* descriptor should be DMA_LINKED_DESCRIPTOR_ALIGN aligned */
+ATTR_PLACE_AT_WITH_ALIGNMENT(".ahb_sram", DMA_LINKED_DESCRIPTOR_ALIGN) dma_linked_descriptor_t rx_descriptors[2];
 ATTR_PLACE_AT(".ahb_sram") uint8_t rx_buffer[2][RX_SIZE_MAX];
 uint8_t tx_buffer[TX_SIZE_MAX];
 
@@ -65,7 +65,7 @@ volatile uint8_t rx_index;
 volatile uint32_t index_count;
 
 hpm_i2s_over_spi_t i2s_device;
-wm8978_context_t wm8978_device;
+codec_control_t wm8978_device;
 
 uint8_t protocol;
 uint8_t audio_depth;

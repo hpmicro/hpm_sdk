@@ -57,6 +57,10 @@ void uart_default_config(UART_Type *ptr, uart_config_t *config)
 #if defined(HPM_IP_FEATURE_UART_RX_EN) && (HPM_IP_FEATURE_UART_RX_EN == 1)
     config->rx_enable = true;
 #endif
+#if defined(HPM_IP_FEATURE_UART_TXRX_POL) && (HPM_IP_FEATURE_UART_TXRX_POL == 1)
+    config->tx_pin_level_invert = false;
+    config->rx_pin_level_invert = false;
+#endif
 }
 
 static bool uart_calculate_baudrate(uint32_t freq, uint32_t baudrate, uint16_t *div_out, uint8_t *osc_out)
@@ -202,6 +206,11 @@ hpm_stat_t uart_init(UART_Type *ptr, uart_config_t *config)
     if (config->rx_enable) {
         ptr->IDLE_CFG |= UART_IDLE_CFG_RXEN_MASK;
     }
+#endif
+
+#if defined(HPM_IP_FEATURE_UART_TXRX_POL) && (HPM_IP_FEATURE_UART_TXRX_POL == 1)
+    uart_set_rx_pin_level_invert(ptr, config->rx_pin_level_invert);
+    uart_set_tx_pin_level_invert(ptr, config->tx_pin_level_invert);
 #endif
     return status_success;
 }

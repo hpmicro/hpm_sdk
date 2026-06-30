@@ -9,7 +9,11 @@
 #include "board.h"
 #include "rvbacktrace.h"
 #include "hpm_debug_console.h"
+#if defined(HPMSOC_HAS_HPMSDK_GPTMRV2)
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 
 #define APP_TICK_MS                   (1000)
 uint32_t cycle;

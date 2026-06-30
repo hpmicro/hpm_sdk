@@ -7,7 +7,7 @@
   <description>HPM5300 device</description>
   <licenseText>
     /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -3669,7 +3669,7 @@ If more data is written to the TX FIFO than the write transfer count (WrTranCnt)
           <fields>
             <field>
               <name>CS_EN</name>
-              <description>No description available</description>
+              <description>Enable the selection of slave units. Each bit controls a slave selection signal.</description>
               <bitOffset>24</bitOffset>
               <bitWidth>4</bitWidth>
               <access>read-write</access>
@@ -3707,7 +3707,8 @@ The RXFIFOInt interrupt or DMA request would be issued for consuming the RX FIFO
             <field>
               <name>TXFIFORST</name>
               <description>Transmit FIFO reset
-Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.</description>
+Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.
+When this bit is set to 1, it is necessary to first poll this bit to ensure it is 0 before proceeding with the operation. Otherwise, subsequent operations may encounter abnormalities.</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -3715,7 +3716,8 @@ Write 1 to reset. It is automatically cleared to 0 after the reset operation com
             <field>
               <name>RXFIFORST</name>
               <description>Receive FIFO reset
-Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.</description>
+Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.
+When this bit is set to 1, it is necessary to first poll this bit to ensure it is 0 before proceeding with the operation. Otherwise, subsequent operations may encounter abnormalities.</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -3723,7 +3725,8 @@ Write 1 to reset. It is automatically cleared to 0 after the reset operation com
             <field>
               <name>SPIRST</name>
               <description>SPI reset
-Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.</description>
+Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.
+When this bit is set to 1, it is necessary to first poll this bit to ensure it is 0 before proceeding with the operation. Otherwise, subsequent operations may encounter abnormalities.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -6097,13 +6100,13 @@ This address must be aligned to the destination transfer size; otherwise the err
             <addressOffset>0x18</addressOffset>
             <size>32</size>
             <resetValue>0x00000000</resetValue>
-            <resetMask>0xFFFFFFF8</resetMask>
+            <resetMask>0xFFFFFFE0</resetMask>
             <fields>
               <field>
                 <name>LLPOINTERL</name>
-                <description>Low part of the pointer to the next descriptor. The pointer must be double word aligned.</description>
-                <bitOffset>3</bitOffset>
-                <bitWidth>29</bitWidth>
+                <description>Low part of the pointer to the next descriptor. The pointer must be 32byte aligned.</description>
+                <bitOffset>5</bitOffset>
+                <bitWidth>27</bitWidth>
                 <access>read-write</access>
               </field>
             </fields>
@@ -17004,8 +17007,8 @@ Default those bits is 0, generate capture irq when capture rising edge.</descrip
               <field>
                 <name>TRISMP</name>
                 <description>Tipple sampe
-0: sample 1 time for data transition
-1: sample 3 times in receive and result in 2oo3</description>
+0: sample 1 time for data transmission
+1: sample 3 times for data transmission and take the same value twice as the sampling result</description>
                 <bitOffset>12</bitOffset>
                 <bitWidth>1</bitWidth>
                 <access>read-write</access>
@@ -20699,7 +20702,8 @@ This field is set to 3h in all controller core.</description>
               <name>IAA</name>
               <description>IAA
 Interrupt on Async Advance Doorbell - Read/Write.
-This bit is used as a doorbell by software to tell the host controller to issue an interrupt the next time it advances asynchronous schedule. Software must write a 1 to this bit to ring the doorbell.
+This bit is used as a doorbell by software to tell the host controller to issue an interrupt the next time it advances asynchronous schedule.
+ Software must write a 1 to this bit to ring the doorbell.
 When the host controller has evicted all appropriate cached schedule states,
 it sets the Interrupt on Async Advance status bit in the USBSTS register.
 If the Interrupt on Sync Advance Enable bit in the USBINTR register is one, then the host controller will assert an interrupt at the next interrupt threshold.
@@ -20748,7 +20752,8 @@ See description at bit 15</description>
               <name>RST</name>
               <description>RST
 Controller Reset (RESET) - Read/Write. Software uses this bit to reset the controller.
-This bit is set to zero by the Host/Device Controller when the reset process is complete. Software cannot terminate the reset process early by writing a zero to this register.
+This bit is set to zero by the Host/Device Controller when the reset process is complete.
+Software cannot terminate the reset process early by writing a zero to this register.
 Host operation mode:
 When software writes a one to this bit, the Controller resets its internal pipelines, timers, counters, state machines etc. to their initial value.
 Any transaction currently in progress on USB is immediately terminated. A USB reset is not driven on downstream ports.
@@ -20757,7 +20762,8 @@ Attempting to reset an actively running host controller will result in undefined
 Device operation mode:
 When software writes a one to this bit, the Controller resets its internal pipelines, timers, counters, state machines etc. to their initial value.
 Writing a one to this bit when the device is in the attached state is not recommended, because the effect on an attached host is undefined.
-In order to ensure that the device is not in an attached state before initiating a device controller reset, all primed endpoints should be flushed and the USBCMD Run/Stop bit should be set to 0.</description>
+In order to ensure that the device is not in an attached state before initiating a device controller reset,
+ all primed endpoints should be flushed and the USBCMD Run/Stop bit should be set to 0.</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -20849,7 +20855,8 @@ when all Enabled TX/RX Endpoint NAK bits are cleared.</description>
               <description>AS
 Asynchronous Schedule Status - Read Only.
 This bit reports the current real status of the Asynchronous Schedule. When set to zero the asynchronous schedule status is disabled and if set to one the status is enabled.
-The Host Controller is not required to immediately disable or enable the Asynchronous Schedule when software transitions the Asynchronous Schedule Enable bit in the USBCMD register.
+The Host Controller is not required to immediately disable or enable the Asynchronous Schedule
+ when software transitions the Asynchronous Schedule Enable bit in the USBCMD register.
 When this bit and the Asynchronous Schedule Enable bit are the same value, the Asynchronous Schedule is either enabled (1) or disabled (0).
 Only used in the host operation mode.</description>
               <bitOffset>15</bitOffset>
@@ -21630,8 +21637,10 @@ Bits [Port Enabled, Suspend] Port State
 When in suspend state, downstream propagation of data is blocked on this port, except for port reset.
 The blocking occurs at the end of the current transaction if a transaction was in progress when this bit was written to 1.
 In the suspend state, the port is sensitive to resume detection.
-Note that the bit status does not change until the port is suspended and that there may be a delay in suspending a port if there is a transaction currently in progress on the USB.
-The host controller will unconditionally set this bit to zero when software sets the Force Port Resume bit to zero. The host controller ignores a write of zero to this bit.
+Note that the bit status does not change until the port is suspended
+and that there may be a delay in suspending a port if there is a transaction currently in progress on the USB.
+The host controller will unconditionally set this bit to zero when software sets the Force Port Resume bit to zero.
+The host controller ignores a write of zero to this bit.
 If host software sets this bit to a one when the port is not enabled (that is, Port enabled bit is a zero) the results are undefined.
 This field is zero if Port Power(PORTSC1) is zero in host mode.
 In Device Mode: Read Only.
@@ -21645,12 +21654,14 @@ In device mode this bit is a read only status bit.</description>
               <description>FPR
 Force Port Resume -Read/Write. 1= Resume detected/driven on port. 0=No resume (K-state) detected driven on port. Default = 0.
 In Host Mode:
-Software sets this bit to one to drive resume signaling. The Host Controller sets this bit to one if a J-to-K transition is detected while the port is in the Suspend state.
+Software sets this bit to one to drive resume signaling.
+The Host Controller sets this bit to one if a J-to-K transition is detected while the port is in the Suspend state.
 When this bit transitions to a one because a J-to-K transition is detected, the Port Change Detect bit in the USBSTS register is also set to one.
 This bit will automatically change to zero after the resume sequence is complete.
 This behavior is different from EHCI where the host controller driver is required to set this bit to a zero after the resume duration is timed in the driver.
 Note that when the Host controller owns the port, the resume sequence follows the defined sequence documented in the USB Specification Revision 2.0.
-The resume signaling (Full-speed 'K') is driven on the port as long as this bit remains a one. This bit will remain a one until the port has switched to the high-speed idle.
+The resume signaling (Full-speed 'K') is driven on the port as long as this bit remains a one.
+This bit will remain a one until the port has switched to the high-speed idle.
 Writing a zero has no effect because the port controller will time the resume operation, clear the bit the port control state switches to HS or FS idle.
 This field is zero if Port Power(PORTSC1) is zero in host mode.
 This bit is not-EHCI compatible.
@@ -21705,7 +21716,8 @@ Port Enabled/Disabled-Read/Write. 1=Enable. 0=Disable. Default 0.
 In Host Mode:
 Ports can only be enabled by the host controller as a part of the reset and enable. Software cannot enable a port by writing a one to this field.
 Ports can be disabled by either a fault condition (disconnect event or other fault condition) or by the host software.
-Note that the bit status does not change until the port state actually changes. There may be a delay in disabling or enabling a port due to other host controller and bus events.
+Note that the bit status does not change until the port state actually changes.
+There may be a delay in disabling or enabling a port due to other host controller and bus events.
 When the port is disabled, (0b) downstream propagation of data is blocked except for reset.
 This field is zero if Port Power(PORTSC1) is zero in host mode.
 In Device Mode:
@@ -21883,11 +21895,14 @@ Setting this bit causes VBus to discharge through a resistor.</description>
               <description>SDIS
 Stream Disable Mode. (0 - Inactive [default]; 1 - Active)
 Device Mode: Setting to a '1' disables double priming on both RX and TX for low bandwidth systems.
-This mode ensures that when the RX and TX buffers are sufficient to contain an entire packet that the standard double buffering scheme is disabled to prevent overruns/underruns in bandwidth limited systems.
+This mode ensures that when the RX and TX buffers are sufficient to contain an entire packet
+that the standard double buffering scheme is disabled to prevent overruns/underruns in bandwidth limited systems.
 Note: In High Speed Mode, all packets received are responded to with a NYET handshake when stream disable is active.
 Host Mode: Setting to a '1' ensures that overruns/underruns of the latency FIFO are eliminated for low bandwidth systems
-where the RX and TX buffers are sufficient to contain the entire packet. Enabling stream disable also has the effect of ensuring the TX latency is filled to capacity before the packet is launched onto the USB.
-NOTE: Time duration to pre-fill the FIFO becomes significant when stream disable is active. See TXFILLTUNING and TXTTFILLTUNING [MPH Only] to characterize the adjustments needed for
+where the RX and TX buffers are sufficient to contain the entire packet.
+Enabling stream disable also has the effect of ensuring the TX latency is filled to capacity before the packet is launched onto the USB.
+NOTE: Time duration to pre-fill the FIFO becomes significant when stream disable is active.
+See TXFILLTUNING and TXTTFILLTUNING [MPH Only] to characterize the adjustments needed for
 the scheduler when using this feature.
 NOTE: The use of this feature substantially limits of the overall USB performance that can be achieved.</description>
               <bitOffset>4</bitOffset>
@@ -21985,7 +22000,8 @@ PETB[N] - Endpoint #N, N is in 0..7</description>
             <field>
               <name>PERB</name>
               <description>PERB
-Prime Endpoint Receive Buffer - R/WS. For each endpoint, a corresponding bit is used to request a buffer prepare for a receive operation for when a USB host initiates a USB OUT transaction.
+Prime Endpoint Receive Buffer - R/WS.
+For each endpoint, a corresponding bit is used to request a buffer prepare for a receive operation for when a USB host initiates a USB OUT transaction.
 Software should write a one to the corresponding bit whenever posting a new transfer descriptor to an endpoint queue head.
 Hardware automatically uses this bit to begin parsing for a new transfer descriptor from the queue head and prepare a receive buffer.
 Hardware clears this bit when the associated endpoint(s) is (are) successfully primed.
@@ -22081,8 +22097,10 @@ ERBR[N] - Endpoint #N, N is in 0..7</description>
             <field>
               <name>ETCE</name>
               <description>ETCE
-Endpoint Transmit Complete Event - R/WC. Each bit indicates a transmit event (IN/INTERRUPT) occurred and software should read the corresponding endpoint queue to determine the endpoint status.
-If the corresponding IOC bit is set in the Transfer Descriptor, then this bit is set simultaneously with the USBINT . Writing one clears the corresponding bit in this register.
+Endpoint Transmit Complete Event - R/WC. Each bit indicates a transmit event (IN/INTERRUPT) occurred,
+ and software should read the corresponding endpoint queue to determine the endpoint status.
+If the corresponding IOC bit is set in the Transfer Descriptor, then this bit is set simultaneously with the USBINT .
+Writing one clears the corresponding bit in this register.
 ETCE[N] - Endpoint #N, N is in 0..7</description>
               <bitOffset>16</bitOffset>
               <bitWidth>16</bitWidth>
@@ -22142,7 +22160,9 @@ TX Endpoint Type - Read/Write
 00 Control
 01 Isochronous
 10 Bulk
-11 Interrupt</description>
+11 Interrupt
+NOTE: when this TX endpoint type is set to none-Control type, must set RXT in same register to none-Control type also, even it's not enabled.
+(control endpoint must be existed with pair)</description>
               <bitOffset>18</bitOffset>
               <bitWidth>2</bitWidth>
               <access>read-write</access>
@@ -22158,7 +22178,8 @@ as a Control Endpoint and this bit will continue to be cleared by hardware until
 Software can write a one to this bit to force the endpoint to return a STALL handshake to the Host.
 This control will continue to STALL until this bit is either cleared by software or automatically cleared as above for control endpoints.
 NOTE: [CONTROL ENDPOINT TYPES ONLY]: there is a slight delay (50 clocks max) between the ENDPTSETUPSTAT begin cleared and hardware continuing to clear this bit.
-In most systems, it is unlikely the DCD software will observe this delay. However, should the DCD observe that the stall bit is not set after writing a one to it then follow this procedure:
+In most systems, it is unlikely the DCD software will observe this delay.
+However, should the DCD observe that the stall bit is not set after writing a one to it then follow this procedure:
 continually write this stall bit until it is set or until a new setup has been received by checking the associated endptsetupstat Bit.</description>
               <bitOffset>16</bitOffset>
               <bitWidth>1</bitWidth>
@@ -22190,10 +22211,12 @@ to synchronize the data PID's between the host and device.</description>
               <name>RXT</name>
               <description>RXT
 RX Endpoint Type - Read/Write
-00 Control
+00 Control(default)
 01 Isochronous
 10 Bulk
-11 Interrupt</description>
+11 Interrupt
+NOTE: when this RX endpoint type is set to none-Control type, must set TXT in same register to none-Control type also, even it's not enabled.
+(control endpoint must be existed with pair)</description>
               <bitOffset>2</bitOffset>
               <bitWidth>2</bitWidth>
               <access>read-write</access>
@@ -22232,84 +22255,108 @@ Bit.</description>
           <fields>
             <field>
               <name>OTG_WKDPDMCHG_EN</name>
-              <description>No description available</description>
+              <description>DP/DM wakeup enable
+when USB enters into low power mode(suspend), setting this bit to high, or VBUS is valid(after selected by otg_vbus_source_sel), will wakeup USB(exit suspend),
+and send wakeup interrupt if otg_wakeup_int_enable is set to high.
+this bit is only used in device mode.
+use WKDC/WKCN in PORTSC1 to enable DP/DM wakeup at host mode</description>
               <bitOffset>25</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>AUTORESUME_EN</name>
-              <description>No description available</description>
+              <description>auturesume enable
+used in host mode only, for response to device remote wakeup if PLL is not enabled in time.</description>
               <bitOffset>19</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_VBUS_WAKEUP_EN</name>
-              <description>No description available</description>
+              <description>vbus wakeup enable</description>
               <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_ID_WAKEUP_EN</name>
-              <description>No description available</description>
+              <description>ID wakeup enable</description>
               <bitOffset>16</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_VBUS_SOURCE_SEL</name>
-              <description>No description available</description>
+              <description>VBUS wakeup source select.
+0:  use vbus valid as wakeup source(&gt;4.2V);
+1:  use session valid as wakeup source(&gt; about 2.4V);</description>
               <bitOffset>13</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_UTMI_SUSPENDM_SW</name>
-              <description>default 0 for naneng usbphy</description>
+              <description>software usbphy suspend control.
+default 0 will suspend usbphy.
+user need to set this bit to 1 during usbphy initiallization
+NOTE:  make sure at least 1us between setting this bit and clear otg_utmi_reset_sw</description>
               <bitOffset>12</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_UTMI_RESET_SW</name>
-              <description>default 1 for naneng usbphy</description>
+              <description>software usbphy reset control.
+default 1 will let usbphy in reset state.
+user need to clr this bit to 0 during usbphy initiallization
+NOTE:  before clearing this bit, make sure at least 1us after setting otg_utmi_suspendm_sw.</description>
               <bitOffset>11</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_WAKEUP_INT_ENABLE</name>
-              <description>No description available</description>
+              <description>wakeup interrupt enable.
+when USB in suspend state(PORTSC1.PHCD is 1), user can close all PLL and external crystal, keep internal 24MHz osc active as wakeup clock.
+when receive wakeup event and related enable is set, an interrupt to CPU will be asserted if this bit is set.
+the interrupt status bit is located at TOP_STATUS.wakeup_int_status，user need clear this bit to 0 to clear the wakeup interrupt.</description>
               <bitOffset>10</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_POWER_MASK</name>
-              <description>No description available</description>
+              <description>USB*_PWR polarity control
+during host mode, user can config IOMUX to output USB*_PWR pin(which is from PORTSC1.PP), to control external VBUS on/off.
+this bit can control the polarity of external VBUS control logic active high or active low(default 0).
+user can also use a GPIO to control.</description>
               <bitOffset>9</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_OVER_CUR_POL</name>
-              <description>No description available</description>
+              <description>overcurrent polarity control.
+during host mode, user can config IOMUX to input USB*_OC as overcurrent status indication(generally come from VBUS control logic).
+this bit can control the polarity of overcurrent.
+0 for active high;
+1 for active low.</description>
               <bitOffset>8</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>OTG_OVER_CUR_DIS</name>
-              <description>No description available</description>
+              <description>overcurrent disable.
+setting this bit to 1 can disable overcurrent function.</description>
               <bitOffset>7</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SER_MODE_SUSPEND_EN</name>
-              <description>for naneng usbphy, only switch to serial mode when suspend</description>
+              <description>setting this bit to 1.</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -22326,28 +22373,35 @@ Bit.</description>
           <fields>
             <field>
               <name>GPIO_ID_SEL_N</name>
-              <description>No description available</description>
+              <description>ID selection
+USBPHY has ID pin, but it maybe not exist in some small package. user can use some GPIO(see pinmux for detail) as ID in these package if need ID functon.
+0:  use usbphy ID.
+1:  use GPIO ID(need config pinmux)</description>
               <bitOffset>25</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>ID_DIG_OVERRIDE</name>
-              <description>No description available</description>
+              <description>ID override value.
+use this register as ID value if  id_dig_override_en is set to 1.
+this feature is useful when external ID is not used.</description>
               <bitOffset>14</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SESS_VALID_OVERRIDE</name>
-              <description>No description available</description>
+              <description>sess_valid override value.
+use this register as session valid value if sess_valid_override_enis set to 1.</description>
               <bitOffset>13</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>VBUS_VALID_OVERRIDE</name>
-              <description>No description available</description>
+              <description>vbus_valid override value.
+use this register as vbus valid value if vbus_valid_override_en is set to 1.</description>
               <bitOffset>12</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -22361,21 +22415,21 @@ Bit.</description>
             </field>
             <field>
               <name>ID_DIG_OVERRIDE_EN</name>
-              <description>No description available</description>
+              <description>ID override enable</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SESS_VALID_OVERRIDE_EN</name>
-              <description>No description available</description>
+              <description>SESS_VALID override enable</description>
               <bitOffset>1</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>VBUS_VALID_OVERRIDE_EN</name>
-              <description>No description available</description>
+              <description>VBUS_VALID override enable</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -22392,7 +22446,9 @@ Bit.</description>
           <fields>
             <field>
               <name>UTMI_CFG_RST_N</name>
-              <description>No description available</description>
+              <description>usbphy config reset
+defult 0 for usbphy config in reset state.
+user need set it to 1 during usbphy initialization.</description>
               <bitOffset>20</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -22418,10 +22474,11 @@ should clear this bit before entering into suspend state(setting portsc.phcd), a
           <fields>
             <field>
               <name>WAKEUP_INT_STATUS</name>
-              <description>No description available</description>
+              <description>wakeup interrupt status bit.
+NOTE: this bit is not write 1 clear. user need clear OTG_CTRL0.otg_wakeup_int_enable to clear wakeup interrupt.</description>
               <bitOffset>31</bitOffset>
               <bitWidth>1</bitWidth>
-              <access>read-write</access>
+              <access>read-only</access>
             </field>
           </fields>
         </register>
@@ -22435,42 +22492,51 @@ should clear this bit before entering into suspend state(setting portsc.phcd), a
           <fields>
             <field>
               <name>UTMI_CLK_VALID</name>
-              <description>No description available</description>
+              <description>usbphy clock valid status bit.
+this bit is used to check whether usbphy is outputing valid UTMI clock.
+user need write 1 to clear it first, and read to check whether UTMI clock is valid.
+0 means no valid UTMI clock; 1 means there's valid UTMI clock.</description>
               <bitOffset>31</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>LINE_STATE</name>
-              <description>No description available</description>
+              <description>USB bus state.
+during full speed or low speed, bit7 is DM state, bit6 is DP state.
+during high speed, this filed only appeared whether in data transfer(Squelch), 00 means no data transfer, 01 means active data transfer</description>
               <bitOffset>6</bitOffset>
               <bitWidth>2</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>HOST_DISCONNECT</name>
-              <description>No description available</description>
+              <description>host disconnection status
+this bit is used only for host mode working at high speed.
+when high speed device connected, usb host can't use DP/DM status to detect device disconnection.
+usbphy will detect device disconnection at end of SOF(32-bit time), by check signal level(400mv or 800mv).
+this bit set to 1 means usbphy detect high speed device disconection.</description>
               <bitOffset>5</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>ID_DIG</name>
-              <description>No description available</description>
+              <description>usbphy ID pin state.</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>UTMI_SESS_VALID</name>
-              <description>No description available</description>
+              <description>usbphy SESS_VALID state.</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>VBUS_VALID</name>
-              <description>No description available</description>
+              <description>usbphy VBUS_VALID state.</description>
               <bitOffset>0</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -24532,7 +24598,8 @@ dma write address is (tar_addr+seq_wr_pointer)*4</description>
           <fields>
             <field>
               <name>STOP_POS</name>
-              <description>if stop_en is set, SW is responsible to update this field to the next read point, HW should not write data to this point since it's not read out by SW yet</description>
+              <description>if stop_en is set, SW is responsible to update this field to the next read point,
+HW should not write data to this point since it's not read out by SW yet</description>
               <bitOffset>16</bitOffset>
               <bitWidth>12</bitWidth>
               <access>read-write</access>
@@ -24728,7 +24795,8 @@ it may be updated period according to config, also may be updated due to other q
               <name>CONVERT_CLOCK_NUMBER</name>
               <description>convert clock numbers, set to 21 (0x15) for 16bit mode, which means convert need 21 adc clock cycles(based on clock after divider);
 user can use small value to get faster conversion, but less accuracy, need to config cov_end_cnt at adc16_config1 also.
-Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0, covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
+Ex: use 200MHz bus clock for adc, set sample_clock_number to 4, sample_clock_number_shift to 0,
+covert_clk_number to 21 for 16bit mode, clock_divder to 3, then each ADC conversion(plus sample) need 25 cycles(50MHz).</description>
               <bitOffset>4</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>

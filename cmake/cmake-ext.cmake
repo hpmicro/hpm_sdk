@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2025 HPMicro
+# Copyright (c) 2021-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Set CMake policy CMP0079 to NEW
@@ -1536,4 +1536,70 @@ function(normalize_size_string_in_hex output_var size_str)
     human_readable_size_to_decimal(decimal_result "${size_str}")
     decimal_to_hex(hex_result "${decimal_result}")
     set(${output_var} "${hex_result}" PARENT_SCOPE)
+endfunction()
+
+# Check the FPU type enabled by the given RISC-V architecture and ABI.
+#
+# Returns one of the following values via the output variable:
+#   "double"  - Double-precision floating point (arch has 'd'/'g', abi ends with 'd')
+#   "single"  - Single-precision floating point (arch has 'f' but not 'd', abi ends with 'f')
+#   "soft"    - Software floating point (no FP extension or abi is integer-only)
+#
+# RISC-V ISA notes:
+#   - 'g' is a shorthand for 'imafd' (includes both 'f' and 'd')
+#   - ABI conventions: ilp32/ilp64 (soft), ilp32f/lp64f (single), ilp32d/lp64d (double)
+#
+# Example:
+#   sdk_check_enabled_fpu(FPU_TYPE "rv32imafdc" "ilp32d")
+#   # FPU_TYPE = "double"
+#
+#   sdk_check_enabled_fpu(FPU_TYPE "rv32imafc" "ilp32f")
+#   # FPU_TYPE = "single"
+#
+#   sdk_check_enabled_fpu(FPU_TYPE "rv32imac" "ilp32")
+#   # FPU_TYPE = "soft"
+#
+# :param output_var: Variable name to store the result ("double", "single", or "soft")
+# :param arch: RISC-V architecture string (e.g. rv32imafdc, rv32imac_zicsr_zifencei)
+# :param abi: RISC-V ABI string (e.g. ilp32, ilp32f, ilp32d)
+# @public
+#
+function(sdk_check_enabled_fpu output_var arch abi)
+    # Extract the base ISA string (before any underscore-separated extensions)
+    string(REGEX MATCH "^[a-z0-9]+" _base_arch "${arch}")
+
+    set(_has_d_ext OFF)
+    set(_has_f_ext OFF)
+    set(_has_d_abi OFF)
+    set(_has_f_abi OFF)
+
+    # Check arch extensions: 'g' expands to 'imafd', so it implies both 'f' and 'd'
+    if(_base_arch MATCHES "^rv[0-9]+.*g")
+        set(_has_d_ext ON)
+        set(_has_f_ext ON)
+    elseif(_base_arch MATCHES "^rv[0-9]+.*d")
+        set(_has_d_ext ON)
+        set(_has_f_ext ON)
+    elseif(_base_arch MATCHES "^rv[0-9]+.*f")
+        set(_has_f_ext ON)
+    endif()
+
+    # Check ABI suffix
+    if("${abi}" MATCHES "d$")
+        set(_has_d_abi ON)
+        set(_has_f_abi ON)
+    elseif("${abi}" MATCHES "f$")
+        set(_has_f_abi ON)
+    endif()
+
+    # Determine FPU type from the combination of arch extension and ABI
+    if(_has_d_ext AND _has_d_abi)
+        set(_fpu_type "double")
+    elseif(_has_f_ext AND _has_f_abi)
+        set(_fpu_type "single")
+    else()
+        set(_fpu_type "soft")
+    endif()
+
+    set(${output_var} "${_fpu_type}" PARENT_SCOPE)
 endfunction()

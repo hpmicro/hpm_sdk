@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 #include "board.h"
+#include "hpm_romapi.h"
 #include "eeprom_emulation.h"
 #include "eeprom_device.h"
 

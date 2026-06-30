@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,11 +18,11 @@
 #define SENT_ENABLE_PAUSE_NIBBLE     (1U)
 #endif
 
-#ifndef SENT_IDLE_POLARITY
-#define SENT_IDLE_POLARITY          (0U)
+#ifndef SENT_IDLE_HIGH
+#define SENT_IDLE_HIGH          (0U)
 #endif
 
-#if SENT_IDLE_POLARITY
+#if SENT_IDLE_HIGH
 #define SENT_PULSE_WIDTH_BITS       (0x00U)
 #else
 #define SENT_PULSE_WIDTH_BITS       (0xFFU)

@@ -1,0 +1,120 @@
+/*********************************************************************
+*                    SEGGER Microcontroller GmbH                     *
+*                        The Embedded Experts                        *
+**********************************************************************
+*                                                                    *
+*            (c) 1995 - 2024 SEGGER Microcontroller GmbH             *
+*                                                                    *
+*       www.segger.com     Support: support@segger.com               *
+*                                                                    *
+**********************************************************************
+*                                                                    *
+*       SEGGER SystemView * Real-time application analysis           *
+*                                                                    *
+**********************************************************************
+*                                                                    *
+* All rights reserved.                                               *
+*                                                                    *
+* SEGGER strongly recommends to not make any changes                 *
+* to or modify the source code of this software in order to stay     *
+* compatible with the SystemView and RTT protocol, and J-Link.       *
+*                                                                    *
+* Redistribution and use in source and binary forms, with or         *
+* without modification, are permitted provided that the following    *
+* condition is met:                                                  *
+*                                                                    *
+* o Redistributions of source code must retain the above copyright   *
+*   notice, this condition and the following disclaimer.             *
+*                                                                    *
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             *
+* CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,        *
+* INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           *
+* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+* DISCLAIMED. IN NO EVENT SHALL SEGGER Microcontroller BE LIABLE FOR *
+* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR           *
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  *
+* OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;    *
+* OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF      *
+* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT          *
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE  *
+* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
+* DAMAGE.                                                            *
+*                                                                    *
+**********************************************************************
+-------------------------- END-OF-HEADER -----------------------------
+
+File    : SEGGER_SYSVIEW_Conf_Def.h
+Purpose : SEGGER SystemView configuration file.
+          Set defines which deviate from the defaults (see SEGGER_SYSVIEW_ConfDefaults.h) here.          
+Revision: $Rev: 25331 $
+
+Additional information:
+  Required defines which must be set are:
+    SEGGER_SYSVIEW_GET_TIMESTAMP
+    SEGGER_SYSVIEW_GET_INTERRUPT_ID
+  For known compilers and cores, these might be set to good defaults
+  in SEGGER_SYSVIEW_ConfDefaults.h.
+  
+  SystemView needs a (nestable) locking mechanism.
+  If not defined, the RTT locking mechanism is used,
+  which then needs to be properly configured.
+*/
+
+#ifndef SEGGER_SYSVIEW_CONF_DEF_H
+#define SEGGER_SYSVIEW_CONF_DEF_H
+
+#include <stdint.h>
+/*********************************************************************
+*
+*       Defines, configurable
+*
+**********************************************************************
+*/
+
+#ifdef SEGGER_SYSVIEW_SECTION_FAST
+#define SEGGER_SYSVIEW_SECTION ".fast_ram.init"
+#else
+#define SEGGER_SYSVIEW_SECTION ".noncacheable.bss"
+#endif
+
+// The target device name
+#define SEGGER_SYSVIEW_DEVICE_NAME     "RISC-V"
+
+#ifndef SEGGER_SYSVIEW_TIMESTAMP_FREQ_UINT_US
+#define SEGGER_SYSVIEW_TIMESTAMP_FREQ_UINT_US 0
+#endif
+
+// Frequency of the timestamp
+#if SEGGER_SYSVIEW_TIMESTAMP_FREQ_UINT_US
+#define SEGGER_SYSVIEW_TIMESTAMP_FREQ  (1000000u)
+#else
+#define SEGGER_SYSVIEW_TIMESTAMP_FREQ  SEGGER_SYSVIEW_CPU_FREQ
+#endif
+// System Frequency.
+#define SEGGER_SYSVIEW_CPU_FREQ        (clock_get_core_clock_ticks_per_ms() * 1000)
+
+// Lowest Id reported by the Application.
+#define SEGGER_SYSVIEW_ID_BASE         (0x00000000)
+
+#define SEGGER_SYSVIEW_RISCV_IRQ_ECALL  4011
+#define SEGGER_SYSVIEW_SYSDESC_ECALL    "I#4011=ECall"
+
+#define SEGGER_SYSVIEW_RISCV_IRQ_MTIMER  4007
+#define SEGGER_SYSVIEW_SYSDESC_MTIMER    "I#4007=MTimer"
+
+#define SEGGER_SYSVIEW_RISCV_IRQ_SOFTWARE  4003
+#define SEGGER_SYSVIEW_SYSDESC_SOFTWARE    "I#4003=Software"
+
+// Retrieve a system timestamp via user-defined function
+#define SEGGER_SYSVIEW_GET_TIMESTAMP() SEGGER_SYSVIEW_X_GetTimestamp()
+
+// Get the currently active interrupt Id from the user-provided function.
+#define SEGGER_SYSVIEW_GET_INTERRUPT_ID()   SEGGER_SYSVIEW_X_GetInterruptId()
+#define SEGGER_SYSVIEW_SET_INTERRUPT_ID(id) SEGGER_SYSVIEW_X_SetInterruptId(id)
+
+
+void SEGGER_SYSVIEW_Conf(void);
+void SEGGER_SYSVIEW_X_SetInterruptId(uint32_t id);
+#endif  // SEGGER_SYSVIEW_CONF_DEF_H
+
+/*************************** End of file ****************************/

@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2025 HPMicro
+# Copyright (c) 2021-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -36,7 +36,10 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=0)
-sdk_compile_definitions(-DLWIP_DHCP=0)
+if (NOT DEFINED LWIP_DHCP)
+    set(LWIP_DHCP 0)
+endif()
+sdk_compile_definitions(-DLWIP_DHCP=${LWIP_DHCP})
 sdk_compile_definitions(-DLWIP_HTTPD_MAX_REQ_LENGTH=1460)
 sdk_compile_definitions(-DMBEDTLS_CONFIG_FILE="hpm_sdk_mbedtls_config.h")
 sdk_compile_definitions(-DUSE_LWIPOPTS_APP_H=1)
@@ -53,6 +56,7 @@ sdk_inc(inc/lwip_httpd_mbedtls)
 sdk_app_src(../ports/baremetal/single/arch/sys_arch.c)
 sdk_app_src(../ports/baremetal/single/ethernetif.c)
 sdk_app_src(../common/single/common.c)
+sdk_app_src(../common/enet_phy_adaptive_lwip.c)
 sdk_app_src(../common/single/netconf.c)
 sdk_app_src(src/lwip_httpd_mbedtls/httpd_mbedtls.c)
 sdk_app_src(src/lwip.c)

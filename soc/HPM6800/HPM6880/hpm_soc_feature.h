@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,7 +27,7 @@
  * I2C Section
  */
 #define I2C_SOC_FIFO_SIZE (4U)
-#define I2C_SOC_TRANSFER_COUNT_MAX (4096U)
+#define I2C_SOC_TRANSFER_COUNT_MAX (65536U)
 
 /*
  * PMIC Section
@@ -138,6 +138,8 @@
 #define ADC16_SOC_TEMP_CH_EN                       (0U)
 #define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 #define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
+/* WDOG: Do not set INT_EN in adc16_init_channel. Use adc16_enable_wdog_interrupt() after in-window conversion. */
+#define ADC16_SOC_WDOG_INT_EN_DEFERRED             (1U)
 
 /*
  * SYSCTL Section

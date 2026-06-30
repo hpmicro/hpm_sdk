@@ -8,7 +8,7 @@ Overview
 
 The HPM6E00 is a dual-core MCU running 600MHz, with high computing power and abundant peripheral resources, and 2MB of RAM on the chip.
 
-The HPM6E00EVK is an evaluation board for the HPM6E00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/SEI/PWM/ADC), CAN interface, Ethernet interface, EtherCAT interfaces, USB interface, audio interface, PPI/FREMC interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
+The HPM6E00EVK is an evaluation board for the HPM6E00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/SEI/PWM/ADC), CAN interface, Ethernet interface, EtherCAT interfaces, USB interface, audio interface, PPI/FEMC interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
 
 .. image:: doc/hpm6e00evk.png
    :alt: hpm6e00evk
@@ -37,6 +37,7 @@ Hardware
 
   - Line in
   - Mic
+  - Speaker
   - DAO
 
 - Motor
@@ -246,7 +247,7 @@ Pin Description
 
 - HALL Pin
 
-The HALL pin of the hpm6200evk needs to be connected.
+The HALL pin of the hpm6e00evk needs to be wired separately.
 
 .. list-table::
     :header-rows: 1
@@ -392,7 +393,7 @@ The HALL pin of the hpm6200evk needs to be connected.
      - Remark
    * - GPTMR4.CAPT_0
      - J4[3]
-     -
+     - SENT decode input pin (idle high and low levels share the same pin)
    * - GPTMR4.COMP_3
      - P5[36]
      - BLCK of i2s emulation
@@ -439,7 +440,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 | I2C0.SDA| P5[27] |
 +---------+--------+
 
-- Ethernet PPS PPS Pin:
+- Ethernet PPS Pin:
 
 +------------+-----+---------+
 | Function   | Pin | Position|

@@ -47,7 +47,7 @@ tsn_lwip_iperf
 
  - 编译配置
 
-  - MCU作为TCP / UDP client时，需要指定服务端IP, 并确保所指定的IP与MCU自身IP处于同一网段，可重定义IP_CONFIG、NETMASKC_CONFIG、GW_CONFIG来完成配置
+  - MCU作为TCP / UDP client时，选择client模式后可在串口终端输入服务端IP，或直接回车使用默认远程服务端IP。默认远程服务端IP可通过 ``REMOTE_IP0_CONFIG`` 重定义。请确保远程IP与MCU自身IP处于同一网段，可按需重定义 ``IP0_CONFIG``、``NETMASK0_CONFIG``、``GW0_CONFIG``。
 
 运行示例
 ------------

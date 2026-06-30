@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 hpmicro
+ * Copyright (c) 2024-2026 hpmicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,6 +35,16 @@ static void gpu_vg_lite_startup(void)
     printf("gpu: name: %s, id: 0x%08X, rev: 0x%08X, cid: 0x%08X\n", name, chip_id, chip_rev, chip_cid);
 }
 
+/*
+ * VG-Lite requires initialization before use.
+ * The `gpu_init()` function will be called by LVGL during initialization.
+ * In this sample, `gpu_init()` is implemented to initialize the VG-Lite GPU and
+ */
+void gpu_init(void)
+{
+    gpu_vg_lite_startup();
+}
+
 static void lvgl_task(void *pvParameters)
 {
     (void) pvParameters;
@@ -42,7 +52,6 @@ static void lvgl_task(void *pvParameters)
 
     board_init_cap_touch();
     board_init_lcd();
-    gpu_vg_lite_startup();
 
     hpm_lvgl_init();
     hpm_lvgl_demos();
@@ -57,7 +66,7 @@ int main(void)
 {
     board_init();
 
-    if (xTaskCreate(lvgl_task, "lvgl", 2048, NULL, 5, NULL) != pdPASS) {
+    if (xTaskCreate(lvgl_task, "lvgl", 4096, NULL, 5, NULL) != pdPASS) {
         printf("Task creation failed!.\n");
         for (;;) {
         }

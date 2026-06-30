@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,25 +7,31 @@
 
 #include <stdio.h>
 #include "board.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
-#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
 #include "hpm_dmamux_drv.h"
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
 #endif
-#endif
 
 #define APP_BOARD_GPTMR               BOARD_GPTMR
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_CHANNEL
 #define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_CLK_NAME
 
-#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
+#ifndef APP_GPTMR_TARGET_FREQ
+#define APP_GPTMR_TARGET_FREQ         (100000UL) /* 100KHz */
+#endif
+
+#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1)) && defined(HPM_XDMA_BASE)
 /* XDMA is 64bit width.so can transfer gptmr two 32bit register,it's include CAPPRD, CAPDTY. */
-#define APP_GPTMR_DMA                 BOARD_APP_XDMA
-#define APP_GPTMR_DMA_IRQ             BOARD_APP_XDMA_IRQ
+#define APP_GPTMR_DMA                 BOARD_APP_DMA1
+#define APP_GPTMR_DMA_IRQ             BOARD_APP_DMA1_IRQ
 #define APP_DMA_SRC_WIDTH             DMA_TRANSFER_WIDTH_DOUBLE_WORD
 #define APP_DMA_DST_WIDTH             DMA_TRANSFER_WIDTH_DOUBLE_WORD
 #define APP_GPTMR_DMA_SRC             BOARD_GPTMR_DMA_SRC
@@ -65,14 +71,14 @@ int main(void)
     board_init();
     init_gptmr_pins(APP_BOARD_GPTMR);
     printf("gptmr pwm measure test\n");
-#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
+#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1)) && defined(HPM_XDMA_BASE)
     dma_transfer_config();
 #endif
     pwm_measure_config();
     while (1) {
         /* please make sure deplay time is more than one pwm cycle */
         board_delay_ms(200);
-#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
+#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1)) && defined(HPM_XDMA_BASE)
         dma_enable_channel(APP_GPTMR_DMA, APP_DMA_CH);
         if (dma_is_done) {
             dma_is_done = false;
@@ -98,7 +104,7 @@ int main(void)
     return 0;
 }
 
-#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
+#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1)) && defined(HPM_XDMA_BASE)
 static void dma_transfer_config(void)
 {
     dma_channel_config_t ch_config = {0};
@@ -129,7 +135,11 @@ static void pwm_measure_config(void)
     board_init_gptmr_clock(APP_BOARD_GPTMR);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     gptmr_freq = clock_get_frequency(APP_BOARD_GPTMR_CLOCK);
-#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1))
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+    config.prescaler = gptmr_freq / APP_GPTMR_TARGET_FREQ;
+    gptmr_freq = gptmr_freq / config.prescaler;
+#endif
+#if (defined (DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && (defined (CONFIG_USE_DMA) && (CONFIG_USE_DMA == 1)) && defined(HPM_XDMA_BASE)
     gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     config.cmp_initial_polarity_high = false;
     config.dma_request_event = gptmr_dma_request_on_input_signal_toggle;
@@ -140,7 +150,10 @@ static void pwm_measure_config(void)
 #else
     config.mode = gptmr_work_mode_measure_width;
 #endif
-    gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
+    if (gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false) != status_success) {
+        printf("config gptmr channel failed\n");
+        return;
+    }
     gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     gptmr_start_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
 }

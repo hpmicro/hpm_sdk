@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2025 HPMicro
+# Copyright (c) 2021-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -18,3 +18,4 @@ board:
       - board_clk_ref_pin
       - board_usb_otg
       - board_eeprom_i2c
+      - board_adc16_diff

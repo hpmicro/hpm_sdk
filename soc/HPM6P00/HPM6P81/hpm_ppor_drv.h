@@ -16,7 +16,7 @@ typedef enum {
     ppor_reset_wdog1 = 1 << 17,
     ppor_reset_wdog2 = 1 << 18,
     ppor_reset_wdog3 = 1 << 19,
-    ppor_reset_pmic_wdog = 1 << 20,
+    ppor_reset_pmic_wdog = 1 << 24,
     ppor_reset_software = 1 << 31,
 } ppor_reset_source_t;
 

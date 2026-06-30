@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -772,6 +772,15 @@
 #define IOC_PY07_FUNC_CTL_SPI2_MOSI            IOC_PAD_FUNC_CTL_ALT_SELECT_SET(5)
 #define IOC_PY07_FUNC_CTL_PWM0_P_7             IOC_PAD_FUNC_CTL_ALT_SELECT_SET(16)
 #define IOC_PY07_FUNC_CTL_TRGM0_P_07           IOC_PAD_FUNC_CTL_ALT_SELECT_SET(18)
+
+/* IOC_ADCIN4_FUNC_CTL function mux definitions */
+#define IOC_ADCIN4_FUNC_CTL_PWM1_FAULT_0       IOC_PAD_FUNC_CTL_ALT_SELECT_SET(16)
+
+/* IOC_ADCIN5_FUNC_CTL function mux definitions */
+#define IOC_ADCIN5_FUNC_CTL_PWM1_FAULT_1       IOC_PAD_FUNC_CTL_ALT_SELECT_SET(16)
+
+/* IOC_ADCIN6_FUNC_CTL function mux definitions */
+#define IOC_ADCIN6_FUNC_CTL_PWM0_FAULT_0       IOC_PAD_FUNC_CTL_ALT_SELECT_SET(16)
 
 
 #endif /* HPM_IOMUX_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022,2024 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,17 @@
 #define __HPM_MATH_H__
 
 #include <stddef.h>
+#include "hpm_common.h"
+#ifdef __cplusplus
+/*
+ * __R, __RW, __W may conflict with C++ standard library internal identifiers
+ * (e.g., __R used in stl_tree.h). Undefine them here since hpm_math does not
+ * use these macros. __I, __IO, __O remain available.
+ */
+#undef __R
+#undef __RW
+#undef __W
+#endif
 /**
  * @defgroup hpmmath HPMicro Math Functions
  * @ingroup middleware_interfaces
@@ -49,7 +60,14 @@
 
 #define HPM_DSP_CORE HPM_DSP_HW_NDS32 /* DSP core selection */
 
-#define HPM_MATH_PI (3.14159265358979323846)
+/**
+ * @brief Math constants based on hpm_common.h definitions
+ *
+ */
+#define HPM_MATH_PI             HPM_PI_FLOAT
+#define HPM_MATH_2_PI           HPM_2_PI_FLOAT
+#define HPM_MATH_HALF_PI        HPM_HALF_PI_FLOAT
+#define HPM_MATH_QUARTER_PI     (0.78539816339744830962f)  /* pi/4 */
 
 /**
  * @brief HPM_MATH_SW_FFT_CHECKLIST Enabled to use table lookup to speed up the software fft,
@@ -67,6 +85,495 @@
 extern "C"
 {
 #endif
+
+typedef struct {
+    uint32_t table_size;        /*!< Table size (must be power of 2) */
+    uint32_t table_mask;        /*!< Table mask (table_size - 1) */
+    float scale;                /*!< Scale factor (table_size / 2*PI) */
+    uint8_t initialized;        /*!< Initialization flag */
+    float *sin_table;           /*!< Pointer to sine lookup table (user allocated) */
+} hpm_math_fast_trig_context_t;
+
+/**
+ * @brief Fast trigonometric functions using lookup table
+ * @{
+ */
+
+/**
+ * @brief Initialize the fast trigonometric lookup table
+ * @param ctx Fast trig context pointer
+ * @param table_size Table size (must be power of 2: 256, 512, 1024, 2048, 4096, 8192, ...)
+ * @param sin_table_buffer Pointer to user-allocated sine table buffer
+ * @return status_success on success, status_invalid_argument on invalid parameters
+ *
+ * @note Must be called before using fast trig functions
+ * @note Larger table size = higher precision, more memory
+ */
+hpm_stat_t hpm_math_fast_trig_init(hpm_math_fast_trig_context_t *ctx, uint32_t table_size, float *sin_table_buffer);
+
+
+/** @} */
+
+/**
+ * @brief Fast sine function without interpolation (fastest, lowest accuracy)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Sine value
+ *
+ * @note This is the fastest variant, suitable when speed is critical and
+ *       lower accuracy is acceptable. Uses direct table lookup.
+ */
+static inline float hpm_math_fast_sinf(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    /* Normalize angle to [0, 2*PI) */
+    while (x < 0.0f) {
+        x += HPM_MATH_2_PI;
+    }
+    while (x >= HPM_MATH_2_PI) {
+        x -= HPM_MATH_2_PI;
+    }
+
+    /* Direct table lookup without interpolation */
+    const int idx = (int)(x * ctx->scale) & ctx->table_mask;
+    return ctx->sin_table[idx];
+}
+
+/**
+ * @brief Fast cosine function without interpolation (fastest, lowest accuracy)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Cosine value
+ */
+static inline float hpm_math_fast_cosf(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    return hpm_math_fast_sinf(ctx, x + HPM_MATH_HALF_PI);
+}
+
+/**
+ * @brief Fast sine function with linear interpolation (fast, good accuracy)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Sine value
+ *
+ * @note This variant provides a good balance between speed and accuracy.
+ *       Uses linear interpolation between two adjacent table entries.
+ */
+static inline float hpm_math_fast_sinf_linear(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    /* Normalize angle to [0, 2*PI) */
+    while (x < 0.0f) {
+        x += HPM_MATH_2_PI;
+    }
+    while (x >= HPM_MATH_2_PI) {
+        x -= HPM_MATH_2_PI;
+    }
+
+    /* Cache context members for better optimization */
+    float *sin_table = ctx->sin_table;
+    const uint32_t table_mask = ctx->table_mask;
+
+    /* Convert to table index with fractional part */
+    const float findex = x * ctx->scale;
+    const int idx_int = (int)findex;
+    const int idx0 = idx_int & table_mask;
+    const int idx1 = (idx0 + 1) & table_mask;
+    const float frac = findex - (float)idx_int;
+
+    /* Linear interpolation: y0 + frac * (y1 - y0) */
+    const float y0 = sin_table[idx0];
+    return y0 + frac * (sin_table[idx1] - y0);
+}
+
+/**
+ * @brief Fast cosine function with linear interpolation (fast, good accuracy)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Cosine value
+ */
+static inline float hpm_math_fast_cosf_linear(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    return hpm_math_fast_sinf_linear(ctx, x + HPM_MATH_HALF_PI);
+}
+
+/**
+ * @brief Fast sine function with quadratic interpolation (highest accuracy)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Sine value
+ *
+ * @note This variant provides the highest accuracy using 3-point Lagrange
+ *       quadratic interpolation. Suitable for applications requiring high precision.
+ */
+static inline float hpm_math_fast_sinf_quadratic(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    /* Normalize angle to [0, 2*PI) */
+    while (x < 0.0f) {
+        x += HPM_MATH_2_PI;
+    }
+    while (x >= HPM_MATH_2_PI) {
+        x -= HPM_MATH_2_PI;
+    }
+
+    /* Cache context members for better compiler optimization */
+    float *sin_table = ctx->sin_table;
+    const uint32_t table_mask = ctx->table_mask;
+
+    /* Convert to table index with fractional part */
+    const float findex = x * ctx->scale;
+    const int idx1_int = (int)findex;
+    const int idx1 = idx1_int & table_mask;
+    const float t = findex - (float)idx1_int;
+
+    /* Get three sample points for quadratic interpolation */
+    const float y0 = sin_table[(idx1 - 1) & table_mask];
+    const float y1 = sin_table[idx1];
+    const float y2 = sin_table[(idx1 + 1) & table_mask];
+
+    /*
+     * Quadratic (Lagrange) interpolation using 3 points
+     * P(t) = y1 + t * ((y2-y0)/2 + t * ((y0+y2)/2 - y1))
+     * Optimized form: y1 + 0.5 * t * ((y2 - y0) + t * (y0 + y2 - 2*y1))
+     */
+    const float d = y2 - y0;
+    const float c = y0 + y2 - y1 - y1;
+    return y1 + 0.5f * t * (d + t * c);
+}
+
+/**
+ * @brief Fast cosine function with quadratic interpolation (highest accuracy)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Cosine value
+ */
+static inline float hpm_math_fast_cosf_quadratic(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    return hpm_math_fast_sinf_quadratic(ctx, x + HPM_MATH_HALF_PI);
+}
+
+/**
+ * @brief Fast simultaneous sine and cosine with linear interpolation
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @param sin_out Pointer to store sine value
+ * @param cos_out Pointer to store cosine value
+ *
+ * @note This is more efficient than calling sinf and cosf separately,
+ *       as it shares angle normalization and index calculations.
+ *       Use this when you need both sin and cos of the same angle.
+ */
+static inline void hpm_math_fast_sincosf_linear(
+    hpm_math_fast_trig_context_t *ctx,
+    float x,
+    float *sin_out,
+    float *cos_out)
+{
+    /* Normalize angle to [0, 2*PI) - only once */
+    while (x < 0.0f) {
+        x += HPM_MATH_2_PI;
+    }
+    while (x >= HPM_MATH_2_PI) {
+        x -= HPM_MATH_2_PI;
+    }
+
+    /* Cache context members */
+    float *sin_table = ctx->sin_table;
+    const uint32_t table_mask = ctx->table_mask;
+    const uint32_t cos_offset = ctx->table_size >> 2; /* table_size / 4 = 90 degrees */
+
+    /* Calculate index once for both sin and cos */
+    const float findex = x * ctx->scale;
+    const int idx_int = (int)findex;
+    const int sin_idx0 = idx_int & table_mask;
+    const int sin_idx1 = (sin_idx0 + 1) & table_mask;
+    const float frac = findex - (float)idx_int;
+
+    /* Sin: linear interpolation */
+    const float sin_y0 = sin_table[sin_idx0];
+    const float sin_y1 = sin_table[sin_idx1];
+    *sin_out = sin_y0 + frac * (sin_y1 - sin_y0);
+
+    /* Cos: use sin table with 90 degree offset, same frac */
+    const int cos_idx0 = (sin_idx0 + cos_offset) & table_mask;
+    const int cos_idx1 = (cos_idx0 + 1) & table_mask;
+    const float cos_y0 = sin_table[cos_idx0];
+    const float cos_y1 = sin_table[cos_idx1];
+    *cos_out = cos_y0 + frac * (cos_y1 - cos_y0);
+}
+
+/**
+ * @brief Fast simultaneous sine and cosine with quadratic interpolation
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @param sin_out Pointer to store sine value
+ * @param cos_out Pointer to store cosine value
+ *
+ * @note Higher accuracy version using quadratic interpolation.
+ */
+static inline void hpm_math_fast_sincosf_quadratic(
+    hpm_math_fast_trig_context_t *ctx,
+    float x,
+    float *sin_out,
+    float *cos_out)
+{
+    /* Normalize angle to [0, 2*PI) - only once */
+    while (x < 0.0f) {
+        x += HPM_MATH_2_PI;
+    }
+    while (x >= HPM_MATH_2_PI) {
+        x -= HPM_MATH_2_PI;
+    }
+
+    /* Cache context members */
+    float *sin_table = ctx->sin_table;
+    const uint32_t table_mask = ctx->table_mask;
+    const uint32_t cos_offset = ctx->table_size >> 2;
+
+    /* Calculate index once */
+    const float findex = x * ctx->scale;
+    const int idx1_int = (int)findex;
+    const int sin_idx1 = idx1_int & table_mask;
+    const float t = findex - (float)idx1_int;
+
+    /* Sin: quadratic interpolation with 3 points */
+    const float sin_y0 = sin_table[(sin_idx1 - 1) & table_mask];
+    const float sin_y1 = sin_table[sin_idx1];
+    const float sin_y2 = sin_table[(sin_idx1 + 1) & table_mask];
+    const float sin_d = sin_y2 - sin_y0;
+    const float sin_c = sin_y0 + sin_y2 - sin_y1 - sin_y1;
+    *sin_out = sin_y1 + 0.5f * t * (sin_d + t * sin_c);
+
+    /* Cos: quadratic interpolation with 90 degree offset */
+    const int cos_idx1 = (sin_idx1 + cos_offset) & table_mask;
+    const float cos_y0 = sin_table[(cos_idx1 - 1) & table_mask];
+    const float cos_y1 = sin_table[cos_idx1];
+    const float cos_y2 = sin_table[(cos_idx1 + 1) & table_mask];
+    const float cos_d = cos_y2 - cos_y0;
+    const float cos_c = cos_y0 + cos_y2 - cos_y1 - cos_y1;
+    *cos_out = cos_y1 + 0.5f * t * (cos_d + t * cos_c);
+}
+
+/**
+ * @brief Core polynomial for tan(x) where x in [-pi/4, pi/4]
+ * @param x Reduced angle in radians, must be in [-pi/4, pi/4]
+ * @return Tangent value
+ *
+ * @note Uses Taylor series optimized for float32:
+ *       tan(x) = x * (1 + x²*(c1 + x²*(c2 + x²*(c3 + x²*(c4 + x²*(c5 + x²*c6))))))
+ */
+static inline float hpm_math_tan_poly_core(float x)
+{
+    const float x2 = x * x;
+
+    /* Taylor coefficients: 1/3, 2/15, 17/315, 62/2835, 1382/155925, ... */
+    const float c1 = 0.333333333f;
+    const float c2 = 0.133333333f;
+    const float c3 = 0.053968254f;
+    const float c4 = 0.021869489f;
+    const float c5 = 0.008863236f;
+    const float c6 = 0.003592128f;
+
+    return x * (1.0f + x2 * (c1 + x2 * (c2 + x2 * (c3 + x2 * (c4 + x2 * (c5 + x2 * c6))))));
+}
+
+/**
+ * @brief Direct polynomial tan with range reduction
+ * @param x Angle in radians (normalized to [0, 2*pi))
+ * @return Tangent value
+ *
+ * @note Uses polynomial approximation with careful range reduction.
+ *       Avoids sin/cos division which amplifies errors near singularities.
+ */
+static inline float hpm_math_tan_poly_direct(float x)
+{
+    /* Reduce to [0, pi) - tan has period pi */
+    const int n_pi = (int)(x / HPM_MATH_PI);
+    float x_reduced = x - n_pi * HPM_MATH_PI;
+
+    /* Reduce to (-pi/2, pi/2) */
+    if (x_reduced > HPM_MATH_HALF_PI) {
+        x_reduced = x_reduced - HPM_MATH_PI;
+    }
+
+    /* Reduce to [-pi/4, pi/4] using tan(pi/2 - y) = 1/tan(y) */
+    if (x_reduced > HPM_MATH_QUARTER_PI) {
+        x_reduced = HPM_MATH_HALF_PI - x_reduced;
+        const float result = hpm_math_tan_poly_core(x_reduced);
+        return 1.0f / result;
+    } else if (x_reduced < -HPM_MATH_QUARTER_PI) {
+        x_reduced = -HPM_MATH_HALF_PI - x_reduced;
+        const float result = hpm_math_tan_poly_core(x_reduced);
+        return 1.0f / result;
+    } else {
+        return hpm_math_tan_poly_core(x_reduced);
+    }
+}
+
+/**
+ * @brief Fast tangent function with linear interpolation (optimized)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Tangent value
+ *
+ * @note Uses optimized sincosf to compute sin and cos together.
+ *       May have numerical issues near pi/2 + n*pi.
+ */
+static inline float hpm_math_fast_tanf_linear(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    float s, c;
+    hpm_math_fast_sincosf_linear(ctx, x, &s, &c);
+    return s / c;
+}
+
+/**
+ * @brief Fast tangent function with quadratic interpolation (optimized)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Tangent value
+ *
+ * @note Uses optimized sincosf to compute sin and cos together.
+ *       May have numerical issues near pi/2 + n*pi.
+ */
+static inline float hpm_math_fast_tanf_quadratic(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    float s, c;
+    hpm_math_fast_sincosf_quadratic(ctx, x, &s, &c);
+    return s / c;
+}
+
+/**
+ * @brief Fast tangent function with hybrid method (highest accuracy)
+ * @param ctx Fast trig context pointer
+ * @param x Angle in radians
+ * @return Tangent value
+ *
+ * @note Uses hybrid approach for best accuracy:
+ *       - Near singularities (pi/2 + n*pi): polynomial approximation
+ *       - Elsewhere: sin/cos division with quadratic interpolation
+ *       This avoids division error amplification near singularities.
+ *       Achieves approximately 3x better accuracy than pure sin/cos method.
+ */
+static inline float hpm_math_fast_tanf_hybrid(hpm_math_fast_trig_context_t *ctx, float x)
+{
+    /* Normalize angle to [0, 2*PI) */
+    while (x < 0.0f) {
+        x += HPM_MATH_2_PI;
+    }
+    while (x >= HPM_MATH_2_PI) {
+        x -= HPM_MATH_2_PI;
+    }
+
+    /* Check distance to singularities (pi/2 and 3*pi/2) */
+    const float dist1 = x > HPM_MATH_HALF_PI ?
+                        x - HPM_MATH_HALF_PI : HPM_MATH_HALF_PI - x;
+    const float three_pi_2 = HPM_MATH_HALF_PI * 3.0f;
+    const float dist2 = x > three_pi_2 ?
+                        x - three_pi_2 : three_pi_2 - x;
+    const float min_dist = dist1 < dist2 ? dist1 : dist2;
+
+    /* Threshold: about 20 degrees = 0.35 rad */
+    const float threshold = 0.35f;
+
+    if (min_dist < threshold) {
+        /* Near singularity - use polynomial to avoid division amplification */
+        return hpm_math_tan_poly_direct(x);
+    } else {
+        /* Normal region - sin/cos is accurate here */
+        float s, c;
+        hpm_math_fast_sincosf_quadratic(ctx, x, &s, &c);
+        return s / c;
+    }
+}
+
+/*
+ * Fast atan/atan2 implementation using polynomial approximation with range reduction.
+ * No additional lookup table required.
+ *
+ * Uses range reduction to keep polynomial argument in [-0.4142, 0.4142]:
+ * - |x| <= 0.4142: direct polynomial
+ * - 0.4142 < |x| <= 2.4142: atan(x) = pi/4 + atan((x-1)/(x+1))
+ * - |x| > 2.4142: atan(x) = pi/2 - atan(1/x)
+ */
+
+/**
+ * @brief Fast arctangent function using range reduction
+ * @param x Input value
+ * @return Arctangent value in radians [-pi/2, pi/2]
+ *
+ * @note Uses 9th order polynomial with range reduction for high accuracy.
+ *       About 4-5x faster than standard library with max error ~1e-5.
+ */
+static inline float hpm_math_fast_atanf(float x)
+{
+    /* Constants for range reduction */
+    const float ATAN_TH1 = 0.4142135624f;  /* tan(22.5°) = sqrt(2) - 1 */
+    const float ATAN_TH2 = 2.4142135624f;  /* tan(67.5°) = sqrt(2) + 1 */
+    const float ATAN_PI_4 = 0.7853981634f; /* pi/4 */
+
+    float sign = 1.0f;
+    float abs_x = x;
+    if (x < 0.0f) {
+        abs_x = -x;
+        sign = -1.0f;
+    }
+
+    float z, offset;
+
+    if (abs_x <= ATAN_TH1) {
+        /* Range 1: |x| <= 0.4142, direct computation */
+        z = abs_x;
+        offset = 0.0f;
+    } else if (abs_x <= ATAN_TH2) {
+        /* Range 2: 0.4142 < |x| <= 2.4142, use atan(x) = pi/4 + atan((x-1)/(x+1)) */
+        z = (abs_x - 1.0f) / (abs_x + 1.0f);
+        offset = ATAN_PI_4;
+    } else {
+        /* Range 3: |x| > 2.4142, use atan(x) = pi/2 - atan(1/x) */
+        z = -1.0f / abs_x;
+        offset = HPM_MATH_HALF_PI;
+    }
+
+    /*
+     * 9th order polynomial for |z| <= 0.4142
+     * atan(z) ≈ z - z³/3 + z⁵/5 - z⁷/7 + z⁹/9
+     * = z * (1 - z²*(1/3 - z²*(1/5 - z²*(1/7 - z²/9))))
+     */
+    const float z2 = z * z;
+    const float poly = 1.0f - z2 * (0.333333333f - z2 * (0.2f - z2 *
+                       (0.142857143f - z2 * 0.111111111f)));
+    const float result = offset + z * poly;
+
+    return sign * result;
+}
+
+/**
+ * @brief Fast two-argument arctangent function
+ * @param y Y coordinate
+ * @param x X coordinate
+ * @return Angle in radians [-pi, pi]
+ *
+ * @note About 4-5x faster than standard library with max error ~1e-5.
+ */
+static inline float hpm_math_fast_atan2f(float y, float x)
+{
+    if (x > 0.0f) {
+        return hpm_math_fast_atanf(y / x);
+    } else if (x < 0.0f) {
+        if (y >= 0.0f) {
+            return hpm_math_fast_atanf(y / x) + HPM_MATH_PI;
+        } else {
+            return hpm_math_fast_atanf(y / x) - HPM_MATH_PI;
+        }
+    } else {
+        /* x == 0 */
+        if (y > 0.0f) {
+            return HPM_MATH_HALF_PI;
+        } else if (y < 0.0f) {
+            return -HPM_MATH_HALF_PI;
+        } else {
+            return 0.0f; /* undefined, return 0 */
+        }
+    }
+}
 
 #ifdef HPM_MATH_DSP_STATISTICS
 

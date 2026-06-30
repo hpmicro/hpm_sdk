@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -141,6 +141,7 @@
 #define ADC_SOC_PREEMPT_ENABLE_CTRL_SUPPORT        (0U)
 #define ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES     (4096U)
 #define ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES     (48U)
+#define ADC_SOC_HW_TRIG_SRC                        (1U)
 #define ADC_SOC_OTP_TSNS_REF_TEMP_MASK             (0xffffUL)
 #define ADC_SOC_OTP_TSNS_REF_TEMP_SHIFT            (21U)
 #define ADC_SOC_REF_TEMP                           (47U)
@@ -152,6 +153,8 @@
 #define ADC12_SOC_CALIBRATION_WAITING_LOOP_CNT     (10)
 #define ADC12_SOC_MAX_CH_NUM                       (17U)
 #define ADC12_SOC_MAX_SAMPLE_VALUE                 (4095U)
+/* WDOG: Do not set INT_EN in adc12_init_channel. Use adc12_enable_wdog_interrupt() after in-window conversion. */
+#define ADC12_SOC_WDOG_INT_EN_DEFERRED             (1U)
 
 #define ADC16_SOC_PARAMS_LEN                       (34U)
 #define ADC16_SOC_MAX_CH_NUM                       (7U)
@@ -159,6 +162,8 @@
 #define ADC16_SOC_TEMP_CH_EN                       (1U)
 #define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 #define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
+/* WDOG: Do not set INT_EN in adc16_init_channel. Use adc16_enable_wdog_interrupt() after in-window conversion. */
+#define ADC16_SOC_WDOG_INT_EN_DEFERRED             (1U)
 
 /*
  * SYSCTL Section

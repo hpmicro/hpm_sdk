@@ -1,8 +1,12 @@
+# Copyright (c) 2022-2026 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
 ## Script for hpmicro ##
 sdk_inc(common)
 sdk_inc(osal)
 sdk_inc(core)
 sdk_inc(class/cdc)
+sdk_inc(class/dfu)
 sdk_inc(class/hid)
 sdk_inc(class/midi)
 sdk_inc(class/msc)
@@ -10,14 +14,24 @@ sdk_inc(class/audio)
 sdk_inc(class/video)
 sdk_inc(class/hub)
 sdk_inc(class/wireless)
+sdk_inc(class/serial)
 sdk_inc(port/ehci)
 sdk_inc(port/hpmicro)
 
 sdk_src(port/hpmicro/usb_glue_hpm.c)
 sdk_src(core/usbotg_core.c)
+if (CONFIG_USB_DEVICE_DFU)
+  sdk_src(port/hpmicro/hpm_dfu_port.c)
+  sdk_compile_definitions(-DCONFIG_USB_DEVICE_DFU=1)
+if (DEFINED USBD_DFU_XFER_SIZE)
+  sdk_compile_definitions(USBD_DFU_XFER_SIZE=${USBD_DFU_XFER_SIZE})
+else()
+  sdk_compile_definitions(USBD_DFU_XFER_SIZE=512)
+endif()
+endif()
 
-if(CONFIG_USB_DEVICE_CDC OR CONFIG_USB_DEVICE_CDC_ACM OR CONFIG_USB_DEVICE_CDC_ECM
-    OR CONFIG_USB_DEVICE_HID OR CONFIG_USB_DEVICE_MSC
+if(CONFIG_USB_DEVICE_CDC_ACM OR CONFIG_USB_DEVICE_CDC_ECM
+    OR CONFIG_USB_DEVICE_DFU OR CONFIG_USB_DEVICE_HID OR CONFIG_USB_DEVICE_MSC
     OR CONFIG_USB_DEVICE_AUDIO OR CONFIG_USB_DEVICE_VIDEO
     OR CONFIG_USB_DEVICE_RNDIS OR CONFIG_USB_DEVICE_MIDI)
   set(CONFIG_CHERRYUSB_DEVICE 1)
@@ -26,9 +40,9 @@ endif()
 if(CONFIG_CHERRYUSB_DEVICE)
   sdk_src(core/usbd_core.c)
   sdk_src(port/hpmicro/usb_dc_hpm.c)
-  sdk_src_ifdef(CONFIG_USB_DEVICE_CDC class/cdc/usbd_cdc_acm.c)  ## legacy for old version
   sdk_src_ifdef(CONFIG_USB_DEVICE_CDC_ACM class/cdc/usbd_cdc_acm.c)
   sdk_src_ifdef(CONFIG_USB_DEVICE_CDC_ECM class/cdc/usbd_cdc_ecm.c)
+  sdk_src_ifdef(CONFIG_USB_DEVICE_DFU class/dfu/usbd_dfu.c)
   sdk_src_ifdef(CONFIG_USB_DEVICE_HID class/hid/usbd_hid.c)
   sdk_src_ifdef(CONFIG_USB_DEVICE_MSC class/msc/usbd_msc.c)
   sdk_src_ifdef(CONFIG_USB_DEVICE_AUDIO class/audio/usbd_audio.c)
@@ -36,7 +50,7 @@ if(CONFIG_CHERRYUSB_DEVICE)
   sdk_src_ifdef(CONFIG_USB_DEVICE_RNDIS class/wireless/usbd_rndis.c)
 endif()
 
-if(CONFIG_USB_HOST_CDC_ACM OR CONFIG_USB_HOST_CDC_ECM OR CONFIG_USB_HOST_HID
+if(CONFIG_USB_HOST_SERIAL OR CONFIG_USB_HOST_CDC_ECM OR CONFIG_USB_HOST_HID
     OR CONFIG_USB_HOST_MSC OR CONFIG_USB_HOST_AUDIO OR CONFIG_USB_HOST_VIDEO
     OR CONFIG_USB_HOST_RNDIS)
   set(CONFIG_CHERRYUSB_HOST 1)
@@ -47,7 +61,13 @@ if(CONFIG_CHERRYUSB_HOST)
   sdk_src(class/hub/usbh_hub.c)
   sdk_src(port/ehci/usb_hc_ehci.c)
   sdk_src(port/hpmicro/usb_hc_hpm.c)
-  sdk_src_ifdef(CONFIG_USB_HOST_CDC_ACM class/cdc/usbh_cdc_acm.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_SERIAL class/serial/usbh_serial.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_SERIAL class/serial/usbh_cdc_acm.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_SERIAL class/serial/usbh_ch34x.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_SERIAL class/serial/usbh_cp210x.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_SERIAL class/serial/usbh_ftdi.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_SERIAL class/serial/usbh_pl2303.c)
+  sdk_src_ifdef(CONFIG_USB_HOST_SERIAL class/serial/usbh_gsm.c)
   sdk_src_ifdef(CONFIG_USB_HOST_CDC_ECM class/cdc/usbh_cdc_ecm.c)
   sdk_src_ifdef(CONFIG_USB_HOST_HID class/hid/usbh_hid.c)
   sdk_src_ifdef(CONFIG_USB_HOST_MSC class/msc/usbh_msc.c)

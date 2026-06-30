@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2022, sakumisu
- * Copyright (c) 2022-2025, HPMicro
+ * Copyright (c) 2022-2026, HPMicro
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -32,8 +32,12 @@
 /* Enable print with color */
 #define CONFIG_USB_PRINTF_COLOR_ENABLE
 
-/* data align size when use dma */
-#ifndef CONFIG_USB_ALIGN_SIZE
+/* #define CONFIG_USB_DCACHE_ENABLE */
+
+/* data align size when use dma or use dcache */
+#ifdef CONFIG_USB_DCACHE_ENABLE
+#define CONFIG_USB_ALIGN_SIZE HPM_L1C_CACHELINE_SIZE
+#else
 #define CONFIG_USB_ALIGN_SIZE 4
 #endif
 
@@ -70,9 +74,6 @@
 
 /* Enable test mode */
 #define CONFIG_USBDEV_TEST_MODE
-
-/* enable advance desc register api */
-#define CONFIG_USBDEV_ADVANCE_DESC
 
 /* move ep0 setup handler from isr to thread */
 /* #define CONFIG_USBDEV_EP0_THREAD */
@@ -119,6 +120,28 @@
 #define CONFIG_USBDEV_MSC_STACKSIZE 2048
 #endif
 
+#ifndef CONFIG_USBDEV_MTP_MAX_BUFSIZE
+#define CONFIG_USBDEV_MTP_MAX_BUFSIZE 2048
+#endif
+
+#ifndef CONFIG_USBDEV_MTP_MAX_OBJECTS
+#define CONFIG_USBDEV_MTP_MAX_OBJECTS 256
+#endif
+
+#ifndef CONFIG_USBDEV_MTP_MAX_PATHNAME
+#define CONFIG_USBDEV_MTP_MAX_PATHNAME 256
+#endif
+
+#define CONFIG_USBDEV_MTP_THREAD
+
+#ifndef CONFIG_USBDEV_MTP_PRIO
+#define CONFIG_USBDEV_MTP_PRIO 4
+#endif
+
+#ifndef CONFIG_USBDEV_MTP_STACKSIZE
+#define CONFIG_USBDEV_MTP_STACKSIZE 4096
+#endif
+
 #ifndef CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE
 #define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 156
 #endif
@@ -148,7 +171,7 @@
 #define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 2
 #define CONFIG_USBHOST_MAX_ENDPOINTS        8
 
-#define CONFIG_USBHOST_MAX_CDC_ACM_CLASS 4
+#define CONFIG_USBHOST_MAX_SERIAL_CLASS  4
 #define CONFIG_USBHOST_MAX_HID_CLASS     4
 #define CONFIG_USBHOST_MAX_MSC_CLASS     2
 #define CONFIG_USBHOST_MAX_AUDIO_CLASS   1
@@ -177,6 +200,10 @@
 
 #ifndef CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT
 #define CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT 500
+#endif
+
+#ifndef CONFIG_USBHOST_SERIAL_RX_SIZE
+#define CONFIG_USBHOST_SERIAL_RX_SIZE 2048
 #endif
 
 #ifndef CONFIG_USBHOST_MSC_TIMEOUT
@@ -238,6 +265,9 @@
 #define CONFIG_USBHOST_BLUETOOTH_RX_SIZE 2048
 #endif
 
+#define CONFIG_USBHOST_PLATFORM_CDC_ECM
+#define CONFIG_USBHOST_PLATFORM_CDC_RNDIS
+
 /* ================ USB Device Port Configuration ================*/
 #define CONFIG_USBDEV_MAX_BUS USB_SOC_MAX_COUNT
 
@@ -256,6 +286,14 @@
 #endif
 #ifndef CONFIG_HPM_USBH_IRQn
 #define CONFIG_HPM_USBH_IRQn IRQn_USB0
+#endif
+
+/* ================ USB Otg Port Configuration ==================*/
+#ifndef CONFIG_HPM_USBOTG_BASE
+#define CONFIG_HPM_USBOTG_BASE HPM_USB0_BASE
+#endif
+#ifndef CONFIG_HPM_USBOTG_IRQn
+#define CONFIG_HPM_USBOTG_IRQn IRQn_USB0
 #endif
 
 /* ================ EHCI Configuration ================ */

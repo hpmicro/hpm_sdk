@@ -15,10 +15,6 @@ extern hpm_can_config_t hpm_canopen_config[MAX_CANOPEN_DEVICE];
 extern hpm_can_data_t hpm_canopen_data[MAX_CANOPEN_DEVICE];
 extern struct device hpm_canopen_dev[MAX_CANOPEN_DEVICE];
 
-#if defined(CONFIG_CANOPEN_MASTER)
-extern hpm_master_receive_buf_t canopen_rx_buf;
-#endif
-
 void hpm_can_get_message(const struct device *dev);
 
 void canopen_irq_handler(struct device *canopendevice)
@@ -85,12 +81,6 @@ void hpm_can_get_message(const struct device *dev)
     can_receive_buf_t rx_buf;
     memset(&rx_buf, 0, sizeof(rx_buf));
     can_read_received_message(can, &rx_buf);
-
-#if defined(CONFIG_CANOPEN_MASTER)
-    memset(&canopen_rx_buf, 0, sizeof(canopen_rx_buf));
-    canopen_rx_buf.has_received_message = true;
-    memcpy(&canopen_rx_buf.rx_buf, &rx_buf, sizeof(rx_buf));
-#endif
 
     uint32_t filter_index = hpm_can_get_first_filter_index(&rx_buf, data);
     frame.id = rx_buf.id;

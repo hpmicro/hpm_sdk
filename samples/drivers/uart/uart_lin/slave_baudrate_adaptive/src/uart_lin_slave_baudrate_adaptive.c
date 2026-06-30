@@ -124,7 +124,7 @@ void uart_isr(void)
  *
  * Processes DMA interrupts during baudrate detection
  */
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_HDMA_IRQ, dma_isr)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA0_IRQ, dma_isr)
 void dma_isr(void)
 {
     plb_lin_dma_isr_function(&lin_clock_cfg);
@@ -241,7 +241,7 @@ int main(void)
     lin_clock_cfg.lin_max_freq = LIN_MAX_FREQ;
     lin_clock_cfg.clock_error = 0.1;                    /* Baudrate tolerance */
     lin_clock_cfg.freq = clock_get_frequency(BOARD_PLB_PWM_CLOCK_NAME);
-    lin_clock_cfg.device.dma = BOARD_APP_HDMA;
+    lin_clock_cfg.device.dma = BOARD_APP_DMA0;
     lin_clock_cfg.device.dma_chn = 4;
     lin_clock_cfg.device.dma_mux = BOARD_APP_DMAMUX;
     lin_clock_cfg.device.plb = HPM_PLB;
@@ -257,7 +257,7 @@ int main(void)
     lin_clock_cfg.filter_length = 50;
     lin_clock_cfg.call_back = callback;
     plb_lin_clock_detection_init(&lin_clock_cfg);
-    intc_m_enable_irq_with_priority(BOARD_APP_HDMA_IRQ, 2);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA0_IRQ, 2);
 
     /* Main processing loop */
     while (1) {

@@ -744,19 +744,23 @@ void i2s_get_default_config(I2S_Type *ptr, i2s_config_t *config);
  */
 void i2s_init(I2S_Type *ptr, i2s_config_t *config);
 
+#if defined(HPMSOC_HAS_HPMSDK_PDM) || defined(HPMSOC_HAS_HPMSDK_PDMLITE)
 /**
  * @brief I2S get default transfer config for pdm
  *
  * @param [out] transfer i2s_transfer_config_t
  */
 void i2s_get_default_transfer_config_for_pdm(i2s_transfer_config_t *transfer);
+#endif
 
+#if defined(HPMSOC_HAS_HPMSDK_DAO)
 /**
  * @brief I2S get default transfer config for dao
  *
  * @param [out] transfer i2s_transfer_config_t
  */
 void i2s_get_default_transfer_config_for_dao(i2s_transfer_config_t *transfer);
+#endif
 
 /**
  * @brief I2S get default transfer config

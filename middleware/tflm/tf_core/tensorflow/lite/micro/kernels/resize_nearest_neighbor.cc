@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2025 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,18 +21,18 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/kernels/op_macros.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
-#include "tensorflow/lite/micro/micro_error_reporter.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
-namespace ops {
-namespace micro {
-namespace resize_nearest_neighbor {
+
+namespace {
 
 constexpr int kInputTensor = 0;
 constexpr int kSizeTensor = 1;
 constexpr int kOutputTensor = 0;
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus ResizeNearestNeighborPrepare(TfLiteContext* context,
+                                          TfLiteNode* node) {
   MicroContext* micro_context = GetMicroContext(context);
 
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
@@ -54,10 +54,8 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 
   output->type = input->type;
 
-  if (!IsConstantTensor(size)) {
-    TF_LITE_KERNEL_LOG(context, "Dynamic tensors are unsupported in tfmicro.");
-    return kTfLiteError;
-  }
+  TF_LITE_ENSURE_MSG(context, IsConstantTensor(size),
+                     "Non-constant >size< tensor is not supported");
 
   micro_context->DeallocateTempTfLiteTensor(input);
   micro_context->DeallocateTempTfLiteTensor(size);
@@ -66,7 +64,8 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus ResizeNearestNeighborEval(TfLiteContext* context,
+                                       TfLiteNode* node) {
   auto* params =
       reinterpret_cast<TfLiteResizeNearestNeighborParams*>(node->builtin_data);
 
@@ -79,7 +78,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
   tflite::ResizeNearestNeighborParams op_params;
   op_params.align_corners = params->align_corners;
-  op_params.half_pixel_centers = false;
+  op_params.half_pixel_centers = params->half_pixel_centers;
 
   if (output->type == kTfLiteFloat32) {
     reference_ops::ResizeNearestNeighbor(
@@ -114,19 +113,12 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
   return kTfLiteOk;
 }
-}  // namespace resize_nearest_neighbor
 
-TfLiteRegistration Register_RESIZE_NEAREST_NEIGHBOR() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/resize_nearest_neighbor::Prepare,
-          /*invoke=*/resize_nearest_neighbor::Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+}  // namespace
+
+TFLMRegistration Register_RESIZE_NEAREST_NEIGHBOR() {
+  return tflite::micro::RegisterOp(nullptr, ResizeNearestNeighborPrepare,
+                                   ResizeNearestNeighborEval);
 }
 
-}  // namespace micro
-}  // namespace ops
 }  // namespace tflite

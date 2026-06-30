@@ -16,9 +16,11 @@
 #include "hpm_pllctl_drv.h"
 #include "hpm_clock_drv.h"
 #include "hpm_pcfg_drv.h"
+#include "hpm_sysctl_drv.h"
 #include "coremark.h"
 #include "demos/lv_demos.h"
 #include "dualcore_widgets.h"
+#include "multicore_common.h"
 
 extern coremark_context_t g_coremark_ctx[2];
 coremark_context_t *g_cm_ctx[2] = { (coremark_context_t *)&g_coremark_ctx[0], (coremark_context_t *)&g_coremark_ctx[1] };
@@ -614,16 +616,6 @@ void init_coremark_context(void)
     g_lv_cm_ctx.bus_freq[1] = clock_get_frequency(clock_axi0);
 }
 
-void load_coremark_bin_for_cpu(void)
-{
-    extern const uint32_t sec_core_img_size;
-    extern const uint8_t sec_core_img[];
-    uint32_t core1_img_sys_addr = core_local_mem_to_sys_address(HPM_CORE1, (uint32_t) COREMARK_BIN_ARRAY);
-    memcpy((void *) core1_img_sys_addr, sec_core_img, sec_core_img_size);
-    printf("Loading core1 image to destination 0x%08x...\n", core1_img_sys_addr);
-    l1c_dc_flush((uint32_t) core1_img_sys_addr, HPM_L1C_CACHELINE_ALIGN_UP(sec_core_img_size));
-}
-
 void refresh_coremark_info(void)
 {
     static const char coremark_str_hdrs[] = "CoreMark 1.0 : ";
@@ -677,11 +669,8 @@ void run_coremark_for_cpu(uint32_t index)
         enable_global_irq(CSR_MSTATUS_MIE_MASK);
         g_lv_cm_ctx.result_ready[0] = false;
     } else if (index == 1) {
-        if (HPM_SYSCTL->CPU[1].GPR[1] != 0xc1bef1a9) {
-            load_coremark_bin_for_cpu();
-            HPM_SYSCTL->CPU[1].GPR[0] = (uint32_t) COREMARK_BIN_ARRAY;
-            HPM_SYSCTL->CPU[1].GPR[1] = 0xc1bef1a9;
-            HPM_SYSCTL->CPU[1].LP &= ~SYSCTL_CPU_LP_HALT_MASK;
+        if (!sysctl_is_cpu_released(HPM_SYSCTL, HPM_CORE1)) {
+            multicore_release_cpu(HPM_CORE1, SEC_CORE_IMG_START);
             printf("Released Core1!\n");
         } else {
             HPM_SYSCTL->CPU[1].GPR[3] = 1;

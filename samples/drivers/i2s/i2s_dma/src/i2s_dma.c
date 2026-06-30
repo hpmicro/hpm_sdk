@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,13 +26,7 @@
 #endif
 
 /* Audio codec selection based on board hardware */
-#ifdef CONFIG_CODEC_WM8960
-    #include "hpm_wm8960.h"
-#elif defined(CONFIG_CODEC_SGTL5000)
-    #include "hpm_sgtl5000.h"
-#else
-    #error no specified Audio Codec!!!
-#endif
+#include "hpm_codec_common.h"
 
 /* I2C and I2S peripheral definitions */
 #ifndef BOARD_CODEC_I2C_BASE
@@ -45,9 +39,9 @@
 #define CODEC_I2S_TX_DATA_LINE  BOARD_APP_I2S_TX_DATA_LINE
 
 /* DMA configuration definitions */
-#define TEST_DMA             BOARD_APP_XDMA
+#define TEST_DMA             BOARD_APP_DMA1
 #define TEST_DMA_CHANNEL     (2U)
-#define TEST_I2S_DMA_IRQ     BOARD_APP_XDMA_IRQ
+#define TEST_I2S_DMA_IRQ     BOARD_APP_DMA1_IRQ
 #define TEST_DMA_SRC_REQ     BOARD_APP_I2S_TX_DMA_REQ
 #define TEST_DMAMUX_CH       DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_DMA, TEST_DMA_CHANNEL)
 
@@ -146,51 +140,62 @@ hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
     /* Initialize I2C interface for codec control */
     board_init_i2c(CODEC_I2C);
 
-#ifdef CONFIG_CODEC_WM8960
-    /* Configure WM8960 codec */
-    wm8960_config_t wm8960_config = {
-        .route       = wm8960_route_playback,
-        .left_input  = wm8960_input_closed,
-        .right_input = wm8960_input_closed,
-        .play_source = wm8960_play_source_dac,
-        .bus         = wm8960_bus_left_justified,
-        .format = {.mclk_hz = mclk_freq, .sample_rate = sample_rate, .bit_width = audio_depth},
-        .lrclk_polarity = (i2s_invert_fclk_out) ? wm8960_lrclk_polarity_high_for_left_channel : wm8960_lrclk_polarity_low_for_left_channel,
-    };
-
-    wm8960_control_t wm8960_control = {
+    codec_control_t codec_control = {
         .ptr = CODEC_I2C,
-        .slave_address = WM8960_I2C_ADDR, /* I2C address */
+        .slave_address = BOARD_AUDIO_CODEC_I2C_ADDR,
     };
 
-    if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
+#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
+    /* Configure WM8960 codec */
+    wm8960_config_t wm8960_config;
+    wm8960_get_default_config(&wm8960_config);
+
+    /* Override default route for playback only */
+    wm8960_config.route = wm8960_route_playback;
+    wm8960_config.format.sample_rate = sample_rate;
+    wm8960_config.format.bit_width = audio_depth;
+    wm8960_config.format.mclk_hz = mclk_freq;
+    wm8960_config.lrclk_polarity = (i2s_invert_fclk_out) ? wm8960_lrclk_polarity_high_for_left_channel : wm8960_lrclk_polarity_low_for_left_channel;
+
+    if (wm8960_init(&codec_control, &wm8960_config) != status_success) {
         printf("Init Audio Codec failed\n");
         return status_fail;
     }
 
-#elif defined(CONFIG_CODEC_SGTL5000)
+#elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
     /* Configure SGTL5000 codec */
-    sgtl_config_t sgtl5000_config = {
-        .route = sgtl_route_playback,    /*!< Audio data route.*/
-        .bus = sgtl_bus_left_justified,  /*!< Audio transfer protocol */
-        .master = false,                 /*!< Master or slave. True means master, false means slave. */
-        .format = {
-            .mclk_hz = mclk_freq,
-            .sample_rate = sample_rate,
-            .bit_width = audio_depth,
-            .sclk_edge = sgtl_sclk_valid_edge_rising
-        },
-        .lrclk_polarity = (i2s_invert_fclk_out) ? sgtl_lrclk_polarity_high_for_left_channel : sgtl_lrclk_polarity_low_for_left_channel,
-    };
+    sgtl_config_t sgtl5000_config;
+    sgtl_get_default_config(&sgtl5000_config);
 
-    sgtl_context_t sgtl5000_context = {
-        .ptr = CODEC_I2C,
-        .slave_address = SGTL5000_I2C_ADDR, /* I2C address */
-    };
+    /* Override default route for playback only */
+    sgtl5000_config.route = sgtl_route_playback;
+    sgtl5000_config.format.sample_rate = sample_rate;
+    sgtl5000_config.format.bit_width = audio_depth;
+    sgtl5000_config.format.mclk_hz = mclk_freq;
+    sgtl5000_config.lrclk_polarity = (i2s_invert_fclk_out) ? sgtl_lrclk_polarity_high_for_left_channel : sgtl_lrclk_polarity_low_for_left_channel;
 
-    if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
+    if (sgtl_init(&codec_control, &sgtl5000_config) != status_success) {
+        printf("Init Audio Codec failed\n");
         return status_fail;
     }
+
+#elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
+    /* Configure ES8389 codec */
+    es8389_config_t es8389_config;
+    es8389_get_default_config(&es8389_config);
+
+    es8389_config.sample_rate = sample_rate;
+    es8389_config.data_width = audio_depth;
+    es8389_config.mclk_hz = mclk_freq;
+    es8389_config.lrclk_polarity = (i2s_invert_fclk_out) ? es8389_lrclk_polarity_high_for_left_channel : es8389_lrclk_polarity_low_for_left_channel;
+
+    if (es8389_init(&codec_control, &es8389_config) != status_success) {
+        printf("Init Audio Codec failed\n");
+        return status_fail;
+    }
+
+#else
+    #error no specified Audio Codec!!!
 #endif
 
     return status_success;
@@ -223,7 +228,7 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     i2s_get_default_transfer_config(&transfer);
     transfer.sample_rate = audio_data->sample_rate;
     transfer.audio_depth = audio_data->audio_depth;
-    /* 1 chanel - channel slot mask 0x1; 2 channel - channel solt mask 0x3 */
+    /* 1 chanel: left channel slot mask 0x1, right channel slot mask 0x2; 2 channel - channel slot mask 0x3 */
     transfer.channel_slot_mask = (1 << audio_data->channel_num) - 1;
     transfer.data_line = CODEC_I2S_TX_DATA_LINE;
     transfer.master_mode = true;
@@ -253,7 +258,7 @@ hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data)
 
     /* Configure DMAMUX and enable interrupt */
     dmamux_config(BOARD_APP_DMAMUX, TEST_DMAMUX_CH, TEST_DMA_SRC_REQ, true);
-    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, 1);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, 1);
 
     /* Perform multiple playback cycles */
     for (uint8_t i = 0; i < 10; i++) {

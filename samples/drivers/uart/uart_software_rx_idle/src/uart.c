@@ -11,7 +11,7 @@
 
 #define TEST_UART                     BOARD_UART_IDLE
 
-#define TEST_DMA                      BOARD_APP_HDMA
+#define TEST_DMA                      BOARD_APP_DMA0
 #define TEST_DMA_CHANNEL              (0U)
 
 #define TEST_DMAMUX                   BOARD_APP_DMAMUX

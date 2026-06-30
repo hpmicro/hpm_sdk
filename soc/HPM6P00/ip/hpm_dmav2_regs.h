@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -596,10 +596,10 @@ typedef struct {
 /*
  * LLPOINTERL (RW)
  *
- * Low part of the pointer to the next descriptor. The pointer must be double word aligned.
+ * Low part of the pointer to the next descriptor. The pointer must be 32byte aligned.
  */
-#define DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_MASK (0xFFFFFFF8UL)
-#define DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_SHIFT (3U)
+#define DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_MASK (0xFFFFFFE0UL)
+#define DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_SHIFT (5U)
 #define DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_SET(x) (((uint32_t)(x) << DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_SHIFT) & DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_MASK)
 #define DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_GET(x) (((uint32_t)(x) & DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_MASK) >> DMAV2_CHCTRL_LLPOINTER_LLPOINTERL_SHIFT)
 

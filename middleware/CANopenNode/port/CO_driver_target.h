@@ -30,6 +30,7 @@
 #ifdef CO_DRIVER_CUSTOM
 #include "CO_driver_custom.h"
 #endif
+#include "user_config.h"
 
 #ifdef __cplusplus
 extern "C" {

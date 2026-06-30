@@ -23,6 +23,13 @@
  *
  */
 
+/*
+ * Copyright (c) 2022-2026 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include <stdio.h>
 #include <string.h>
 
@@ -67,10 +74,12 @@ enum {
 /* Macro Const Declaration */
 #define I2S_MCLK_FREQ_IN_HZ (24576000UL)
 
+#define AUDIO_MIC_TX_SZ (CFG_TUD_AUDIO_EP_SZ_IN - (CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX * CFG_TUD_AUDIO_FUNC_1_FORMAT_1_N_BYTES_PER_SAMPLE_TX))  /* actual mic data per packet (1 frame less than EP max) */
+
 #define SPEAKER_DMA_CHANNEL 1U
 #define MIC_DMA_CHANNEL     2U
-#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL)
-#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, MIC_DMA_CHANNEL)
+#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL)
+#define MIC_DMAMUX_CHANNEL        DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA1, MIC_DMA_CHANNEL)
 
 #define PDM_I2S_CLK_NAME      BOARD_MIC_I2S_CLK_NAME
 #define PDM_I2S_DATA_LINE     BOARD_MIC_I2S_DATA_LINE
@@ -80,13 +89,13 @@ enum {
 #define DAO_I2S_DATA_LINE     BOARD_SPEAKER_I2S_DATA_LINE
 #define DAO_I2S_TX_DMAMUX_SRC BOARD_SPEAKER_I2S_TX_DMAMUX_SRC
 
-#define N_SAMPLE_RATES  TU_ARRAY_SIZE(sample_rates)
-
 /* Variable Definition */
 volatile uint32_t current_sample_rate;
 
 /* List of supported sample rates */
 const uint32_t sample_rates[] = {16000};
+
+#define N_SAMPLE_RATES  TU_ARRAY_SIZE(sample_rates)
 
 /* Audio controls */
 /* Current states */
@@ -111,7 +120,7 @@ static volatile uint8_t s_mic_buf_rear;
 static volatile bool s_mic_dma_transfer_done;
 
 
-void i2s_pdm_dma_cfg(uint32_t size, uint32_t *ptr);
+void i2s_pdm_dma_cfg(uint32_t *ptr, uint32_t size);
 void reinit_dao_i2s_cfg(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num);
 void audio_task(void);
 bool speaker_out_buff_is_empty(void);
@@ -175,7 +184,6 @@ void dao_config(void)
     i2s_start(DAO_I2S);
 
     dao_get_default_config(HPM_DAO, &dao_config);
-    dao_config.enable_mono_output = true;
     dao_init(HPM_DAO, &dao_config);
 
     i2s_enable_tx_dma_request(DAO_I2S);
@@ -220,7 +228,7 @@ int main(void)
     pdm_config();
     dao_config();
 
-    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, 1);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, 1);
     intc_set_irq_priority(IRQn_USB0, 2);
 
     while (1) {
@@ -328,7 +336,7 @@ static bool tud_audio_feature_unit_get_request(uint8_t rhport, audio20_control_r
             audio20_control_cur_1_t mute1 = { .bCur = spk_mute[request->bChannelNumber] };
             TU_LOG1("Get channel %u mute %d\r\n", request->bChannelNumber, mute1.bCur);
             return tud_audio_buffer_and_schedule_control_xfer(rhport, (tusb_control_request_t const *)request, &mute1, sizeof(mute1));
-        } else if (UAC2_ENTITY_SPK_FEATURE_UNIT && request->bControlSelector == AUDIO20_FU_CTRL_VOLUME) {
+        } else if (request->bControlSelector == AUDIO20_FU_CTRL_VOLUME) {
             if (request->bRequest == AUDIO20_CS_REQ_RANGE) {
                 audio20_control_range_2_n_t(1) range_vol = {
                     .wNumSubRanges = tu_htole16(1),
@@ -351,7 +359,7 @@ static bool tud_audio_feature_unit_get_request(uint8_t rhport, audio20_control_r
             audio20_control_cur_1_t mute1 = { .bCur = mic_mute[request->bChannelNumber] };
             TU_LOG1("Get channel %u mute %d\r\n", request->bChannelNumber, mute1.bCur);
             return tud_audio_buffer_and_schedule_control_xfer(rhport, (tusb_control_request_t const *)request, &mute1, sizeof(mute1));
-        } else if (UAC2_ENTITY_SPK_FEATURE_UNIT && request->bControlSelector == AUDIO20_FU_CTRL_VOLUME) {
+        } else if (request->bControlSelector == AUDIO20_FU_CTRL_VOLUME) {
             if (request->bRequest == AUDIO20_CS_REQ_RANGE) {
                 audio20_control_range_2_n_t(1) range_vol = {
                     .wNumSubRanges = tu_htole16(1),
@@ -512,7 +520,7 @@ bool tud_audio_set_itf_cb(uint8_t rhport, tusb_control_request_t const *p_reques
         s_mic_buf_front = 0;
         s_mic_buf_rear = 0;
         s_mic_dma_transfer_done = false;
-        i2s_pdm_dma_cfg(CFG_TUD_AUDIO_EP_SZ_IN, (uint32_t *)&mic_buf[s_mic_buf_rear][0]);
+        i2s_pdm_dma_cfg((uint32_t *)&mic_buf[s_mic_buf_rear][0], AUDIO_MIC_TX_SZ);
     }
 
     return true;
@@ -547,7 +555,7 @@ bool tud_audio_tx_done_isr(uint8_t rhport, uint16_t n_bytes_sent, uint8_t func_i
 
     if (s_mic_tx_flag) {
         if (!mic_in_buff_is_empty()) {
-            tud_audio_write((uint8_t *)&mic_buf[s_mic_buf_front][0], CFG_TUD_AUDIO_EP_SZ_IN);
+            tud_audio_write((uint8_t *)&mic_buf[s_mic_buf_front][0], AUDIO_MIC_TX_SZ);
             s_mic_buf_front++;
             if (s_mic_buf_front >= AUDIO_BUFFER_COUNT) {
                 s_mic_buf_front = 0;
@@ -561,14 +569,14 @@ bool tud_audio_tx_done_isr(uint8_t rhport, uint16_t n_bytes_sent, uint8_t func_i
 /*---------------------------------------------------------------------*/
 /*                  audio playback and DMA isr handling                */
 /*---------------------------------------------------------------------*/
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA1_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
     volatile uint32_t mic_status;
 
-    speaker_status = dma_check_transfer_status(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL);
-    mic_status = dma_check_transfer_status(BOARD_APP_XDMA, MIC_DMA_CHANNEL);
+    speaker_status = dma_check_transfer_status(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL);
+    mic_status = dma_check_transfer_status(BOARD_APP_DMA1, MIC_DMA_CHANNEL);
 
     if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
         s_spk_dma_transfer_done = true;
@@ -579,11 +587,11 @@ void isr_dma(void)
     }
 }
 
-void i2s_speaker_dma_cfg(uint32_t size, volatile uint32_t *ptr)
+void i2s_speaker_dma_cfg(volatile uint32_t *ptr, uint32_t size)
 {
     dma_channel_config_t ch_config = {0};
 
-    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)ptr);
     ch_config.dst_addr = (uint32_t)&DAO_I2S->TXD[DAO_I2S_DATA_LINE];
     ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
@@ -594,28 +602,28 @@ void i2s_speaker_dma_cfg(uint32_t size, volatile uint32_t *ptr)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
     }
 }
 
-void i2s_pdm_dma_cfg(uint32_t size, uint32_t *ptr)
+void i2s_pdm_dma_cfg(uint32_t *ptr, uint32_t size)
 {
     dma_channel_config_t ch_config = {0};
 
-    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
 
-    ch_config.src_addr = (uint32_t)(&PDM_I2S->RXD[PDM_I2S_DATA_LINE]) + 2u;
+    ch_config.src_addr = (uint32_t)(&PDM_I2S->RXD[PDM_I2S_DATA_LINE]);
     ch_config.dst_addr = core_local_mem_to_sys_address(HPM_CORE0, (uint32_t)ptr);
-    ch_config.src_width = DMA_TRANSFER_WIDTH_HALF_WORD;
-    ch_config.dst_width = DMA_TRANSFER_WIDTH_HALF_WORD;
+    ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
+    ch_config.dst_width = DMA_TRANSFER_WIDTH_WORD;
     ch_config.src_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
-    ch_config.size_in_byte = DMA_ALIGN_HALF_WORD(size);
+    ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
 
-    if (status_success != dma_setup_channel(BOARD_APP_XDMA, MIC_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_DMA1, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
     }
 }
@@ -654,14 +662,14 @@ void audio_task(void)
         if (!speaker_out_buff_is_empty()) {
             if (s_spk_dma_transfer_req) {
                 s_spk_dma_transfer_req = false;
-                i2s_speaker_dma_cfg(spk_buf_size[s_spk_buf_front], (uint32_t *)&spk_buf[s_spk_buf_front][0]);
+                i2s_speaker_dma_cfg((uint32_t *)&spk_buf[s_spk_buf_front][0], spk_buf_size[s_spk_buf_front]);
                 s_spk_buf_front++;
                 if (s_spk_buf_front >= AUDIO_BUFFER_COUNT) {
                     s_spk_buf_front = 0;
                 }
             } else if (s_spk_dma_transfer_done) {
                 s_spk_dma_transfer_done = false;
-                i2s_speaker_dma_cfg(spk_buf_size[s_spk_buf_front], (uint32_t *)&spk_buf[s_spk_buf_front][0]);
+                i2s_speaker_dma_cfg((uint32_t *)&spk_buf[s_spk_buf_front][0], spk_buf_size[s_spk_buf_front]);
                 s_spk_buf_front++;
                 if (s_spk_buf_front >= AUDIO_BUFFER_COUNT) {
                     s_spk_buf_front = 0;
@@ -679,7 +687,7 @@ void audio_task(void)
             if (s_mic_buf_rear >= AUDIO_BUFFER_COUNT) {
                 s_mic_buf_rear = 0;
             }
-            i2s_pdm_dma_cfg(CFG_TUD_AUDIO_EP_SZ_IN, (uint32_t *)&mic_buf[s_mic_buf_rear][0]);
+            i2s_pdm_dma_cfg((uint32_t *)&mic_buf[s_mic_buf_rear][0], AUDIO_MIC_TX_SZ);
         }
     }
 }

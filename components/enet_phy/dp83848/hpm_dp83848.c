@@ -21,8 +21,10 @@ static bool dp83848_check_id(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, phy_addr, DP83848_PHYIDR1);
-    id2 = enet_read_phy(ptr, phy_addr, DP83848_PHYIDR2);
+    if (enet_read_phy(ptr, phy_addr, DP83848_PHYIDR1, &id1) != status_success ||
+        enet_read_phy(ptr, phy_addr, DP83848_PHYIDR2, &id2) != status_success) {
+        return false;
+    }
 
     if (DP83848_PHYIDR1_OUI_MSB_GET(id1) == DP83848_ID1 && DP83848_PHYIDR2_OUI_LSB_GET(id2) == DP83848_ID2) {
         return true;
@@ -45,7 +47,9 @@ bool dp83848_reset(ENET_Type *ptr, uint32_t phy_addr)
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, phy_addr, DP83848_BMCR);
+        if (enet_read_phy(ptr, phy_addr, DP83848_BMCR, &data) != status_success) {
+            return false;
+        }
     } while (DP83848_BMCR_RESET_GET(data) && --retry_cnt);
 
     return retry_cnt > 0 ? true : false;
@@ -92,12 +96,47 @@ bool dp83848_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, dp83848_config_t
     return true;
 }
 
-void dp83848_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status)
+hpm_stat_t dp83848_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status)
 {
-    uint16_t data;
+    uint16_t data, bmcr;
+    hpm_stat_t stat;
 
-    data = enet_read_phy(ptr, phy_addr, DP83848_PHYSTS);
+    if (status == NULL) {
+        return status_invalid_argument;
+    }
+
+    status->enet_phy_speed_valid = 0U;
+
+    stat = enet_read_phy(ptr, phy_addr, DP83848_PHYSTS, &data);
+    if (stat != status_success) {
+        status->enet_phy_link = enet_phy_link_unknown;
+        return stat;
+    }
     status->enet_phy_link = DP83848_PHYSTS_LINK_STATUS_GET(data);
+
+    if (status->enet_phy_link == 0U) {
+        return status_success;
+    }
+
+    stat = enet_read_phy(ptr, phy_addr, DP83848_BMCR, &bmcr);
+    if (stat != status_success) {
+        status->enet_phy_link = enet_phy_link_unknown;
+        return stat;
+    }
+    if (DP83848_BMCR_ANE_GET(bmcr) == 0U) {
+        status->enet_phy_speed = DP83848_BMCR_SPEED0_GET(bmcr) ? enet_phy_port_speed_100mbps : enet_phy_port_speed_10mbps;
+        status->enet_phy_duplex = DP83848_BMCR_DUPLEX_GET(bmcr);
+        status->enet_phy_speed_valid = 1U;
+        return status_success;
+    }
+
+    if (DP83848_PHYSTS_AUTO_NEG_COMPLETE_GET(data) == 0U) {
+        return status_success;
+    }
+
     status->enet_phy_speed = DP83848_PHYSTS_SPEED_STATUS_GET(data) ? enet_phy_port_speed_10mbps : enet_phy_port_speed_100mbps;
     status->enet_phy_duplex = DP83848_PHYSTS_DUPLEX_STATUS_GET(data);
+    status->enet_phy_speed_valid = 1U;
+
+    return status_success;
 }

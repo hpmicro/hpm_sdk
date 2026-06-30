@@ -459,5 +459,4 @@ GPTMR samplse
   sent_signal_decode/README_en
   t_shape_accel_decel/README_en
   timer_basic/README_en
-  qeimode/README_en
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,8 +14,9 @@
 #include "lwip/timeouts.h"
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
+#include "enet_phy_adaptive_lwip.h"
 
-static enet_phy_status_t last_status;
+static enet_phy_status_t last_status = {.enet_phy_link = enet_phy_link_unknown};
 
 #if !NO_SYS
 extern xSemaphoreHandle s_xSemaphore;
@@ -123,38 +124,17 @@ bool enet_get_link_status(void)
 
 void enet_self_adaptive_port_speed(void)
 {
-    enet_phy_status_t status = {0};
+    lwip_enet_phy_adaptive_binding_t binding = {
+        .last = &last_status,
+        .enet_base = ENET,
+        .phy_port = 0,
+        .log_prefix = NULL,
+        .print_port_banner = false,
+        .notify_netif = false,
+        .netif_idx = 0,
+    };
 
-    enet_line_speed_t line_speed[] = {enet_line_speed_10mbps, enet_line_speed_100mbps, enet_line_speed_1000mbps};
-    char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
-    char *duplex_str[] = {"Half duplex", "Full duplex"};
-
-#if defined(RGMII) && RGMII
-    #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_get_phy_status(ENET, DP83867_ADDR, &status);
-    #else
-        rtl8211_get_phy_status(ENET, RTL8211_ADDR, &status);
-    #endif
-#else
-    #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_get_phy_status(ENET, DP83848_ADDR, &status);
-    #else
-        rtl8201_get_phy_status(ENET, RTL8201_ADDR, &status);
-    #endif
-#endif
-
-    if (memcmp(&last_status, &status, sizeof(enet_phy_status_t)) != 0) {
-        memcpy(&last_status, &status, sizeof(enet_phy_status_t));
-        if (status.enet_phy_link) {
-            printf("Link Status: Up\n");
-            printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
-            printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
-            enet_set_line_speed(ENET, line_speed[status.enet_phy_speed]);
-            enet_set_duplex_mode(ENET, status.enet_phy_duplex);
-        } else {
-            printf("Link Status: Down\n");
-        }
-    }
+    lwip_enet_phy_adaptive_poll(&binding);
 }
 
 void enet_services(struct netif *netif)

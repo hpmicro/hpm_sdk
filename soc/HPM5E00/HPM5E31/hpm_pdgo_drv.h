@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -54,7 +54,7 @@ typedef enum {
     dgo_irq1_pcnt0_update = PDGO_IRQ1_EN_PCNT0_UPDATE_MASK,
     dgo_irq1_pcnt0_z_match = PDGO_IRQ1_EN_PCNT0_Z_MASK,
     dgo_irq1_pcnt0_h_match = PDGO_IRQ1_EN_PCNT0_HOME_MASK,
-    dgo_irq1_pcnt0_cmp0_match = PDGO_IRQ1_EN_PCNT0_MATCH0_MASK,
+    dgo_irq1_pcnt0_cmp_match0 = PDGO_IRQ1_EN_PCNT0_MATCH0_MASK,
     dgo_irq1_pcnt0_tacho = PDGO_IRQ1_EN_PCNT0_TACHO_MASK,
     dgo_irq1_pcnt0_dec_err = PDGO_IRQ1_EN_PCNT0_DECERR_MASK,
     dgo_irq1_pcnt0_seq_err = PDGO_IRQ1_EN_PCNT0_SEQERR_MASK,
@@ -221,18 +221,18 @@ typedef enum {
 } dgo_pcnt_tacho_mode_t;
 
 /**
- * @brief pulse counter compare mode
+ * @brief pulse counter match mode
  */
 typedef enum {
-    dgo_pcnt_cmp_disable = 0,
-    dgo_pcnt_cmp_range_match_mode,
-    dgo_pcnt_cmp_match_mode0,
-    dgo_pcnt_cmp_match_mode1,
-    dgo_pcnt_cmp_match_forward_mode0,
-    dgo_pcnt_cmp_match_forward_mode1,
-    dgo_pcnt_cmp_match_reverse_mode0,
-    dgo_pcnt_cmp_match_reverse_mode1,
-} dgo_pcnt_cmp_mode_t;
+    dgo_pcnt_match_disable = 0,
+    dgo_pcnt_match_range_cmp0_cmp1_mode,
+    dgo_pcnt_match_cmp0_mode0,
+    dgo_pcnt_match_cmp0_mode1,
+    dgo_pcnt_match_cmp0_forward_mode0,
+    dgo_pcnt_match_cmp0_forward_mode1,
+    dgo_pcnt_match_cmp0_reverse_mode0,
+    dgo_pcnt_match_cmp0_reverse_mode1,
+} dgo_pcnt_match_mode_t;
 
 /**
  * @brief pulse counter range match mode compare source
@@ -316,7 +316,7 @@ typedef struct {
     dgo_pcnt_sig_state_t dump_state;
     dgo_pcnt_tacho_mode_t tacho_mode;
     uint16_t tacho_len;
-    dgo_pcnt_cmp_mode_t cmp0_mode;
+    dgo_pcnt_match_mode_t match0_mode;
     dgo_pcnt_range_cmp_src_t range_cmp_src;
     uint32_t cmp0_value;
     uint32_t cmp1_value;
@@ -519,7 +519,7 @@ static inline void pdgo_disable_all_irq(PDGO_Type *ptr)
  * @param [in] ptr DGO base address
  * @param [in] mask @ref dgo_irq0_bit_mask_t
  */
-static inline void pdgo_enable_irq0_by_bit_mask(PDGO_Type *ptr, dgo_irq0_bit_mask_t mask)
+static inline void pdgo_enable_irq0_by_bit_mask(PDGO_Type *ptr, uint32_t mask)
 {
     ptr->IRQ0_EN |= mask;
 }
@@ -529,7 +529,7 @@ static inline void pdgo_enable_irq0_by_bit_mask(PDGO_Type *ptr, dgo_irq0_bit_mas
  * @param [in] ptr DGO base address
  * @param [in] mask @ref dgo_irq0_bit_mask_t
  */
-static inline void pdgo_disable_irq0_by_bit_mask(PDGO_Type *ptr, dgo_irq0_bit_mask_t mask)
+static inline void pdgo_disable_irq0_by_bit_mask(PDGO_Type *ptr, uint32_t mask)
 {
     ptr->IRQ0_EN &= ~mask;
 }
@@ -569,7 +569,7 @@ static inline void pdgo_clear_irq0_status(PDGO_Type *ptr, uint32_t mask)
  * @param [in] ptr DGO base address
  * @param [in] mask @ref dgo_irq0_bit_mask_t
  */
-static inline void pdgo_enable_irq1_by_bit_mask(PDGO_Type *ptr, dgo_irq1_bit_mask_t mask)
+static inline void pdgo_enable_irq1_by_bit_mask(PDGO_Type *ptr, uint32_t mask)
 {
     ptr->IRQ1_EN |= mask;
 }
@@ -579,7 +579,7 @@ static inline void pdgo_enable_irq1_by_bit_mask(PDGO_Type *ptr, dgo_irq1_bit_mas
  * @param [in] ptr DGO base address
  * @param [in] mask @ref dgo_irq1_bit_mask_t
  */
-static inline void pdgo_disable_irq1_by_bit_mask(PDGO_Type *ptr, dgo_irq1_bit_mask_t mask)
+static inline void pdgo_disable_irq1_by_bit_mask(PDGO_Type *ptr, uint32_t mask)
 {
     ptr->IRQ1_EN &= ~mask;
 }
@@ -836,11 +836,11 @@ static inline void pdgo_set_pcnt_enable(PDGO_Type *ptr, dgo_pcnt_num_t num, bool
  * @brief Set PCNT cmp mode
  * @param [in] ptr DGO base address
  * @param [in] num @ref dgo_pcnt_num_t
- * @param [in] mode cmp mode @ref dgo_pcnt_cmp_mode_t
+ * @param [in] mode cmp mode @ref dgo_pcnt_match_mode_t
  */
-static inline void pdgo_set_pcnt_cmp_mode(PDGO_Type *ptr, dgo_pcnt_num_t num, dgo_pcnt_cmp_mode_t mode)
+static inline void pdgo_set_pcnt_cmp_mode(PDGO_Type *ptr, dgo_pcnt_num_t num, dgo_pcnt_match_mode_t mode)
 {
-    ptr->PCNT[num].HOMING_CFG = (ptr->PCNT[num].HOMING_CFG & ~PDGO_PCNT_HOMING_CFG_CMP0_MODE_MASK) | PDGO_PCNT_HOMING_CFG_CMP0_MODE_SET(mode);
+    ptr->PCNT[num].HOMING_CFG = (ptr->PCNT[num].HOMING_CFG & ~PDGO_PCNT_HOMING_CFG_MATCH0_MODE_MASK) | PDGO_PCNT_HOMING_CFG_MATCH0_MODE_SET(mode);
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023,2025 HPMicro
+ * Copyright (c) 2022-2023,2025,2026 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -46,8 +46,7 @@ SECTIONS
     } > FLASH
 
     __vector_load_addr__ = ADDR(.start) + SIZEOF(.start);
-    .vectors ORIGIN(ILM) : AT(__vector_load_addr__) {
-        . = ALIGN(8);
+    .vectors ORIGIN(ILM) : AT(__vector_load_addr__) ALIGN(8) {
         __vector_ram_start__ = .;
         KEEP(*(.vector_table))
         KEEP(*(.isr_vector))
@@ -134,8 +133,7 @@ SECTIONS
     PROVIDE (etext = .);
 
     __data_load_addr__ = etext;
-    .data : AT(__data_load_addr__) {
-        . = ALIGN(8);
+    .data : AT(__data_load_addr__) ALIGN(8) {
         __data_start__ = .;
         __global_pointer$ = . + 0x800;
         *(.data)
@@ -187,8 +185,7 @@ SECTIONS
     } > SDRAM
 
     __fast_load_addr__ = etext + SIZEOF(.data);
-    .fast : AT(__fast_load_addr__) {
-        . = ALIGN(8);
+    .fast : AT(__fast_load_addr__) ALIGN(8) {
         PROVIDE(__ramfunc_start__ = .);
         *(.fast)
         *(.fast.*)
@@ -197,8 +194,7 @@ SECTIONS
     } > ILM
 
     __tdata_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast);
-    .tdata : AT(__tdata_load_addr__) {
-        . = ALIGN(8);
+    .tdata : AT(__tdata_load_addr__) ALIGN(8) {
         PROVIDE(__tdata_start__ = .);
         *(.tdata)
         *(.tdata.*)
@@ -220,8 +216,7 @@ SECTIONS
     } > SDRAM
 
     __noncacheable_init_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata);
-    .noncacheable.init : AT(__noncacheable_init_load_addr__) {
-        . = ALIGN(8);
+    .noncacheable.init : AT(__noncacheable_init_load_addr__) ALIGN(8) {
         __noncacheable_init_start__ = .;
         KEEP(*(.noncacheable.init))
         KEEP(*(.noncacheable.init.*))
@@ -230,8 +225,7 @@ SECTIONS
     } > SDRAM_NONCACHEABLE
 
     __fast_ram_init_load_addr__ = etext + SIZEOF(.data) + SIZEOF(.fast) + SIZEOF(.tdata) + SIZEOF(.noncacheable.init);
-    .fast_ram.init : AT(__fast_ram_init_load_addr__) {
-        . = ALIGN(8);
+    .fast_ram.init : AT(__fast_ram_init_load_addr__) ALIGN(8) {
         __fast_ram_init_start__ = .;
         KEEP(*(.fast_ram.init))
         KEEP(*(.fast_ram.init.*))

@@ -17,12 +17,12 @@ Hardware
 - HPM6360IPA MCU
 - Onboard Memory
 
-  - 16bit 256Mb SDRAM
-  - 128Mb Quad SPI NOR Flash
+  - 16bit 256Mb (32MB) SDRAM
+  - 128Mb (16MB) Quad SPI NOR Flash
 
 - USB
 
-  - USB type C (USB 2.0 OTG) connector x2
+  - USB type C (USB 2.0 OTG) connector x1
 
 - Ethernet
 
@@ -45,6 +45,8 @@ Hardware
 
 DIP Switch S1
 -------------
+
+- Bit 1 and 2 control the boot mode
 
 .. list-table::
    :header-rows: 1
@@ -143,7 +145,7 @@ Pin Description
        - Remark
      * - GPTMR2.CAPT_0
        - J28[40]
-       -
+       - SENT decode input pin (idle low level)
      * - GPTMR2.COMP_0
        - J28[35]
        - MCLK of i2s emulation
@@ -153,6 +155,9 @@ Pin Description
      * - GPTMR2.COMP_2
        - J28[16]
        - BLCK of i2s emulation
+     * - GPTMR2.COMP_2
+       - J28[16]
+       - SENT decode input pin (idle high level)
 
 - ADC16 Pin:
 
@@ -306,7 +311,7 @@ Pin Description
 
 .. _hpm6300evk_known_issues:
 
-Board Know Issue
+Board Known Issue
 ----------------------
 
 - USB VBUS pin resistance issue

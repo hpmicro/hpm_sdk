@@ -1,6 +1,6 @@
 /*
 Copyright 2020 EEMBC and The MLPerf Authors. All Rights Reserved.
-Copyright (c) 2022 HPMicro
+Copyright (c) 2022-2026 HPMicro
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -27,7 +27,6 @@ in th_results is copied from the original in EEMBC.
 
 #include "api/internally_implemented.h"
 #include "tensorflow/lite/micro/kernels/micro_ops.h"
-#include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 #include "tensorflow/lite/schema/schema_generated.h"
@@ -55,9 +54,6 @@ uint8_t tensor_arena_local[kTensorArenaSize];
 typedef int8_t model_input_t;
 typedef int8_t model_output_t;
 
-
-tflite::ErrorReporter* error_reporter_local = nullptr;
-tflite::MicroInterpreter* interpreter = nullptr;
 float input_float[kInputSize];
 
 
@@ -166,7 +162,13 @@ void *th_memcpy(void *dst, const void *src, size_t n) {
 
 int th_vprintf(const char *format, va_list ap) {
 	vsprintf((char *)gstr1, format, ap);
-	printf((char *)gstr1);
+	/* Print the already-formatted string as DATA, not as a format string.
+	   Using printf((char*)gstr1) re-interprets it as a format: echoing the
+	   command terminator '%' (gstr1="%") is an invalid conversion (UB). With
+	   this build's newlib it emits '%' plus a spurious NUL byte, corrupting
+	   the bload echo stream and desynchronizing the runner on fast SoCs.
+	   Always pass runtime data via %s. */
+	printf("%s", (char *)gstr1);
 	return 0;
 }
 

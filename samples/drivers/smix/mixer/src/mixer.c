@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -67,6 +67,11 @@ hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
 
     board_init_i2c(CODEC_I2C);
 
+    codec_control_t codec_control = {
+        .ptr = CODEC_I2C,
+        .slave_address = BOARD_AUDIO_CODEC_I2C_ADDR,
+    };
+
 #ifdef CONFIG_CODEC_WM8960
     wm8960_config_t wm8960_config = {
         .route       = wm8960_route_playback,
@@ -78,12 +83,7 @@ hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
         .lrclk_polarity = (i2s_invert_fclk_out) ? wm8960_lrclk_polarity_high_for_left_channel : wm8960_lrclk_polarity_low_for_left_channel,
     };
 
-    wm8960_control_t wm8960_control = {
-        .ptr = CODEC_I2C,
-        .slave_address = WM8960_I2C_ADDR, /* I2C address */
-    };
-
-    if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
+    if (wm8960_init(&codec_control, &wm8960_config) != status_success) {
         return status_fail;
     }
 
@@ -101,12 +101,7 @@ hpm_stat_t board_codec_init(audio_data_t *audio_data, uint32_t mclk_freq)
         .lrclk_polarity = (i2s_invert_fclk_out) ? sgtl_lrclk_polarity_high_for_left_channel : sgtl_lrclk_polarity_low_for_left_channel,
     };
 
-    sgtl_context_t sgtl5000_context = {
-        .ptr = CODEC_I2C,
-        .slave_address = SGTL5000_I2C_ADDR, /* I2C address */
-    };
-
-    if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
+    if (sgtl_init(&codec_control, &sgtl5000_config) != status_success) {
         return status_fail;
     }
 #endif

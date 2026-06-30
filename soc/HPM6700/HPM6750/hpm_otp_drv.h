@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -47,7 +47,7 @@ enum {
 /***********************************************************************************************************************
  * Prototypes
  **********************************************************************************************************************/
-#ifdef __cpluscplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -64,14 +64,14 @@ extern "C" {
     /**
      * @brief Read the OTP word from shadow register
      * @param [in] addr OTP word index
-     * @retval OTP word value
+     * @return OTP word value
      */
      uint32_t otp_read_from_shadow(uint32_t addr);
 
     /**
      * @brief Read the specified OTP word from OTP IP bus
      * @param [in] addr OTP word index
-     * @retval OTP word value
+     * @return OTP word value
      */
     uint32_t otp_read_from_ip(uint32_t addr);
 
@@ -94,7 +94,7 @@ extern "C" {
     /**
      * @brief Change the Software lock permission
      * @param [in] addr OTP word index
-     * @param [in] lock_option OTP lcok option
+     * @param [in] lock_option OTP lock option
      * @return API execution status
      */
     hpm_stat_t otp_lock_otp(uint32_t addr, otp_lock_option_t lock_option);
@@ -118,7 +118,7 @@ extern "C" {
     hpm_stat_t otp_set_configurable_region(uint32_t start, uint32_t num_of_words);
 
     /**
-     * @return Write data to OTP shadow register
+     * @brief Write data to OTP shadow register
      * @param [in] addr OTP word index
      * @param [in] val Data to be written
      * @return API execution status
@@ -126,7 +126,7 @@ extern "C" {
     hpm_stat_t otp_write_shadow_register(uint32_t addr, uint32_t val);
 
 
-#ifdef __cpluscplus
+#ifdef __cplusplus
 }
 #endif
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,9 +12,11 @@
 #include "hpm_pwm_drv.h"
 #include "hpm_trgm_drv.h"
 #include "hpm_qei_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
-#include "hpm_adc12_drv.h"
-
+#endif
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
 
@@ -28,7 +30,7 @@
 #include "lvgl.h"
 #include "lv_adapter.h"
 #include "hpm_gpio_drv.h"
-#include "hpm_adc.h"
+#include "hpm_adc_v2.h"
 
 /*motor_speed set*/
 #define MOTOR0_SPD                  (0)  /*r/s   delta:0.1r/s    1-40r/s */
@@ -58,7 +60,7 @@ void motor0_highspeed_loop(void);
 uint8_t smc_start_flag = 0; /*滑模启动标志*/
 int32_t qei_clock_hz = 0;
 float fre_setspeed = MOTOR0_SPD;
-/*1ms 时间参考*/
+/*1ms 时间参数*/
 volatile uint8_t timer_flag = 0;
 float fre_set_angle = 0.0;
 int32_t fre_set_pos = 0;
@@ -67,27 +69,6 @@ int32_t fre_last_pos = 0;
 int8_t fre_user_mode = 0; /*0 : pos     1:  speed*/
 int32_t fre_record_now_pos = 0; /*record position */
 /**adc hal struct*/
-adc_type hpm_adc_u = {
-    #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    .adc_base.adc12 = BOARD_BLDC_ADC_U_BASE,
-    #else
-    .adc_base.adc16 = BOARD_BLDC_ADC_U_BASE,
-    #endif
-    .module = BOARD_BLDC_ADC_MODULE};
-adc_type hpm_adc_v = {
-    #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    .adc_base.adc12 = BOARD_BLDC_ADC_V_BASE,
-    #else
-    .adc_base.adc16 = BOARD_BLDC_ADC_V_BASE,
-    #endif
-    .module = BOARD_BLDC_ADC_MODULE};
-adc_type hpm_adc_w = {
-    #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    .adc_base.adc12 = BOARD_BLDC_ADC_W_BASE,
-    #else
-    .adc_base.adc16 = BOARD_BLDC_ADC_W_BASE,
-    #endif
-    .module = BOARD_BLDC_ADC_MODULE};
 typedef struct motor0_par{
     BLDC_CONTROL_FOC_PARA       foc_para;
     BLDC_CONTRL_PID_PARA        speedloop_para;
@@ -445,145 +426,71 @@ SDK_DECLARE_EXT_ISR_M(BOARD_BLDC_ADC_IRQn, isr_adc)
 void isr_adc(void)
 {
     uint32_t status;
-    status = hpm_adc_get_status_flags(&hpm_adc_u);
 
-    if ((status & BOARD_BLDC_ADC_TRIG_FLAG) != 0) {
-        hpm_adc_clear_status_flags(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
+    adc_v2_handle_t adc_u = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+    status = hpm_adc_v2_get_status_flags(adc_u);
+    if ((status & HPM_ADC_V2_EVENT_TRIG_COMPLETE) != 0) {
+        hpm_adc_v2_clear_status_flags(adc_u, HPM_ADC_V2_EVENT_TRIG_COMPLETE);
         motor0.adc_trig_event_callback();
     }
 }
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {
-    adc_pmt_config_t pmt_cfg;
+    adc_v2_preempt_config_t pmt_cfg;
+    adc_v2_handle_t adc_handle;
 
-    pmt_cfg.module = BOARD_BLDC_ADC_MODULE;
-
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    pmt_cfg.config.adc12.trig_ch   = trig_ch;
-    pmt_cfg.config.adc12.trig_len  = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
-    pmt_cfg.config.adc12.adc_ch[0] = BOARD_BLDC_ADC_CH_W;
-    pmt_cfg.config.adc12.inten[0] = inten;
-
-    pmt_cfg.adc_base.adc12 = BOARD_BLDC_ADC_W_BASE;
-#else
-    pmt_cfg.config.adc16.trig_ch   = trig_ch;
-    pmt_cfg.config.adc16.trig_len  = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
-    pmt_cfg.config.adc16.adc_ch[0] = BOARD_BLDC_ADC_CH_W;
-    pmt_cfg.config.adc16.inten[0] = inten;
-
-    pmt_cfg.adc_base.adc16 = BOARD_BLDC_ADC_W_BASE;
-#endif
-    hpm_adc_set_preempt_config(&pmt_cfg);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    pmt_cfg.config.adc12.adc_ch[0] = BOARD_BLDC_ADC_CH_V;
-    pmt_cfg.adc_base.adc12 = BOARD_BLDC_ADC_V_BASE;
-#else
-    pmt_cfg.config.adc16.adc_ch[0] = BOARD_BLDC_ADC_CH_V;
-    pmt_cfg.adc_base.adc16 = BOARD_BLDC_ADC_V_BASE;
-#endif
-    hpm_adc_set_preempt_config(&pmt_cfg);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    pmt_cfg.config.adc12.adc_ch[0] = BOARD_BLDC_ADC_CH_U;
-    pmt_cfg.adc_base.adc12 = BOARD_BLDC_ADC_U_BASE;
-#else
-    pmt_cfg.config.adc16.adc_ch[0] = BOARD_BLDC_ADC_CH_U;
-    pmt_cfg.adc_base.adc16 = BOARD_BLDC_ADC_U_BASE;
-#endif
-    hpm_adc_set_preempt_config(&pmt_cfg);
+    pmt_cfg.trig_ch = trig_ch;
+    pmt_cfg.trig_len = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
+    pmt_cfg.inten[0] = inten;
+    pmt_cfg.adc_ch[0] = BOARD_BLDC_ADC_CH_V;
+    adc_handle = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_V_BASE);
+    hpm_adc_v2_set_preempt_config(adc_handle, &pmt_cfg);
+    pmt_cfg.adc_ch[0] = BOARD_BLDC_ADC_CH_U;
+    adc_handle = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+    hpm_adc_v2_set_preempt_config(adc_handle, &pmt_cfg);
 }
 
 /*初始化adc*/
 void adc_init(void)
 {
-    adc_config_t cfg;
-    adc_channel_config_t ch_cfg;
+    adc_v2_config_t cfg;
+    adc_v2_channel_config_t ch_cfg;
+    adc_v2_handle_t adc_u = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+    adc_v2_handle_t adc_v = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_V_BASE);
+    adc_v2_handle_t adc_w = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_W_BASE);
 
-    cfg.module = BOARD_BLDC_ADC_MODULE;
-    hpm_adc_init_default_config(&cfg);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
+    hpm_adc_v2_get_default_config(adc_u, &cfg);
     board_init_adc_clock(BOARD_BLDC_ADC_U_BASE, true);
     board_init_adc_clock(BOARD_BLDC_ADC_V_BASE, true);
     board_init_adc_clock(BOARD_BLDC_ADC_W_BASE, true);
-    cfg.config.adc12.res            = adc12_res_12_bits;
-    cfg.config.adc12.conv_mode      = adc12_conv_mode_preemption;
-    cfg.config.adc12.diff_sel       = adc12_sample_signal_single_ended;
-    cfg.config.adc12.adc_clk_div    = adc12_clock_divider_3;
-    cfg.config.adc12.sel_sync_ahb   = false;
-    cfg.config.adc12.adc_ahb_en = true;
+    cfg.resolution_bits = BOARD_BLDC_ADC_RES_BITS;
+    cfg.conv_mode = adc_v2_conv_mode_preemption;
+    cfg.signal_mode = adc_v2_signal_mode_single_ended;
+    cfg.clock_div = BOARD_BLDC_ADC_CLOCK_DIV;
+    cfg.sel_sync_ahb = false;
+    hpm_adc_v2_init(adc_u, &cfg);
+    hpm_adc_v2_init(adc_v, &cfg);
+    hpm_adc_v2_init(adc_w, &cfg);
 
-    cfg.adc_base.adc12 = BOARD_BLDC_ADC_U_BASE;
-    hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc12 = BOARD_BLDC_ADC_V_BASE;
-    hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc12 = BOARD_BLDC_ADC_W_BASE;
-    hpm_adc_init(&cfg);
-#else
-    board_init_adc_clock(BOARD_BLDC_ADC_U_BASE, true);
-    board_init_adc_clock(BOARD_BLDC_ADC_V_BASE, true);
-    board_init_adc_clock(BOARD_BLDC_ADC_W_BASE, true);
-    cfg.config.adc16.res            = adc16_res_16_bits;
-    cfg.config.adc16.conv_mode      = adc16_conv_mode_preemption;
-    cfg.config.adc16.adc_clk_div    = adc16_clock_divider_4;
-    cfg.config.adc16.sel_sync_ahb   = false;
-    cfg.config.adc16.adc_ahb_en = true;
-
-    cfg.adc_base.adc16 = BOARD_BLDC_ADC_U_BASE;
-    hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc16 = BOARD_BLDC_ADC_V_BASE;
-    hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc16 = BOARD_BLDC_ADC_W_BASE;
-    hpm_adc_init(&cfg);
-#endif
-
-    ch_cfg.module                        = BOARD_BLDC_ADC_MODULE;
-    hpm_adc_init_channel_default_config(&ch_cfg);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    ch_cfg.config.adc12_ch.diff_sel      = adc12_sample_signal_single_ended;
-    ch_cfg.config.adc12_ch.sample_cycle  = 15;
-
-    ch_cfg.adc_base.adc12                = BOARD_BLDC_ADC_U_BASE;
-    ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_U;
-    hpm_adc_channel_init(&ch_cfg);
-
-    ch_cfg.adc_base.adc12                = BOARD_BLDC_ADC_V_BASE;
-    ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_V;
-    hpm_adc_channel_init(&ch_cfg);
-
-    ch_cfg.adc_base.adc12                = BOARD_BLDC_ADC_W_BASE;
-    ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_W;
-    hpm_adc_channel_init(&ch_cfg);
-#else
-    ch_cfg.config.adc16_ch.sample_cycle  = 20;
-
-    ch_cfg.adc_base.adc16                = BOARD_BLDC_ADC_U_BASE;
-    ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_U;
-    hpm_adc_channel_init(&ch_cfg);
-
-    ch_cfg.adc_base.adc16                = BOARD_BLDC_ADC_V_BASE;
-    ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_V;
-    hpm_adc_channel_init(&ch_cfg);
-
-    ch_cfg.adc_base.adc16                = BOARD_BLDC_ADC_W_BASE;
-    ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_W;
-    hpm_adc_channel_init(&ch_cfg);
-#endif
+    hpm_adc_v2_get_channel_default_config(adc_u, &ch_cfg);
+    ch_cfg.signal_mode = adc_v2_signal_mode_single_ended;
+    ch_cfg.sample_cycle = BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE;
+    ch_cfg.ch = BOARD_BLDC_ADC_CH_U;
+    hpm_adc_v2_init_channel(adc_u, &ch_cfg);
+    ch_cfg.ch = BOARD_BLDC_ADC_CH_V;
+    hpm_adc_v2_init_channel(adc_v, &ch_cfg);
+    ch_cfg.ch = BOARD_BLDC_ADC_CH_W;
+    hpm_adc_v2_init_channel(adc_w, &ch_cfg);
 
     init_trigger_mux(BOARD_BLDCPWM_TRGM);
     init_trigger_cfg(BOARD_BLDC_ADC_TRG, true);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC16
-    adc16_enable_pmt_queue(BOARD_BLDC_ADC_U_BASE, BOARD_BLDC_ADC_TRG);
-    adc16_enable_pmt_queue(BOARD_BLDC_ADC_V_BASE, BOARD_BLDC_ADC_TRG);
-    adc16_enable_pmt_queue(BOARD_BLDC_ADC_W_BASE, BOARD_BLDC_ADC_TRG);
-#endif
-     /* Set DMA start address for preemption mode */
-    hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[0]));
-    hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[1]));
-    hpm_adc_init_pmt_dma(&hpm_adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[2]));
+    hpm_adc_v2_enable_pmt_queue(adc_u, BOARD_BLDC_ADC_TRG);
+    hpm_adc_v2_enable_pmt_queue(adc_v, BOARD_BLDC_ADC_TRG);
+    hpm_adc_v2_enable_pmt_queue(adc_w, BOARD_BLDC_ADC_TRG);
+    hpm_adc_v2_init_pmt_dma(adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[0]));
+    hpm_adc_v2_init_pmt_dma(adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[1]));
+    hpm_adc_v2_init_pmt_dma(adc_w, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[2]));
 }
 void motor0_angle_align_loop(void)
 {
@@ -599,7 +506,7 @@ void motor0_angle_align_loop(void)
 /*
 * 转子角度对中，将编码器的中点值和实际物理角度的中点值对齐,默认当前的中点值为0角度所在的区域
 *               该函数应当在已经可以输出pwm后调用，即电机可以根据给定角度输出力矩
-*/
+ */
 void bldc_foc_angle_align(void)
 {
     uint16_t run_times = 0;
@@ -618,7 +525,7 @@ void bldc_foc_angle_align(void)
 }
 /*
 *   获取转子角度实际的角度值 注意这里返回的是脉冲数不是实际角度，应当乘以编码器的1精度对应的角度才是实际角度。
-*/
+ */
 int32_t bldc_foc_get_pos(void)
 {
     int32_t ph,z;
@@ -636,7 +543,7 @@ int32_t bldc_foc_get_pos(void)
 
 /*
     获取稳态情况下的电流值电流对中
-*/
+ */
 void lv_set_adval_middle(void)
 {
     uint32_t adc_u_sum = 0;
@@ -667,6 +574,8 @@ void lv_set_adval_middle(void)
 
 int main(void)
 {
+    adc_v2_handle_t adc_u = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+
     board_init();
     init_adc_bldc_pins();
     init_pwm_pins(MOTOR0_BLDCPWM);
@@ -683,7 +592,7 @@ int main(void)
     printf("lvgl example\n");
     lv_ex_motor_speed();
 	intc_m_enable_irq_with_priority(BOARD_BLDC_ADC_IRQn, 1);
-    hpm_adc_enable_interrupts(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
+    hpm_adc_v2_enable_interrupts(adc_u, HPM_ADC_V2_EVENT_TRIG_COMPLETE);
     /*角度对中*/
     bldc_foc_angle_align();
     /*开始转*/

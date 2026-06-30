@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2024-2026 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include <stdio.h>
 #include <stdbool.h>
 #include "board.h"
@@ -43,7 +50,7 @@ static uint16_t csh_sget_cb(chry_readline_t *rl, void *data, uint16_t size)
 
 int shell_init(UART_Type *uart, bool need_login)
 {
-    chry_shell_init_t csh_init;
+    chry_shell_init_t csh_init = {0};
 
     if (uart == NULL) {
         return -1;
@@ -88,7 +95,7 @@ int shell_init(UART_Type *uart, bool need_login)
 #endif
 
 #if defined(CONFIG_CSH_PROMPTEDIT) && CONFIG_CSH_PROMPTEDIT
-    static char csh_prompt_buffer[128];
+    static char csh_prompt_buffer[CONFIG_CSH_PROMPTEDIT_BUF_SIZE];
 
     /*!< set prompt buffer */
     csh_init.prompt_buffer = csh_prompt_buffer;
@@ -96,7 +103,7 @@ int shell_init(UART_Type *uart, bool need_login)
 #endif
 
 #if defined(CONFIG_CSH_HISTORY) && CONFIG_CSH_HISTORY
-    static char csh_history_buffer[128];
+    static char csh_history_buffer[CONFIG_CSH_HISTORY_BUF_SIZE];
 
     /*!< set history buffer */
     csh_init.history_buffer = csh_history_buffer;
@@ -104,7 +111,7 @@ int shell_init(UART_Type *uart, bool need_login)
 #endif
 
 #if defined(CONFIG_CSH_LNBUFF_STATIC) && CONFIG_CSH_LNBUFF_STATIC
-    static char csh_line_buffer[128];
+    static char csh_line_buffer[CONFIG_CSH_LNBUFF_SIZE];
 
     /*!< set linebuffer */
     csh_init.line_buffer = csh_line_buffer;

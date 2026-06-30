@@ -1,5 +1,5 @@
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
-   Copyright (c) 2022 HPMicro
+   Copyright (c) 2022-2026 HPMicro
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ extern uint32_t tf_run_inference;
 extern"C"{
 void start_time(void);
 }
-TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
-                      int image_height, int channels, int8_t* image_data) {
+TfLiteStatus GetImage(int image_width, int image_height, int channels,
+                     int8_t* image_data) {
   uint32_t x, y;
   uint16_t i;
   uint32_t data_pos;
-  (void)error_reporter;
   (void)image_width;
   (void)image_height;
   (void)channels;

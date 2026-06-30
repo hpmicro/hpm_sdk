@@ -1,4 +1,4 @@
-# Copyright (c) 2025 HPMicro
+# Copyright (c) 2025-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -10,7 +10,6 @@ set(CONFIG_EEPROM_EMULATION 1) # using eeprom emulation compenent
 set(CONFIG_LWIP 1)
 set(CONFIG_LWIP_STRERR 1)
 set(CONFIG_LWIP_SOCKET_API 1)
-set(APP_USE_ENET_PORT_COUNT 1)
 
 # FreeRTOS
 set(CONFIG_FREERTOS 1)
@@ -34,7 +33,7 @@ sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=0)
 sdk_compile_definitions(-DUSE_SYSCALL_INTERRUPT_PRIORITY=1)
 sdk_compile_definitions(-DMODBUS_TCP_SLAVE)
-sdk_compile_definitions(-DECAT_SSC_TIMER_USE_RTOS_TICK=1) # SSC code use rtos tick as timer
+sdk_compile_definitions(-DECAT_SSC_TIMER_USE_RTOS_TICK=0) # SSC code use rtos tick as timer
 
 project(ecat_eoe_modbus_tcp_server_freertos)
 

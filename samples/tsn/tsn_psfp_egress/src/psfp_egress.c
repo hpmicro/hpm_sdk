@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,7 +22,6 @@ ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t re
  *---------------------------------------------------------------------*/
 hpm_stat_t tsw_init(TSW_Type *ptr)
 {
-    rtl8211_config_t phy_config;
     tsw_dma_config_t config;
 
     /* Disable all MACs(TX/RX) */
@@ -55,10 +54,6 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     /* Initialize DMA for sending */
     tsw_init_send(ptr, &config);
 
-    for (uint8_t i = 0; i < TSW_SEND_DESC_COUNT; i++) {
-        *send_buff[i] = BOARD_TSW_PORT + 1;
-    }
-
     /* Initialize DMA for receiving */
     tsw_init_recv(ptr, &config);
 
@@ -70,9 +65,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_ep_set_mdio_config(BOARD_TSW, BOARD_TSW_PORT, 19);
 
     /* Initialize PHY */
-    rtl8211_reset(ptr, BOARD_TSW_PORT);
-    rtl8211_basic_mode_default_config(ptr, &phy_config);
-    if (rtl8211_basic_mode_init(ptr, BOARD_TSW_PORT, &phy_config) == true) {
+    if (board_init_tsw_port_phy(ptr) == status_success) {
         printf("TSW phy init passed !\n");
         return status_success;
     } else {
@@ -95,7 +88,7 @@ void tsw_self_adaptive_port_speed(void)
     char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
     char *duplex_str[] = {"Half duplex", "Full duplex"};
 
-    rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
+    board_get_tsw_port_phy_status(BOARD_TSW_PORT, &status);
 
     if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
         if (memcmp((uint8_t *)&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
@@ -125,7 +118,8 @@ int main(void)
 {
     hpm_stat_t stat;
     tsw_frame_t frame;
-    uint32_t header[4];
+    uint32_t rx_sec;
+    uint32_t rx_nsec;
     uint8_t data[1536];
 
     /* Initialize BSP */
@@ -139,7 +133,7 @@ int main(void)
 
     printf("This is a TSW demo: FSFP Egress\n");
 
-    #if defined(RGMII) && RGMII
+    #if defined(HPM_TSW_RGMII) && HPM_TSW_RGMII
     board_init_tsw_rgmii_clock_delay(BOARD_TSW, BOARD_TSW_PORT);
     #endif
 
@@ -201,13 +195,13 @@ int main(void)
                 if (stat == status_success) {
                     if (frame.length > TSW_SOC_SWITCH_HEADER_LEN) {
                         frame.buffer = recv_buff[frame.id];
-                        memcpy(header, &frame.buffer[0], 16);
-                        memcpy(data, &frame.buffer[TSW_SOC_SWITCH_HEADER_LEN], frame.length - TSW_SOC_SWITCH_HEADER_LEN);
+                        memcpy(data, &frame.buffer[TSW_SOC_ETH_PAYLOAD_OFFSET], TSW_FRAME_ETH_LEN(frame.length));
                         tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
-                        printf("RX-Time: %d.%09d\n", header[3], header[2]);
-                        printf("RX Length: %d\n", frame.length - TSW_SOC_SWITCH_HEADER_LEN);
+                        tsw_get_rx_hdr_timestamp(frame.buffer, &rx_sec, &rx_nsec);
+                        printf("RX-Time: %d.%09d\n", rx_sec, rx_nsec);
+                        printf("RX Length: %d\n", TSW_FRAME_ETH_LEN(frame.length));
 
-                        for (uint16_t i = 0; i < frame.length - TSW_SOC_SWITCH_HEADER_LEN; i++) {
+                        for (uint16_t i = 0; i < TSW_FRAME_ETH_LEN(frame.length); i++) {
                             printf("%02x ", data[i]);
                         }
                         printf("\n");

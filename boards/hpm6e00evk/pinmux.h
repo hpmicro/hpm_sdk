@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -83,6 +83,7 @@ void init_mcan4_transceiver_phy_pin(void);
 void init_sdram_card_detect_pin(void);
 void init_brownout_indicate_pin(void);
 void board_init_i2c_eeprom_pin(void);
+void init_trgm_gptmr4_cap2_invert_pins(void);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,8 +7,13 @@
 
 #include <stdio.h>
 #include "board.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
+
 
 #define APP_BOARD_PWM                 BOARD_GPTMR_PWM
 #define APP_BOARD_PWM_CH              BOARD_GPTMR_PWM_CHANNEL
@@ -17,6 +22,10 @@
 
 #define APP_PWM_FREQ                  (100000U)
 #define APP_PWM_DUTY                  (50U)
+
+#ifndef APP_GPTMR_TARGET_FREQ
+#define APP_GPTMR_TARGET_FREQ         (10000000UL) /* 10MHz, for PWM resolution */
+#endif
 
 typedef struct {
     uint32_t gptmr_frequency;
@@ -72,7 +81,12 @@ static void pwm_config(GPTMR_Type *ptr, gptmr_cfg_t *cfg)
     uint32_t reload;
 
     gptmr_channel_get_default_config(ptr, &config);
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+    config.prescaler = cfg->gptmr_frequency / APP_GPTMR_TARGET_FREQ;
+    reload = (cfg->gptmr_frequency / config.prescaler) / cfg->pwm_frequency;
+#else
     reload = cfg->gptmr_frequency / cfg->pwm_frequency;
+#endif
     config.reload = reload;
     config.cmp[0] = (reload * cfg->pwm_duty) / 100;
     config.cmp[1] = reload;
@@ -80,6 +94,9 @@ static void pwm_config(GPTMR_Type *ptr, gptmr_cfg_t *cfg)
     config.enable_software_sync = true;
     config.enable_cmp_output = false;
     gptmr_stop_counter(ptr, cfg->cn_index);
-    gptmr_channel_config(ptr, cfg->cn_index, &config, false);
+    if (gptmr_channel_config(ptr, cfg->cn_index, &config, false) != status_success) {
+        printf("config gptmr channel failed\n");
+        return;
+    }
     gptmr_channel_reset_count(ptr, cfg->cn_index);
 }

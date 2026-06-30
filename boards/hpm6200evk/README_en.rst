@@ -6,13 +6,15 @@ HPM6200EVK
 Overview
 --------
 
-The HPM6200EVK provides a series of interfaces for the characteristic peripherals of the HPM6200 series microcontrollers, including an ADC input SMA interface, a high-resolution PWM output SMA interface, and a first-class motor control interface. HPM6200EVK also integrates two 2x20 pin IO expansion interfaces, which connect most of the IOs of HPM6200 MCU for users to freely evaluate. HPM6200EVK expands NOR Flash storage for MCU and integrates an on-board debugger.
+The HPM6200EVK provides a series of interfaces for the characteristic peripherals of the HPM6200 series microcontrollers, including an ADC input SMA interface, a high-resolution PWM output SMA interface, and an HPMicro standard motor control interface. HPM6200EVK also integrates two 2x20 pin IO expansion interfaces, which connect most of the IOs of HPM6200 MCU for users to freely evaluate. HPM6200EVK expands NOR Flash storage for MCU and integrates an on-board debugger.
 
 .. image:: doc/hpm6200evk.png
    :alt: hpm6200evk
 
 DIP Switch SW1
 --------------
+
+- Bit 1 and 2 control the boot mode
 
 .. list-table::
    :header-rows: 1
@@ -113,9 +115,9 @@ Pin Description
 
      * - Function
        - Position
-     * - I2C0.SCL
+     * - I2C3.SCL
        - P2[7]
-     * - I2C0.SDA
+     * - I2C3.SDA
        - P2[10]
 
 - ACMP Pin:
@@ -140,7 +142,7 @@ Pin Description
        - Remark
      * - GPTMR1.CAPT_0
        - P2[3]
-       -
+       - SENT decode input pin (idle high and low levels share the same pin)
      * - GPTMR1.COMP_0
        - P2[23]
        - MCLK of i2s emulation
@@ -309,7 +311,7 @@ Pin Description
 
 .. _hpm6200evk_known_issues:
 
-Board Know Issue
+Board Known Issue
 ----------------------
 
 - USB VBUS pin resistance issue

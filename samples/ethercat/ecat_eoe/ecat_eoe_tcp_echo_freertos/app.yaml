@@ -4,3 +4,5 @@ dependency:
 excluded_targets:
   - debug
   - release
+  - flash_xip_hybrid
+  - flash_xip_hybrid_release

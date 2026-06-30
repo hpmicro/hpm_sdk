@@ -17,6 +17,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -24,7 +25,7 @@ namespace {
 constexpr int kInputTensor = 0;
 constexpr int kOutputTensor = 0;
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus ZerosLikePrepare(TfLiteContext* context, TfLiteNode* node) {
   MicroContext* micro_context = GetMicroContext(context);
 
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 1);
@@ -49,7 +50,7 @@ void resetZeros(T* out, const int num_elements) {
   }
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus ZerosLikeEval(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* input =
       tflite::micro::GetEvalInput(context, node, kInputTensor);
   TfLiteEvalTensor* output =
@@ -70,25 +71,18 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       resetZeros(tflite::micro::GetTensorData<float>(output), flat_size);
       break;
     default:
-      TF_LITE_KERNEL_LOG(context,
-                         "ZerosLike only currently supports int64, int32, "
-                         "and float32, got %d.",
-                         input->type);
+      MicroPrintf(
+          "ZerosLike only currently supports int64, int32, "
+          "and float32, got %d.",
+          input->type);
       return kTfLiteError;
   }
   return kTfLiteOk;
 }
 }  // namespace
 
-TfLiteRegistration Register_ZEROS_LIKE() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_ZEROS_LIKE() {
+  return tflite::micro::RegisterOp(nullptr, ZerosLikePrepare, ZerosLikeEval);
 }
 
 }  // namespace tflite

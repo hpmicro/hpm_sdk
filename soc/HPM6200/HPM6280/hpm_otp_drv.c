@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -62,7 +62,7 @@ hpm_stat_t otp_program(uint32_t addr, const uint32_t *src, uint32_t num_of_words
         uint32_t reg_val = (HPM_PCFG->LDO2P5 & ~PCFG_LDO2P5_VOLT_MASK) | PCFG_LDO2P5_ENABLE_MASK | PCFG_LDO2P5_VOLT_SET(2500);
         HPM_PCFG->LDO2P5 = reg_val;
         /* Wait until LDO is ready */
-        while (!IS_HPM_BITMASK_SET(HPM_PCFG->LDO2P5, PCFG_DCDC_MODE_READY_MASK)) {
+        while (!IS_HPM_BITMASK_SET(HPM_PCFG->LDO2P5, PCFG_LDO2P5_READY_MASK)) {
         }
         HPM_OTP->UNLOCK = OTP_UNLOCK_MAGIC_NUM;
         for (uint32_t i = 0; i < num_of_words; i++) {
@@ -99,7 +99,7 @@ hpm_stat_t otp_lock_otp(uint32_t addr, otp_lock_option_t lock_option)
     do {
         HPM_BREAK_IF(addr >= ARRAY_SIZE(HPM_OTP->SHADOW) || (lock_option > otp_lock_option_max));
 
-        OTP_Type *otp_base = (addr <= SHADOW_INDEX_IN_PMIC_OTP_END) ? HPM_OTP : HPM_OTPSHW;
+        OTP_Type *otp_base = HPM_OTP;
 
         uint32_t lock_reg_idx = (addr << 1) / 32;
         uint32_t lock_reg_offset = (addr << 1) % 32;

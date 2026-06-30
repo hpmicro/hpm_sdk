@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,7 +21,7 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint8_t ch_num, dma_channel_config_t
      || (ch->src_addr & ((1 << ch->src_width) - 1))
      || (ch->dst_addr & ((1 << ch->dst_width) - 1))
      || ((1 << ch->src_width) & ((1 << ch->dst_width) - 1))
-     || ((ch->linked_ptr & 0x7))) {
+     || ((ch->linked_ptr & (DMA_LINKED_DESCRIPTOR_ALIGN - 1)))) {
         return status_dma_alignment_error;
     }
     ptr->CHCTRL[ch_num].SRCADDR = DMA_CHCTRL_SRCADDR_SRCADDRL_SET(ch->src_addr);
@@ -88,7 +88,7 @@ hpm_stat_t dma_config_linked_descriptor(DMA_Type *ptr, dma_linked_descriptor_t *
      || (config->src_addr & ((1 << config->src_width) - 1))
      || (config->dst_addr & ((1 << config->dst_width) - 1))
      || ((1 << config->src_width) & ((1 << config->dst_width) - 1))
-     || ((config->linked_ptr & 0x7))) {
+     || ((config->linked_ptr & (DMA_LINKED_DESCRIPTOR_ALIGN - 1)))) {
         return status_dma_alignment_error;
     }
 

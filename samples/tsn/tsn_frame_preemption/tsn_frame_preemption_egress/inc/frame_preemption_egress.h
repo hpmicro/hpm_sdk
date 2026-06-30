@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,7 +10,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "board.h"
 #include "hpm_tsw_drv.h"
-#include "hpm_tsw_phy_common.h"
+#include "hpm_tsw_phy.h"
 
 typedef struct {
     uint8_t phy_link;

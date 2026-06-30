@@ -109,26 +109,6 @@ typedef struct gptmr_channel_monitor_config {
 } gptmr_channel_monitor_config_t;
 #endif
 
-#if defined(HPM_IP_FEATURE_GPTMR_QEI_MODE) && (HPM_IP_FEATURE_GPTMR_QEI_MODE == 1)
-typedef enum gptmr_qei_ch_group {
-    gptmr_qei_ch_group_01 = 0,
-    gptmr_qei_ch_group_23 = 2,
-} gptmr_qei_ch_group_t;
-
-typedef enum gptmr_qei_type {
-    gptmr_qei_ud_mode = 0,
-    gptmr_qei_ab_mode,
-    gptmr_qei_pd_mode,
-} gptmr_qei_type_t;
-
-typedef struct gptmr_qei_config {
-    gptmr_qei_type_t type;
-    gptmr_qei_ch_group_t ch_group;
-    uint32_t phmax;
-} gptmr_qei_config_t;
-
-#endif
-
 #if defined(HPM_IP_FEATURE_GPTMR_BURST_MODE) && (HPM_IP_FEATURE_GPTMR_BURST_MODE == 1)
 typedef enum gptmr_burst_counter_mode {
     gptmr_burst_counter_restart = 0,
@@ -141,25 +121,25 @@ typedef enum gptmr_burst_counter_mode {
  * @brief GPTMR channel config
  */
 typedef struct gptmr_channel_cfg {
-    gptmr_work_mode_t mode;
-    gptmr_dma_request_event_t dma_request_event;
-    gptmr_synci_edge_t synci_edge;
-    uint32_t cmp[GPTMR_CH_CMP_COUNT];
-    uint32_t reload;
-    bool cmp_initial_polarity_high;
-    bool enable_cmp_output;
-    bool enable_sync_follow_previous_channel;
-    bool enable_software_sync;
-    bool debug_mode;
+    gptmr_work_mode_t mode;                             /**< Work mode: capture at rising/falling/both edges, measure width, or no capture */
+    gptmr_dma_request_event_t dma_request_event;        /**< DMA request event source: cmp0, cmp1, input toggle, reload, or disabled */
+    gptmr_synci_edge_t synci_edge;                      /**< SYNCI valid edge: none, falling, rising, or both */
+    uint32_t cmp[GPTMR_CH_CMP_COUNT];                   /**< Comparator values (hardware register = cmp - 1 for non-zero/0xFFFFFFFF) */
+    uint32_t reload;                                    /**< Reload value (hardware register = reload - 1 for non-zero/0xFFFFFFFF) */
+    bool cmp_initial_polarity_high;                     /**< Initial output polarity: true = high, false = low */
+    bool enable_cmp_output;                             /**< Enable comparator output to pin */
+    bool enable_sync_follow_previous_channel;           /**< Enable sync follow previous channel */
+    bool enable_software_sync;                          /**< Enable software sync trigger */
+    bool debug_mode;                                    /**< Enable debug mode (timer stops on core halt) */
 #if defined(HPM_IP_FEATURE_GPTMR_MONITOR) && (HPM_IP_FEATURE_GPTMR_MONITOR == 1)
-    bool enable_monitor;
-    gptmr_channel_monitor_config_t monitor_config;
+    bool enable_monitor;                                /**< Enable input signal monitor */
+    gptmr_channel_monitor_config_t monitor_config;      /**< Monitor configuration: monitor type, max/min thresholds */
 #endif
 #if defined(HPM_IP_FEATURE_GPTMR_CNT_MODE) && (HPM_IP_FEATURE_GPTMR_CNT_MODE == 1)
-    gptmr_counter_mode_t counter_mode;
+    gptmr_counter_mode_t counter_mode;                  /**< Counter mode: internal or external clock source */
 #endif
 #if defined(HPM_IP_FEATURE_GPTMR_OP_MODE) && (HPM_IP_FEATURE_GPTMR_OP_MODE == 1)
-    bool enable_opmode;
+    bool enable_opmode;                                 /**< Enable one-shot mode (timer stops at reload) */
 #endif
 } gptmr_channel_config_t;
 
@@ -287,11 +267,7 @@ static inline uint32_t gptmr_channel_get_counter(GPTMR_Type *ptr,
  */
 static inline void gptmr_trigger_channel_software_sync(GPTMR_Type *ptr, uint32_t ch_index_mask)
 {
-#if defined(HPM_IP_FEATURE_GPTMR_QEI_MODE) && (HPM_IP_FEATURE_GPTMR_QEI_MODE == 1)
-    ptr->GCR = (ptr->GCR & ~GPTMR_GCR_SWSYNCT_MASK) | GPTMR_GCR_SWSYNCT_SET(ch_index_mask);
-#else
     ptr->GCR = ch_index_mask;
-#endif
 }
 
 /**
@@ -748,45 +724,6 @@ static inline void gptmr_start_counter(GPTMR_Type *ptr, uint8_t ch_index)
 #endif
     ptr->CHANNEL[ch_index].CR |= GPTMR_CHANNEL_CR_CEN_MASK;
 }
-
-#if defined(HPM_IP_FEATURE_GPTMR_QEI_MODE) && (HPM_IP_FEATURE_GPTMR_QEI_MODE == 1)
-
-/**
- * @brief gptmr config qei.
- *
- * @param [in] ptr GPTMR base address
- * @param [in] qei_config gptmr_qei_config_t
- */
-void gptmr_config_qei(GPTMR_Type *ptr, gptmr_qei_config_t *qei_config);
-
-/**
- * @brief gptmr set qei type.
- *
- * @param [in] ptr GPTMR base address
- * @param [in] ch_group gptmr_qei_ch_group_t
- * @param [in] type gptmr_qei_type_t
- */
-void gptmr_set_qei_type(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group, gptmr_qei_type_t type);
-
-/**
- * @brief gptmr get qei type.
- *
- * @param [in] ptr GPTMR base address
- * @param [in] ch_group gptmr_qei_ch_group_t
- * @retval gptmr_qei_type_t ud_mode or ab_mode or pd_mode
- */
-gptmr_qei_type_t gptmr_get_qei_type(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group);
-
-/**
- * @brief gptmr get qei phase count.
- *
- * @param [in] ptr GPTMR base address
- * @param [in] ch_group gptmr_qei_ch_group_t
- * @retval uint32_t qei phase count
- */
-uint32_t gptmr_get_qei_phcnt(GPTMR_Type *ptr, gptmr_qei_ch_group_t ch_group);
-
-#endif
 
 /**
  * @brief gptmr channel set comparator initial output polarity

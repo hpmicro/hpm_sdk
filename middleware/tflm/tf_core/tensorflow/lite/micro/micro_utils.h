@@ -90,12 +90,19 @@ void SymmetricQuantize(const float* input, T* output, int num_elements,
 template <typename T>
 void SymmetricPerChannelQuantize(const float* input, T* output,
                                  int num_elements, int num_channels,
-                                 float* scales) {
+                                 float* scales,
+                                 size_t quantized_dimension = 0) {
   int elements_per_channel = num_elements / num_channels;
   for (int i = 0; i < num_channels; i++) {
     for (int j = 0; j < elements_per_channel; j++) {
-      output[i * elements_per_channel + j] = FloatToSymmetricQuantizedType<T>(
-          input[i * elements_per_channel + j], scales[i]);
+      size_t offset;
+      if (quantized_dimension == 0) {
+        offset = i * elements_per_channel + j;
+      } else {
+        offset = i + elements_per_channel * j;
+      }
+      output[offset] =
+          FloatToSymmetricQuantizedType<T>(input[offset], scales[i]);
     }
   }
 }
@@ -104,7 +111,8 @@ void SignedSymmetricPerChannelQuantize(const float* values,
                                        TfLiteIntArray* dims,
                                        int quantized_dimension,
                                        int8_t* quantized_values,
-                                       float* scaling_factor);
+                                       float* scaling_factor,
+                                       TfLiteType type = kTfLiteNoType);
 
 // Quantizes inputs based on the values provided, choosing the smallest range
 // which includes all input values.
@@ -135,6 +143,24 @@ void Dequantize(const T* values, const int size, const float scale,
                 int zero_point, float* dequantized_values) {
   for (int i = 0; i < size; ++i) {
     dequantized_values[i] = (values[i] - zero_point) * scale;
+  }
+}
+
+// based on TfLiteType passed in to these functions the corresponding max / min
+// int for that type are returned
+inline int QMinFromTfLiteType(TfLiteType type) {
+  if (type == kTfLiteInt4) {
+    return -8;
+  } else {
+    return std::numeric_limits<int8_t>::min();
+  }
+}
+
+inline int QMaxFromTfLiteType(TfLiteType type) {
+  if (type == kTfLiteInt4) {
+    return 7;
+  } else {
+    return std::numeric_limits<int8_t>::max();
   }
 }
 

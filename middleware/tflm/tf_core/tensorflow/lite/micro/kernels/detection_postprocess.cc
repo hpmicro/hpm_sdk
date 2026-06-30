@@ -117,7 +117,8 @@ struct OpData {
   TfLiteQuantizationParams input_anchors;
 };
 
-void* Init(TfLiteContext* context, const char* buffer, size_t length) {
+void* DetectionPostProcessInit(TfLiteContext* context, const char* buffer,
+                               size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
   OpData* op_data = nullptr;
 
@@ -149,9 +150,8 @@ void* Init(TfLiteContext* context, const char* buffer, size_t length) {
   return op_data;
 }
 
-void Free(TfLiteContext* context, void* buffer) {}
-
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus DetectionPostProcessPrepare(TfLiteContext* context,
+                                         TfLiteNode* node) {
   auto* op_data = static_cast<OpData*>(node->user_data);
 
   MicroContext* micro_context = GetMicroContext(context);
@@ -776,7 +776,8 @@ TfLiteStatus NonMaxSuppressionMultiClass(TfLiteContext* context,
   return kTfLiteOk;
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus DetectionPostProcessEval(TfLiteContext* context,
+                                      TfLiteNode* node) {
   TF_LITE_ENSURE(context, (kBatchSize == 1));
   auto* op_data = static_cast<OpData*>(node->user_data);
 
@@ -801,15 +802,10 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }
 }  // namespace
 
-TfLiteRegistration* Register_DETECTION_POSTPROCESS() {
-  static TfLiteRegistration r = {/*init=*/Init,
-                                 /*free=*/Free,
-                                 /*prepare=*/Prepare,
-                                 /*invoke=*/Eval,
-                                 /*profiling_string=*/nullptr,
-                                 /*builtin_code=*/0,
-                                 /*custom_name=*/nullptr,
-                                 /*version=*/0};
+TFLMRegistration* Register_DETECTION_POSTPROCESS() {
+  static TFLMRegistration r = tflite::micro::RegisterOp(
+      DetectionPostProcessInit, DetectionPostProcessPrepare,
+      DetectionPostProcessEval);
   return &r;
 }
 

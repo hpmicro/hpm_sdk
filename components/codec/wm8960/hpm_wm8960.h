@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015, Freescale Semiconductor, Inc.
  * Copyright 2016-2021 NXP
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,6 +13,7 @@
 #include "hpm_i2c_drv.h"
 #include "hpm_common.h"
 #include "hpm_wm8960_regs.h"
+#include "hpm_codec_control.h"
 
 #define WM8960_I2C_ADDR 0x1A
 
@@ -87,10 +88,6 @@ typedef struct wm8960_config {
     wm8960_lrclk_polarity_t lrclk_polarity;    /* LRCLK polarity for Philips/Left Justified/Right Justified protocol */
 } wm8960_config_t;
 
-typedef struct {
-    I2C_Type *ptr;                     /* I2C bus */
-    uint8_t slave_address;             /* code device address */
-} wm8960_control_t;
 
 
 #if defined(__cplusplus)
@@ -98,12 +95,31 @@ extern "C" {
 #endif
 
 /**
+ * @brief Get default configuration for WM8960.
+ *
+ * This function initializes the configuration structure with default values.
+ * The default configuration:
+ * - route: wm8960_route_playback_and_record
+ * - bus: wm8960_bus_left_justified
+ * - enable_speaker: false
+ * - left_input: wm8960_input_closed
+ * - right_input: wm8960_input_differential_mic_input2
+ * - play_source: wm8960_play_source_dac
+ * - sample_rate: 48000 Hz
+ * - bit_width: 32 bits
+ * - lrclk_polarity: wm8960_lrclk_polarity_low_for_left_channel
+ *
+ * @param config Pointer to WM8960 configuration structure.
+ */
+void wm8960_get_default_config(wm8960_config_t *config);
+
+/**
  * @brief WM8960 initialize function.
  *
  * @param control WM8960 control structure.
  * @param config WM8960 configuration structure.
  */
-hpm_stat_t wm8960_init(wm8960_control_t *control, wm8960_config_t *config);
+hpm_stat_t wm8960_init(codec_control_t *control, wm8960_config_t *config);
 
 /**
  * @brief Deinit the WM8960 codec.
@@ -112,7 +128,7 @@ hpm_stat_t wm8960_init(wm8960_control_t *control, wm8960_config_t *config);
  *
  * @param control WM8960 control structure pointer.
  */
-hpm_stat_t wm8960_deinit(wm8960_control_t *control);
+hpm_stat_t wm8960_deinit(codec_control_t *control);
 
 /**
  * @brief Set audio data route in WM8960.
@@ -122,7 +138,7 @@ hpm_stat_t wm8960_deinit(wm8960_control_t *control);
  * @param control WM8960 control structure.
  * @param config Audio configure structure in WM8960.
  */
-hpm_stat_t wm8960_set_data_route(wm8960_control_t *control, wm8960_config_t *config);
+hpm_stat_t wm8960_set_data_route(codec_control_t *control, wm8960_config_t *config);
 
 /**
  * @brief Set left audio input source in WM8960.
@@ -130,7 +146,7 @@ hpm_stat_t wm8960_set_data_route(wm8960_control_t *control, wm8960_config_t *con
  * @param control WM8960 control structure.
  * @param input Audio input source.
  */
-hpm_stat_t wm8960_set_left_input(wm8960_control_t *control, wm8960_input_t input);
+hpm_stat_t wm8960_set_left_input(codec_control_t *control, wm8960_input_t input);
 
 /**
  * @brief Set right audio input source in WM8960.
@@ -138,7 +154,7 @@ hpm_stat_t wm8960_set_left_input(wm8960_control_t *control, wm8960_input_t input
  * @param control WM8960 control structure.
  * @param input Audio input source.
  */
-hpm_stat_t wm8960_set_right_input(wm8960_control_t *control, wm8960_input_t input);
+hpm_stat_t wm8960_set_right_input(codec_control_t *control, wm8960_input_t input);
 
 /**
  * @brief Set the audio transfer protocol.
@@ -146,7 +162,7 @@ hpm_stat_t wm8960_set_right_input(wm8960_control_t *control, wm8960_input_t inpu
  * @param control WM8960 control structure.
  * @param protocol Audio data transfer protocol.
  */
-hpm_stat_t wm8960_set_protocol(wm8960_control_t *control, wm8960_protocol_t protocol);
+hpm_stat_t wm8960_set_protocol(codec_control_t *control, wm8960_protocol_t protocol);
 
 /**
  * @brief Invert LRCLK polarity.
@@ -154,7 +170,7 @@ hpm_stat_t wm8960_set_protocol(wm8960_control_t *control, wm8960_protocol_t prot
  * @param control WM8960 control structure.
  * @param invert true for invert LRCLK polarity.
  */
-hpm_stat_t wm8960_invert_lrclk_polarity(wm8960_control_t *control, bool invert);
+hpm_stat_t wm8960_invert_lrclk_polarity(codec_control_t *control, bool invert);
 
 /**
  * @brief Set the volume of different modules in WM8960.
@@ -173,7 +189,7 @@ hpm_stat_t wm8960_invert_lrclk_polarity(wm8960_control_t *control, bool invert);
  * @param module Module to set volume, it can be ADC, DAC, Headphone and so on.
  * @param volume Volume value need to be set.
  */
-hpm_stat_t wm8960_set_volume(wm8960_control_t *control, wm8960_module_t module, uint32_t volume);
+hpm_stat_t wm8960_set_volume(codec_control_t *control, wm8960_module_t module, uint32_t volume);
 
 /**
  * @brief Enable/disable expected module.
@@ -182,7 +198,7 @@ hpm_stat_t wm8960_set_volume(wm8960_control_t *control, wm8960_module_t module, 
  * @param module Module expected to enable.
  * @param enable Enable or disable moudles.
  */
-hpm_stat_t wm8960_set_module(wm8960_control_t *control, wm8960_module_t module, bool enable);
+hpm_stat_t wm8960_set_module(codec_control_t *control, wm8960_module_t module, bool enable);
 
 /**
  * @brief SET the WM8960 play source.
@@ -192,7 +208,7 @@ hpm_stat_t wm8960_set_module(wm8960_control_t *control, wm8960_module_t module, 
  *
  * @return kStatus_WM8904_Success if successful, different code otherwise..
  */
-hpm_stat_t wm8960_config_input_to_output_mixer(wm8960_control_t *control, uint32_t play_source);
+hpm_stat_t wm8960_config_input_to_output_mixer(codec_control_t *control, uint32_t play_source);
 
 /**
  * @brief Configure the data format of audio data.
@@ -206,7 +222,7 @@ hpm_stat_t wm8960_config_input_to_output_mixer(wm8960_control_t *control, uint32
  * @param bits Bit depth of audio file (WM8960 only supports 16bit, 20bit, 24bit
  * and 32 bit in HW).
  */
-hpm_stat_t wm8960_set_data_format(wm8960_control_t *control, uint32_t sysclk, uint32_t sample_rate, uint32_t bits);
+hpm_stat_t wm8960_set_data_format(codec_control_t *control, uint32_t sysclk, uint32_t sample_rate, uint32_t bits);
 
 
 /**
@@ -216,7 +232,7 @@ hpm_stat_t wm8960_set_data_format(wm8960_control_t *control, uint32_t sysclk, ui
  * @param reg The register address in WM8960.
  * @param val Value needs to write into the register.
  */
-hpm_stat_t wm8960_write_reg(wm8960_control_t *control, uint8_t reg, uint16_t val);
+hpm_stat_t wm8960_write_reg(codec_control_t *control, uint8_t reg, uint16_t val);
 
 /**
  * @brief Read register from WM8960 using I2C.
@@ -232,7 +248,7 @@ hpm_stat_t wm8960_read_reg(uint8_t reg, uint16_t *val);
  * @param mask The mask code for the bits want to write. The bit you want to write should be 0.
  * @param val Value needs to write into the register.
  */
-hpm_stat_t wm8960_modify_reg(wm8960_control_t *control, uint8_t reg, uint16_t mask, uint16_t val);
+hpm_stat_t wm8960_modify_reg(codec_control_t *control, uint8_t reg, uint16_t mask, uint16_t val);
 
 #ifdef __cplusplus
 }

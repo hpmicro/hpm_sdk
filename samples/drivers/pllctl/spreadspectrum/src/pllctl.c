@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -101,7 +101,7 @@ int main(void)
         }
     }
 
-    printf("PLL%dCLK%d @ %dMhz ss has been enabled (%s) with range 0.%d%% @ %dHz, which can be observed on \"%s\" pin by the oscilloscope\n",
+    printf("PLL%dCLK%d @ %dHz ss has been enabled (%s) with range 0.%d%% @ %dHz, which can be observed on \"%s\" pin by the oscilloscope\n",
                 TEST_PLL, TEST_PLL_CLK, TEST_PLL_FREQ / TEST_CLK_REF_DIV,
                 PLLCTL_SS_TYPE == pllctl_ss_downspread ? "downspread" : "centerspread",
                 SS_RANGE, MODULATION_FREQ, BOARD_APP_CLK_REF_PIN_NAME);

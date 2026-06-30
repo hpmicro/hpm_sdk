@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,9 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "e2p_emulation.h"
+#include "hpm_nor_flash.h"
 
 /* eeprom emulation handle */
 e2p_t hpm_e2p_emulation;
+nor_flash_config_t hpm_nor_cfg;
 
 /**
  * @brief eeprom xpi emulation device operations structure
@@ -30,9 +32,9 @@ static e2p_device_ops_t hpm_e2p_xpi_device_ops = {
  * @param [in] size Size of data to read
  * @retval status_success
  */
-static uint32_t flash_read(uint8_t *buf, uint32_t addr, uint32_t size)
+static hpm_stat_t flash_read(uint8_t *buf, uint32_t addr, uint32_t size)
 {
-    return nor_flash_read(&hpm_e2p_emulation.nor_config, buf, addr, size);
+    return nor_flash_read(&hpm_nor_cfg, buf, addr, size);
 }
 
 /**
@@ -42,9 +44,9 @@ static uint32_t flash_read(uint8_t *buf, uint32_t addr, uint32_t size)
  * @param [in] size Size of data to write
  * @retval status_success
  */
-static uint32_t flash_write(uint8_t *buf, uint32_t addr, uint32_t size)
+static hpm_stat_t flash_write(const uint8_t *buf, uint32_t addr, uint32_t size)
 {
-    return nor_flash_write(&hpm_e2p_emulation.nor_config, buf, addr, size);
+    return nor_flash_write(&hpm_nor_cfg, buf, addr, size);
 }
 
 /**
@@ -52,9 +54,9 @@ static uint32_t flash_write(uint8_t *buf, uint32_t addr, uint32_t size)
  * @param [in] start_addr Start address to erase
  * @param [in] size Size of data to erase
  */
-static void flash_erase(uint32_t start_addr, uint32_t size)
+static hpm_stat_t flash_erase(uint32_t start_addr, uint32_t size)
 {
-    nor_flash_erase(&hpm_e2p_emulation.nor_config, start_addr, size);
+    return nor_flash_erase(&hpm_nor_cfg, start_addr, size);
 }
 
 /**
@@ -82,15 +84,15 @@ hpm_stat_t e2p_emulation_xpi_register_param(hpm_eeprom_device_t *device)
 {
     e2p_emu_xpi_host_config_t *host_config = device->host;
     e2p_emu_xpi_attribute_config_t *config = device->config;
-    hpm_e2p_emulation.nor_config.xpi_base = host_config->base;
-    hpm_e2p_emulation.nor_config.base_addr = config->flash_base_addr;
-    hpm_e2p_emulation.config.start_addr = hpm_e2p_emulation.nor_config.base_addr + config->start_addr;
+    hpm_nor_cfg.xpi_base = host_config->base;
+    hpm_nor_cfg.base_addr = config->flash_base_addr;
+    hpm_nor_cfg.opt_header = config->opt_header;
+    hpm_nor_cfg.opt0 = config->opt0;
+    hpm_nor_cfg.opt1 = config->opt1;
+    hpm_e2p_emulation.config.start_addr = hpm_nor_cfg.base_addr + config->start_addr;
     hpm_e2p_emulation.config.erase_size = config->erase_size;
     hpm_e2p_emulation.config.sector_cnt = config->sector_cnt;
     hpm_e2p_emulation.config.version = config->version; /* 'E' 'S' */
-    hpm_e2p_emulation.nor_config.opt_header = config->opt_header;
-    hpm_e2p_emulation.nor_config.opt0 = config->opt0;
-    hpm_e2p_emulation.nor_config.opt1 = config->opt1;
     hpm_e2p_emulation.config.flash_read = flash_read;
     hpm_e2p_emulation.config.flash_write = flash_write;
     hpm_e2p_emulation.config.flash_erase = flash_erase;
@@ -111,7 +113,7 @@ hpm_stat_t e2p_emulation_xpi_init(hpm_eeprom_device_t *device)
     hpm_stat_t stat;
 
     uint32_t level = eeprom_enter_critical();
-    stat = nor_flash_init(&hpm_e2p_emulation.nor_config);
+    stat = nor_flash_init(&hpm_nor_cfg);
     eeprom_exit_critical(level);
     if (status_success != stat) {
         return status_fail;

@@ -33,7 +33,11 @@ sdk_compile_definitions(-DMAIN_ENTRY=app_main)
 
 sdk_inc(src/port)
 sdk_inc(src)
-sdk_app_src(src/demo_dualcore_coremark.c
+sdk_inc(../../common)
+
+sdk_app_src(
+        ../../common/multicore_common.c
+        src/demo_dualcore_coremark.c
         src/dualcore_widgets.c
         src/generated/hpmlogo_180x120.c
         src/sec_core_img.c

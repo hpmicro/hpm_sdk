@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025-2025 HPMicro
+ * Copyright (c) 2024-2025 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *

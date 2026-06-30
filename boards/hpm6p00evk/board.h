@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,9 +17,13 @@
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
 #include "hpm_debug_console.h"
 #endif
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+#include "hpm_enet_phy_port.h"
+#endif
 
 #define BOARD_NAME          "hpm6p00evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
+#define BOARD_DFU_SIGNATURE (0x48504D21UL)
 #define BOARD_CPU_FREQ      (600000000UL)
 
 #define SEC_CORE_IMG_START CORE1_ILM_LOCAL_BASE
@@ -83,6 +87,9 @@
 #define BOARD_ENET_AUXI_SNAPSHOT_IDX       enet_ptp_auxi_snapshot_trigger_1
 #define BOARD_ENET_AUXI_SNAPSHOT_PTP_CLOCK clock_ptp0
 
+#define BOARD_ENET_RGMII_PHY_ITF        HPM_ENET_PHY_ITF_RGMII
+#define BOARD_ENET_RMII_PHY_ITF         HPM_ENET_PHY_ITF_RMII
+#define BOARD_ENET_RMII_INT_REF_CLK     enet_phy_rmii_refclk_dir_in
 #define BOARD_ENET_RGMII                HPM_ENET0
 #define BOARD_ENET_RGMII_RST_GPIO       HPM_GPIO0
 #define BOARD_ENET_RGMII_RST_GPIO_INDEX GPIO_DO_GPIOC
@@ -155,6 +162,7 @@
 #define BOARD_SDRAM_REFRESH_COUNT    (8192UL)
 #define BOARD_SDRAM_REFRESH_IN_MS    (64UL)
 
+#define BOARD_HAS_FEMC_ASYNC_SRAM         1
 #define BOARD_FEMC_ASYNC_SRAM_CS_INDEX    2
 #define BOARD_FEMC_ASYNC_SRAM_AD_MUX_MODE true
 #define BOARD_FEMC_ASYNC_SRAM_SIZE        (1024 * SIZE_1KB)
@@ -206,11 +214,15 @@
 #define BOARD_DAO_SINGLE_CHANNEL_MASK (2U)
 #define BOARD_DAO_I2S_DMA_REQ         (HPM_DMA_SRC_I2S1_TX_0)
 
+/* audio codec section */
+/* wm8960 i2c address */
+#define BOARD_AUDIO_CODEC_I2C_ADDR (0x1AU)
+
 /* dma section */
-#define BOARD_APP_XDMA      HPM_XDMA
-#define BOARD_APP_HDMA      HPM_HDMA
-#define BOARD_APP_XDMA_IRQ  IRQn_XDMA
-#define BOARD_APP_HDMA_IRQ  IRQn_HDMA
+#define BOARD_APP_DMA1      HPM_XDMA
+#define BOARD_APP_DMA0      HPM_HDMA
+#define BOARD_APP_DMA1_IRQ  IRQn_XDMA
+#define BOARD_APP_DMA0_IRQ  IRQn_HDMA
 #define BOARD_APP_DMAMUX    HPM_DMAMUX
 #define TEST_DMA_CONTROLLER HPM_XDMA
 #define TEST_DMA_IRQ        IRQn_XDMA
@@ -297,25 +309,26 @@
 #define BOARD_APP_ADC16_HW_TRGM_IN           HPM_TRGM0_INPUT_SRC_PWM0_TRGO_0
 #define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ      TRGM_TRGOCFG_ADC2_STRGI
 
-#define BOARD_APP_ADC16_NAME_MASTER     "ADC2"
-#define BOARD_APP_ADC16_BASE_MASTER     HPM_ADC2
-#define BOARD_APP_ADC16_IRQn_MASTER     IRQn_ADC2
-#define BOARD_APP_ADC16_CLK_NAME_MASTER (clock_adc2)
+/* ADC16 differential input: PAIR23 = ADC2/ADC3; PD24 ADC2.IN08 ch8 / PD25 ADC3.IN09 ch9 */
+#define BOARD_APP_ADC16_DIFF_PAIR23_NAME_MASTER     "ADC2"
+#define BOARD_APP_ADC16_DIFF_PAIR23_BASE_MASTER     HPM_ADC2
+#define BOARD_APP_ADC16_DIFF_PAIR23_IRQn_MASTER     IRQn_ADC2
+#define BOARD_APP_ADC16_DIFF_PAIR23_CLK_NAME_MASTER (clock_adc2)
 
-#define BOARD_APP_ADC16_NAME_SLAVE     "ADC3"
-#define BOARD_APP_ADC16_BASE_SLAVE     HPM_ADC3
-#define BOARD_APP_ADC16_IRQn_SLAVE     IRQn_ADC3
-#define BOARD_APP_ADC16_CLK_NAME_SLAVE (clock_adc3)
+#define BOARD_APP_ADC16_DIFF_PAIR23_NAME_SLAVE     "ADC3"
+#define BOARD_APP_ADC16_DIFF_PAIR23_BASE_SLAVE     HPM_ADC3
+#define BOARD_APP_ADC16_DIFF_PAIR23_IRQn_SLAVE     IRQn_ADC3
+#define BOARD_APP_ADC16_DIFF_PAIR23_CLK_NAME_SLAVE (clock_adc3)
 
-#define BOARD_APP_ADC16_MASTER_CH_1 (1U)
-#define BOARD_APP_ADC16_SLAVE_CH_1  (0U)
+#define BOARD_APP_ADC16_DIFF_PAIR23_MASTER_CH_1 (8U)
+#define BOARD_APP_ADC16_DIFF_PAIR23_SLAVE_CH_1  (9U)
 
 #define BOARD_APP_ADC16_HW_TRIG_SRC_CLK_NAME   clock_pwm0
 #define BOARD_APP_ADC16_HW_TRIG_SRC            HPM_PWM0
 #define BOARD_APP_ADC16_HW_TRGM                HPM_TRGM0
 #define BOARD_APP_ADC16_HW_TRGM_IN             HPM_TRGM0_INPUT_SRC_PWM0_TRGO_0
-#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ_MASTER TRGM_TRGOCFG_ADC2_STRGI
-#define BOARD_APP_ADC16_HW_TRGM_OUT_SEQ_SLAVE  TRGM_TRGOCFG_ADC3_STRGI
+#define BOARD_APP_ADC16_DIFF_PAIR23_HW_TRGM_OUT_SEQ_MASTER TRGM_TRGOCFG_ADC2_STRGI
+#define BOARD_APP_ADC16_DIFF_PAIR23_HW_TRGM_OUT_SEQ_SLAVE  TRGM_TRGOCFG_ADC3_STRGI
 #define BOARD_APP_ADC16_HW_TRGM_OUT_PMT        TRGM_TRGOCFG_ADCX_PTRGI0A
 
 #define BOARD_APP_ADC16_PMT_TRIG_CH ADC16_CONFIG_TRG0A
@@ -346,6 +359,7 @@
 #define BOARD_CALLBACK_TIMER_CLK_NAME (clock_gptmr0)
 
 /* LED */
+#define BOARD_LED_GPIO_NAME  "PA25"
 #define BOARD_LED_GPIO_CTRL  HPM_GPIO0
 #define BOARD_LED_GPIO_INDEX GPIO_DI_GPIOA
 #define BOARD_LED_GPIO_PIN   25
@@ -376,11 +390,12 @@
 #define BOARD_BLDCPWM_CMP_TRIG_CMP (16U)
 
 /* BLDC ADC */
-#define BOARD_BLDC_ADC_MODULE    ADCX_MODULE_ADC16
 #define BOARD_BLDC_ADC_U_BASE    HPM_ADC0
+#define BOARD_BLDC_ADC_RES_BITS              (16U)
+#define BOARD_BLDC_ADC_CLOCK_DIV             (4U)
+#define BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE  (20U)
 #define BOARD_BLDC_ADC_V_BASE    HPM_ADC2
 #define BOARD_BLDC_ADC_W_BASE    HPM_ADC3
-#define BOARD_BLDC_ADC_TRIG_FLAG adc16_event_trig_complete
 
 #define BOARD_BLDC_ADC_CH_U                   (14U)
 #define BOARD_BLDC_ADC_CH_V                   (8U)
@@ -487,6 +502,7 @@
 #define BOARD_BLDC_QEIV2_IRQ                     IRQn_QEI0
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE              clock_qei0
+#define BOARD_BLDC_MOTOR_CLOCK_SOURCE            clock_qei0
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV   (4000U)
 
 #define BOARD_APP_QEIV2_BASE                  HPM_QEI1
@@ -676,6 +692,14 @@
 #define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOC
 #define BOARD_USB_ID_GPIO_PIN   (25U)
 
+/* sent decode pin */
+
+#define BOARD_SENT_IDLE_HIGH_GPTMR                   HPM_GPTMR3
+#define BOARD_SENT_IDLE_HIGH_GPTMR_IRQ               IRQn_GPTMR3
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CHANNEL           2
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CLK_NAME          clock_gptmr3
+#define BOARD_SENT_IDLE_HIGH_GPTMR_DMA_SRC           HPM_DMA_SRC_GPTMR3_2
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -714,6 +738,7 @@ uint32_t board_init_pdm_clock(void);
 uint32_t board_init_dao_clock(void);
 void board_init_dao_pins(void);
 void board_init_adc16_pins(void);
+void board_init_adc16_diff_pins(void);
 void board_init_acmp_pins(void);
 void board_init_dac_pins(DAC_Type *ptr);
 void board_init_usb(USB_Type *ptr);
@@ -721,8 +746,11 @@ void board_init_enet_pps_pins(ENET_Type *ptr);
 void board_init_enet_pps_capture_pins(ENET_Type *ptr);
 uint8_t board_get_enet_dma_pbl(ENET_Type *ptr);
 hpm_stat_t board_reset_enet_phy(ENET_Type *ptr);
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+hpm_stat_t board_init_enet_phy(ENET_Type *ptr);
+void board_get_enet_phy_status(uint8_t idx, void *status);
+#endif
 hpm_stat_t board_init_enet_pins(ENET_Type *ptr);
-hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal);
 hpm_stat_t board_init_enet_rgmii_clock_delay(ENET_Type *ptr);
 hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
 hpm_stat_t board_enable_enet_irq(ENET_Type *ptr);
@@ -774,6 +802,7 @@ void init_can_transceiver_phy_pin(MCAN_Type *ptr);
 void init_dac_pins(DAC_Type *ptr);
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
 void board_init_brownout_indicate_pin(void);
+void init_sent_decode_pins(bool idle_high);
 
 #if defined(__cplusplus)
 }

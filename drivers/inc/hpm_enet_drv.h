@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -47,6 +47,10 @@
 
 #ifndef ENET_RETRY_CNT
 #define ENET_RETRY_CNT            (10000UL)   /**< Enet retry count for PTP */
+#endif
+
+#ifndef ENET_MDIO_BUSY_RETRY_CNT
+#define ENET_MDIO_BUSY_RETRY_CNT  (100000UL)  /**< Enet MDIO GMII busy wait retry count */
 #endif
 
 #ifndef ENET_RETRY_DMA_INIT_CNT
@@ -259,6 +263,12 @@ typedef enum {
     enet_pps_cmd_stop_pulse_train_immediately,
     enet_pps_cmd_cancel_stop_pulse_train
 } enet_pps_cmd_t;
+
+/** @brief PPS output mode: fixed output (fixed freq) or flexible output (interval/width/target) */
+typedef enum {
+    enet_pps_fixed_output = 0,     /**< PPS0 control output with fixed frequency */
+    enet_pps_flexible_output       /**< PPSx flexible output with interval/width/target time */
+} enet_pps_output_mode_t;
 
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations
@@ -514,14 +524,6 @@ typedef struct {
     uint32_t nsec;
 } enet_ptp_ts_target_t;
 
-/** @brief PTP config strcut */
-typedef struct {
-    uint8_t ssinc;
-    uint8_t timestamp_rollover_mode;
-    uint8_t update_method;
-    uint32_t addend;
-} enet_ptp_config_t;
-
 /** @brief PTP PPS command output config strcut */
 typedef struct {
     uint32_t pps_interval;
@@ -529,6 +531,26 @@ typedef struct {
     uint32_t target_sec;
     uint32_t target_nsec;
 } enet_pps_cmd_config_t;
+
+/** @brief PTP config struct (used by enet_init_ptp; PPS and initial timestamp optional) */
+typedef struct {
+    uint8_t ssinc;
+    uint8_t timestamp_rollover_mode;
+    uint8_t update_method;
+    uint32_t addend;
+    /** PPS output: used when enet_init_ptp is called with pps_enable_output true */
+    enet_pps_output_mode_t mode;
+    union {
+        enet_pps_ctrl_t control_freq;   /**< for enet_pps_fixed_output: PPS0 frequency */
+        struct {
+            enet_pps_idx_t idx;
+            enet_pps_cmd_config_t config;
+            enet_pps_cmd_t cmd;         /**< PPS command e.g. enet_pps_cmd_start_pulse_train */
+        } flexible;                     /**< for enet_pps_flexible_output: PPSx index, config and command */
+    } param;                            /**< mode-specific parameters: control_freq (fixed) or flexible */
+    bool pps_enable_output;             /**< for enet_init_ptp: true to configure PPS output (mode/param); false: only init PTP */
+    const enet_ptp_ts_update_t *ptp_timestamp; /**< for enet_init_ptp: initial PTP time set after init (via enet_set_ptp_timestamp), must not be NULL */
+} enet_ptp_config_t;
 
 /** @brief PTP auxiliary timestamp struct */
 typedef struct {
@@ -673,9 +695,12 @@ void enet_set_duplex_mode(ENET_Type *ptr, enet_duplex_mode_t mode);
  * @param[in] ptr An Ethernet peripheral base address
  * @param[in] phy_addr the specified address of phy
  * @param[in] addr the specified address of register
- * @retval A value corresponding to the specified register address
+ * @param[out] data the data read from the specified register
+ * @retval status_success MDIO read completed
+ * @retval status_invalid_argument data is NULL
+ * @retval status_timeout MDIO busy wait timed out
  */
-uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr);
+hpm_stat_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint16_t *data);
 
 /**
  * @brief Write phy
@@ -684,8 +709,10 @@ uint16_t enet_read_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr);
  * @param[in] phy_addr a specified address of phy
  * @param[in] addr a specified address of the register
  * @param[in] data a specified data to be written
+ * @retval status_success MDIO write completed
+ * @retval status_timeout MDIO busy wait timed out
  */
-void enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t data);
+hpm_stat_t enet_write_phy(ENET_Type *ptr, uint32_t phy_addr, uint32_t addr, uint32_t data);
 
 /**
  * @brief Resume reception process
@@ -807,12 +834,15 @@ void enet_dma_flush(ENET_Type *ptr);
 hpm_stat_t enet_get_default_ptp_config(ENET_Type *ptr, uint32_t ptp_clk_freq, enet_ptp_config_t *config);
 
 /**
- * @brief Initialize a PTP timer
+ * @brief Initialize PTP timer; optionally configure PPS output and set initial timestamp
  *
  * @param[in] ptr An Ethernet peripheral base address
- * @param[in] config A pointer to an enet_ptp_config struct instance
+ * @param[in] config A pointer to @ref enet_ptp_config_t; set pps_enable_output to true to configure PPS output; ptp_timestamp must not be NULL.
+ * @return Result of execution
+ * @retval status_success Initialize successfully. Please refer to @ref hpm_stat_t.
+ * @retval status_invalid_argument Invalid argument. Please refer to @ref hpm_stat_t.
  */
-void enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config);
+hpm_stat_t enet_init_ptp(ENET_Type *ptr, enet_ptp_config_t *config);
 
 /**
  * @brief Set a timestamp to the PTP timer
@@ -899,7 +929,6 @@ hpm_stat_t enet_set_ppsx_command(ENET_Type *ptr, enet_pps_cmd_t cmd, enet_pps_id
  * @retval hpm_stat_t @ref status_invalid_argument or @ref status_success
  */
 hpm_stat_t enet_set_ppsx_config(ENET_Type *ptr, enet_pps_cmd_config_t *cmd_cfg, enet_pps_idx_t idx);
-
 
 /**
  * @brief Mask Ethernet interrupt events

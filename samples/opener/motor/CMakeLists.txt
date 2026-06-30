@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -11,7 +11,7 @@ set(CONFIG_LWIP_HTTPSRV 1)
 set(CONFIG_LWIP_STRERR 1)
 set(CONFIG_LWIP_SOCKET_API 1)
 set(CONFIG_MOTORCTRL_V2 1)
-set(CONFIG_HPM_ADC 1)
+set(CONFIG_HPM_ADC_V2 1)
 
 set(RV_ABI "ilp32f")
 set(RV_ARCH "rv32imafc")
@@ -39,10 +39,12 @@ sdk_inc(./lwip)
 sdk_inc(./lwip/single)
 sdk_inc(./lwip/single/arch)
 sdk_inc(./lwip/common/single)
+sdk_inc(../../lwip/common)
 
 sdk_app_src(./lwip/single/arch/sys_arch.c)
 sdk_app_src(./lwip/single/ethernetif.c)
 sdk_app_src(./lwip/common/single/common.c)
+sdk_app_src(../../lwip/common/enet_phy_adaptive_lwip.c)
 sdk_app_src(./lwip/common/single/netconf.c)
 
 ## OpENer application files

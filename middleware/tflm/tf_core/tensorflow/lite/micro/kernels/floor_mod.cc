@@ -21,6 +21,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/types.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_utils.h"
 
 // OLD-TODO(b/117523611): We should factor out a binary_op and put binary ops
@@ -61,11 +62,11 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-void* Init(TfLiteContext* context, const char* buffer, size_t length) {
+void* FloorModInit(TfLiteContext* context, const char* buffer, size_t length) {
   return nullptr;
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus FloorModPrepare(TfLiteContext* context, TfLiteNode* node) {
   return CalculateOpData(context, node);
 }
 
@@ -95,7 +96,7 @@ TfLiteStatus EvalFloorMod(TfLiteContext* context, bool requires_broadcast,
   return kTfLiteOk;
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus FloorModEval(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* input1 =
       tflite::micro::GetEvalInput(context, node, kInputTensor1);
   const TfLiteEvalTensor* input2 =
@@ -111,8 +112,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                  output);
     }
     default: {
-      TF_LITE_KERNEL_LOG(context, "Type '%s' is not supported by FLOOR_MOD.",
-                         TfLiteTypeGetName(input1->type));
+      MicroPrintf("Type '%s' is not supported by FLOOR_MOD.",
+                  TfLiteTypeGetName(input1->type));
       return kTfLiteError;
     }
   }
@@ -120,15 +121,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace
 
-TfLiteRegistration Register_FLOOR_MOD() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_FLOOR_MOD() {
+  return tflite::micro::RegisterOp(FloorModInit, FloorModPrepare, FloorModEval);
 }
 
 }  // namespace tflite

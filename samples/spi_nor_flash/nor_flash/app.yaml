@@ -1,0 +1,2 @@
+dependency:
+  - board_spi_nor_flash

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -666,3 +666,21 @@ uint8_t spi_directio_read(SPI_Type *ptr, spi_directio_pin_t pin)
 }
 #endif
 
+void spi_deinit(SPI_Type *ptr)
+{
+#if defined(HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT) && (HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT == 1)
+    ptr->WR_TRANS_CNT = 0;
+    ptr->RD_TRANS_CNT = 0;
+#endif
+#if defined(HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO) && (HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO == 1)
+    ptr->DIRECTIO = SPI_DIRECTIO_HOLD_O_MASK | SPI_DIRECTIO_WP_O_MASK | SPI_DIRECTIO_CS_O_MASK;
+#endif
+    ptr->TRANSFMT = SPI_TRANSFMT_DATALEN_SET(7);
+    ptr->TRANSCTRL = 0;
+    ptr->ADDR = 0;
+    ptr->CTRL = 0;
+    ptr->INTREN = 0;
+    ptr->INTRST = 0xffffffffU; /* W1C */
+    ptr->TIMING = 0;
+    ptr->SLVST = SPI_SLVST_OVERRUN_MASK | SPI_SLVST_UNDERRUN_MASK; /* W1C */
+}

@@ -24,18 +24,22 @@ Project Configurations
 
 - Ethernet DHCP Configurations
 
-  - the configurations in the `CMakeLists.txt` as follows:
+  - In `CMakeLists.txt`, if CMake variable `LWIP_DHCP` is **not** defined, it defaults to **0** (static IP). The build passes `-DLWIP_DHCP=${LWIP_DHCP}`.
 
-    - sdk_compile_definitions(-DLWIP_DHCP=0): Disable DHCP feature
+    - **Default (static IP)**: configure `IP0_CONFIG` / `NETMASK0_CONFIG` / `GW0_CONFIG` in `netinfo.h` (or override via compile definitions). DNS defaults to 114.114.114.114 when not using DHCP.
 
-    - sdk_compile_definitions(-DLWIP_DHCP=1): Enable DHCP feature
+    - **Enable DHCP**: pass `-DLWIP_DHCP=1` when configuring CMake (e.g. ``cmake -DLWIP_DHCP=1 ...``), or set `LWIP_DHCP` to 1 in `CMakeLists.txt` before the `if(NOT DEFINED LWIP_DHCP)` block.
+
+  - DNS (static IP mode, applies to default build):
+
+    - Default DNS is 114.114.114.114. If the MCU can resolve domestic names but not international ones while the PC works, DNS may differ. Before ``#if !LWIP_DHCP`` in `lwipopts_app.h`, add ``#define DNS_SERVER_CONFIG 192.168.100.1`` (or your gateway IP) to align with the PC.
 
 Run Example
 -----------
 
 - Compiling and Downloading
 
-- Running log is shown in the serial terminal as follows:
+- Running log with the **default** build (static IP, `LWIP_DHCP=0`) is shown in the serial terminal as follows. If you build with DHCP enabled (`-DLWIP_DHCP=1`), lines such as ``DHCP State: ...`` appear before the IPv4 lines; addresses follow your network.
 
 
   .. code-block:: console
@@ -47,12 +51,9 @@ Run Example
      Link Status: Up
      Link Speed:  1000Mbps
      Link Duplex: Full duplex
-     DHCP State: SELECTING
-     DHCP State: CHECKING
-     DHCP State: BOUND
-     IPv4 Address: 192.168.11.25
+     IPv4 Address: 192.168.100.10
      IPv4 Netmask: 255.255.255.0
-     IPv4 Gateway: 192.168.11.254
+     IPv4 Gateway: 192.168.100.1
      Please enter a target name(IP or URL):
 
 

@@ -86,7 +86,7 @@ TINYUSB HOST CDC MSC HID FREERTOS
 接CDC设备
 ~~~~~~~~~
 
-- 开发板USB0端口接入CDC-ACM设备时，串口调试助手会显示如下数据：
+- 开发板USB0端口接入CDC-ACM设备时（CDC ACM Device的sample的路径为：samples/cherryusb/device/cdc_acm/cdc_acm_vcom），串口调试助手会显示如下数据：
 
 
 .. code-block:: text
@@ -97,4 +97,4 @@ TINYUSB HOST CDC MSC HID FREERTOS
      Parity  : 0, Data Width: 8
 
 
-- 在console中输入任意字符，CDC设备会转发给Host，Host的console会进行回显。
+- 在Host的console中输入任意字符，Host将通过CDC ACM协议发送给CDC设备，CDC设备收到数据后会发回给Host，Host收到数据会在console进行打印。看到的测试效果：Host Console能够回显输入的字符。

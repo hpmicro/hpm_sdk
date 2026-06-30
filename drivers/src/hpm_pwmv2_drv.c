@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -55,7 +55,7 @@ void pwmv2_config_cmp(PWMV2_Type *pwm_x, uint8_t index, pwmv2_cmp_config_t *conf
         pwmv2_select_cmp_trigmux(pwm_x, index, config->update_trigger_index);
     }
     if (index >= PWM_CMP_UNABLE_OUTPUT_INDEX) {
-        pwmv2_cmp_select_counter(pwm_x, index, config->cmp_source_index);
+        pwmv2_cmp_select_counter(pwm_x, index, config->cmp_use_counter);
     }
     if (config->cmp_source == cmp_value_from_shadow_val) {
         pwmv2_shadow_register_unlock(pwm_x);

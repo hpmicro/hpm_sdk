@@ -161,4 +161,9 @@
 #define configRECORD_STACK_HIGH_ADDRESS        1
 #endif
 
+extern void lv_freertos_task_switch_in(const char *name);
+extern void lv_freertos_task_switch_out(void);
+#define traceTASK_SWITCHED_IN() lv_freertos_task_switch_in(pxCurrentTCB->pcTaskName)
+#define traceTASK_SWITCHED_OUT() lv_freertos_task_switch_out()
+
 #endif /* FREERTOS_CONFIG_H */

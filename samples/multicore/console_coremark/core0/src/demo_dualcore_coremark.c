@@ -13,6 +13,7 @@
 #include "hpm_debug_console.h"
 #include "hpm_clock_drv.h"
 #include "hpm_mchtmr_drv.h"
+#include "hpm_sysctl_drv.h"
 #include "multicore_common.h"
 #include "core_portme.h"
 
@@ -86,7 +87,7 @@ void run_coremark_for_cpu(uint32_t index)
         COREMARK_MAIN();
         enable_global_irq(CSR_MSTATUS_MIE_MASK);
     } else if (index == 1) {
-        if (HPM_SYSCTL->CPU[1].GPR[1] != 0xc1bef1a9) {
+        if (!sysctl_is_cpu_released(HPM_SYSCTL, HPM_CORE1)) {
             multicore_release_cpu(HPM_CORE1, SEC_CORE_IMG_START);
             printf("Run Coremark on Core1...\n\n");
             board_delay_ms(100);

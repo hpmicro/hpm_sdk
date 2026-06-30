@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,7 +7,11 @@
 
 #include <stdio.h>
 #include "board.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 
 #define APP_BOARD_GPTMR               BOARD_GPTMR
@@ -71,7 +75,10 @@ static void monitor_config(void)
     config.monitor_config.monitor_type = APP_GPTMR_MONITOR_SEL;
     config.monitor_config.min_value = (APP_GPTMR_MONITOR_MIN_NS / gptmr_tick_ns);
     config.monitor_config.max_value = (APP_GPTMR_MONITOR_MAX_NS / gptmr_tick_ns);
-    gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
+    if (gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false) != status_success) {
+        printf("config gptmr channel failed\n");
+        return;
+    }
     gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     gptmr_start_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     gptmr_enable_irq(APP_BOARD_GPTMR, GPTMR_CH_CAP_IRQ_MASK(APP_BOARD_GPTMR_CH));

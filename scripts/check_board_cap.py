@@ -55,7 +55,7 @@ def check_ip_dependency(sdk_base, soc_name, app_dependency):
     ip_list = get_board_info.get_soc_ip_list(soc_series, soc_name)
 
     feature_list = get_soc_ip_feature_list(sdk_base, soc_series, soc_name)
-    for d in app_dep:
+    for d in app_dependency:
         if not re.match('ip_feature_', d):
             # process OR logic
             m = re.match(r'||', d)
@@ -63,11 +63,16 @@ def check_ip_dependency(sdk_base, soc_name, app_dependency):
                 or_list = d.split('||')
                 found = False
                 for d in or_list:
-                    if d.strip() in board_cap.split(get_board_info.BOARD_FEATURE_DELIM):
+                    item = d.strip()
+                    if item in board_cap.split(get_board_info.BOARD_FEATURE_DELIM):
                         found = True
                         break
                     if len(ip_list) > 0:
-                        if d.strip() in ip_list:
+                        if item in ip_list:
+                            found = True
+                            break
+                    if re.match('ip_feature_', item):
+                        if ("HPM_%s" % item).upper() in feature_list:
                             found = True
                             break
                 if not found:
@@ -98,7 +103,7 @@ if __name__ == "__main__":
             app_name = os.path.dirname(os.path.relpath(app_path, sdk_base))
             if app_name in board_excluded_samples:
                 sys.exit(1)
-        except:
+        except Exception:
             # if application is not on the same drive with sdk_base, skip checking
             pass
 

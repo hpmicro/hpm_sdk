@@ -7,6 +7,10 @@
 
 #include "hpm_smbus.h"
 
+#ifndef HPM_SMBUS_TRANSFER_COUNT_MAX
+#define HPM_SMBUS_TRANSFER_COUNT_MAX    (300U)
+#endif
+
 static uint8_t hpm_smbus_pec_crc8(uint8_t *data, uint32_t len);
 
 
@@ -126,10 +130,10 @@ hpm_stat_t hpm_smbus_master_read_word_in_command(I2C_Type *ptr, uint8_t slave_ad
 hpm_stat_t hpm_smbus_master_write_block_in_command(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t size)
 {
     hpm_stat_t stat;
-    uint8_t buf[I2C_SOC_TRANSFER_COUNT_MAX];
+    uint8_t buf[HPM_SMBUS_TRANSFER_COUNT_MAX];
     uint16_t buf_size;
     /* frame included addr, command, data, and pec */
-    assert(size > 0 && size <= (I2C_SOC_TRANSFER_COUNT_MAX - 3));
+    assert(size > 0 && size <= HPM_SMBUS_TRANSFER_COUNT_MAX);
     /* addr + rw bit*/
     buf[0] = slave_address << 1;
     buf[1] = command;
@@ -141,34 +145,49 @@ hpm_stat_t hpm_smbus_master_write_block_in_command(I2C_Type *ptr, uint8_t slave_
     return stat;
 }
 
-hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t size)
+hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t size, uint32_t *actual_len)
 {
-    hpm_stat_t stat;
-    uint8_t pec;
-    uint8_t _size;
-    uint16_t buf_size;
-    uint8_t buf[I2C_SOC_TRANSFER_COUNT_MAX];
-    /* frame included addr, command, data, and pec */
-    assert(size > 0 && size <= (I2C_SOC_TRANSFER_COUNT_MAX - 3));
+    hpm_stat_t stat = status_success;
+    uint8_t pec = 0;
+    uint32_t _size = 0;
+    uint32_t buf_size = 0;
+    uint8_t buf[HPM_SMBUS_TRANSFER_COUNT_MAX];
+    /* buf layout: addr(1) + cmd(1) + data(size) + pec(1)*/
+    assert(size > 0 && size <= HPM_SMBUS_TRANSFER_COUNT_MAX);
     /* addr + rw bit*/
     buf[0] = (slave_address << 1);
     buf[1] = command;
     /* write command code in smbus spec*/
     stat = i2c_master_seq_transmit_check_ack(ptr, (const uint16_t)slave_address, &command, sizeof(uint8_t), i2c_frist_frame, true);
-    /* read */
-    buf[2] = (slave_address << 1) | 0x01;
     if (stat == status_success) {
+        /* buf[2]: store slave address with read bit set (bit0=1) for PEC calculation */
+        buf[2] = (slave_address << 1) | 0x01;
         /* now change dir,restart, read the block count*/
         HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[3], 1, i2c_frist_frame));
         _size = buf[3];
+        /* check if _size exceeds internal buf capacity, send STOP to release bus before return */
+        if ((_size + 3) > HPM_SMBUS_TRANSFER_COUNT_MAX) {
+            /* the address misses, a stop needs to be added to prevent the bus from being busy. */
+            i2c_clear_status(ptr, I2C_STATUS_CMPL_MASK);
+            i2c_master_enable_stop_phase(ptr);
+            i2c_master_issue_data_transmission(ptr);
+            return status_invalid_argument;
+        }
         /* read data*/
         HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[4], _size, i2c_next_frame));
         /* read pec */
         HPM_CHECK_RET(i2c_master_seq_receive(ptr, (const uint16_t)slave_address, &buf[_size + 4], 1, i2c_last_frame));
+        /* check actual size before reading data to prevent buffer overflow */
+        if (_size > size) {
+            return status_invalid_argument;
+        }
         buf_size = _size + 4;
         pec = hpm_smbus_pec_crc8(buf, buf_size);
-        if (pec == buf[size + 4]) {
-            memcpy(data, &buf[4], size);
+        if (pec == buf[buf_size]) {
+            memcpy(data, &buf[4], _size);
+            if (actual_len) {
+                *actual_len = _size;
+            }
         } else {
             stat = status_fail;
         }
@@ -179,10 +198,10 @@ hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_a
 hpm_stat_t hpm_smbus_master_write(I2C_Type *ptr, uint8_t slave_address, uint8_t *data, uint32_t size)
 {
     hpm_stat_t stat;
-    uint8_t buf[I2C_SOC_TRANSFER_COUNT_MAX];
+    uint8_t buf[HPM_SMBUS_TRANSFER_COUNT_MAX];
     uint16_t buf_size;
     /* frame included addr, data, and pec */
-    assert(size > 0 && size <= (I2C_SOC_TRANSFER_COUNT_MAX - 1));
+    assert(size > 0 && size <= HPM_SMBUS_TRANSFER_COUNT_MAX);
     /* addr + rw bit*/
     buf[0] = (slave_address << 1) | 0x01;
     memcpy(&buf[1], data, size);
@@ -196,9 +215,9 @@ hpm_stat_t hpm_smbus_master_read(I2C_Type *ptr, uint8_t slave_address, uint8_t *
 {
     hpm_stat_t stat;
     uint8_t pec;
-    uint8_t buf[I2C_SOC_TRANSFER_COUNT_MAX];
+    uint8_t buf[HPM_SMBUS_TRANSFER_COUNT_MAX];
     /* frame included addr, data, and pec */
-    assert(size > 0 && size <= (I2C_SOC_TRANSFER_COUNT_MAX - 2));
+    assert(size > 0 && size <= HPM_SMBUS_TRANSFER_COUNT_MAX);
     buf[0] = (slave_address << 1);
     stat = i2c_master_read(ptr, slave_address, &buf[1], size + 1);
     if (stat == status_success) {
@@ -215,11 +234,11 @@ hpm_stat_t hpm_smbus_master_read(I2C_Type *ptr, uint8_t slave_address, uint8_t *
 hpm_stat_t hpm_smbus_slave_write(I2C_Type *ptr, uint8_t *data, uint32_t size)
 {
     hpm_stat_t stat;
-    uint8_t buf[I2C_SOC_TRANSFER_COUNT_MAX];
+    uint8_t buf[HPM_SMBUS_TRANSFER_COUNT_MAX];
     uint16_t buf_size;
     uint8_t slave_address;
     /* frame included addr, data, and pec */
-    assert(size > 0 && size <= (I2C_SOC_TRANSFER_COUNT_MAX - 1));
+    assert(size > 0 && size <= HPM_SMBUS_TRANSFER_COUNT_MAX);
     slave_address = ptr->ADDR;
     /* addr + rw bit*/
     buf[0] = (slave_address << 1);
@@ -234,10 +253,10 @@ hpm_stat_t hpm_smbus_slave_read(I2C_Type *ptr, uint8_t *data, uint32_t size)
 {
     hpm_stat_t stat;
     uint8_t pec;
-    uint8_t buf[I2C_SOC_TRANSFER_COUNT_MAX];
+    uint8_t buf[HPM_SMBUS_TRANSFER_COUNT_MAX];
     uint8_t slave_address;
     /* frame included addr, data, and pec */
-    assert(size > 0 && size <= (I2C_SOC_TRANSFER_COUNT_MAX - 2));
+    assert(size > 0 && size <= HPM_SMBUS_TRANSFER_COUNT_MAX);
     /* addr + rw bit*/
     slave_address = ptr->ADDR;
     buf[0] = (slave_address << 1) | 0x01;

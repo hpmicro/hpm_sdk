@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,9 +12,15 @@
 #include "hpm_enet_drv.h"
 
 /* Exported Macros------------------------------------------------------------*/
-#if defined(RGMII) && RGMII
+#if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
 #define ENET_INF_TYPE       enet_inf_rgmii
 #define ENET                BOARD_ENET_RGMII
+#elif defined(HPM_ENET_RMII) && HPM_ENET_RMII
+#define ENET_INF_TYPE       enet_inf_rmii
+#define ENET                BOARD_ENET_RMII
+#elif defined(HPM_ENET_MII) && HPM_ENET_MII
+#define ENET_INF_TYPE       enet_inf_mii
+#define ENET                BOARD_ENET_RMII
 #else
 #define ENET_INF_TYPE       enet_inf_rmii
 #define ENET                BOARD_ENET_RMII

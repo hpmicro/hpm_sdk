@@ -9,7 +9,11 @@
 #define _HPM_I2S_OVER_SPI_H
 #include "hpm_common.h"
 #include "hpm_i2s_common.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_spi_drv.h"
 #include "hpm_clock_drv.h"
 #include "hpm_dma_mgr.h"

@@ -109,7 +109,7 @@ bool rtl8211_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, rtl8211_config_t
  *          - Port speed (10 Mbps, 100 Mbps, or 1000 Mbps)
  *          - Duplex mode (half or full)
  */
-void rtl8211_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
+hpm_stat_t rtl8211_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
 
 #if defined(__cplusplus)
 }

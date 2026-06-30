@@ -88,7 +88,7 @@ Toolchain Setup
 
       1. **Download and Unzip the Toolchain**
 
-         - Download the RISC-V GNU toolchain from the `HPMicro official GitHub releases <https://github.com/hpmicro/riscv-gnu-toolchain/releases>`_.
+         - Download the RISC-V GNU toolchain from the `RISC-V GNU toolchain releases <https://github.com/hpmicro/riscv-gnu-toolchain/releases>`_.
          - Unzip the toolchain package to a specific path (e.g., ``TOOLCHAIN_PATH``). The executable ``riscv32-unknown-elf-gcc`` should be located in ``TOOLCHAIN_PATH/bin``.
 
       2. **Set Environment Variables**
@@ -245,6 +245,8 @@ The HPM SDK provides a comprehensive CMake-based build system that offers:
 - **SOC-agnostic application development** with automatic dependency management
 
 For detailed information about using the CMake build system, including advanced configuration options, custom board setup, and best practices, please refer to the :ref:`cmake_user_guide`.
+
+To quickly create your own project, see :ref:`cmake_quick_start` for a minimal CMakeLists.txt template and common pattern examples.
 
 .. _build_application_gnu_gcc:
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,78 +35,12 @@ static const uint8_t device_descriptor[] = {
 
 static const uint8_t config_descriptor_hs[] = {
     USB_CONFIG_DESCRIPTOR_INIT(USB_HID_CONFIG_DESC_SIZ, 0x01, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    /************** Descriptor of Custom interface *****************/
-    0x09,                          /* bLength: Interface Descriptor size */
-    USB_DESCRIPTOR_TYPE_INTERFACE, /* bDescriptorType: Interface descriptor type */
-    0x00,                          /* bInterfaceNumber: Number of Interface */
-    0x00,                          /* bAlternateSetting: Alternate setting */
-    0x02,                          /* bNumEndpoints */
-    0x03,                          /* bInterfaceClass: HID */
-    0x01,                          /* bInterfaceSubClass : 1=BOOT, 0=no boot */
-    0x00,                          /* nInterfaceProtocol : 0=none, 1=keyboard, 2=mouse */
-    0,                             /* iInterface: Index of string descriptor */
-    /******************** Descriptor of Custom HID ********************/
-    0x09,                    /* bLength: HID Descriptor size */
-    HID_DESCRIPTOR_TYPE_HID, /* bDescriptorType: HID */
-    0x11,                    /* bcdHID: HID Class Spec release number */
-    0x01,
-    0x00,                        /* bCountryCode: Hardware target country */
-    0x01,                        /* bNumDescriptors: Number of HID class descriptors to follow */
-    0x22,                        /* bDescriptorType */
-    HID_CUSTOM_REPORT_DESC_SIZE, /* wItemLength: Total length of Report descriptor */
-    0x00,
-    /******************** Descriptor of Custom in endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_IN_EP,                 /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_IN_EP_MPS_HS),        /* wMaxPacketSize */
-    HIDRAW_IN_INTERVAL,           /* bInterval: Polling Interval */
-    /******************** Descriptor of Custom out endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_OUT_EP,                /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_OUT_EP_MPS_HS),       /* wMaxPacketSize */
-    HIDRAW_OUT_EP_INTERVAL,       /* bInterval: Polling Interval */
+    HID_CUSTOM_INOUT_DESCRIPTOR_INIT(0x00, 0x01, HID_CUSTOM_REPORT_DESC_SIZE, HIDRAW_OUT_EP, HIDRAW_IN_EP, HIDRAW_IN_EP_MPS_HS, HIDRAW_IN_INTERVAL),
 };
 
 static const uint8_t config_descriptor_fs[] = {
     USB_CONFIG_DESCRIPTOR_INIT(USB_HID_CONFIG_DESC_SIZ, 0x01, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    /************** Descriptor of Custom interface *****************/
-    0x09,                          /* bLength: Interface Descriptor size */
-    USB_DESCRIPTOR_TYPE_INTERFACE, /* bDescriptorType: Interface descriptor type */
-    0x00,                          /* bInterfaceNumber: Number of Interface */
-    0x00,                          /* bAlternateSetting: Alternate setting */
-    0x02,                          /* bNumEndpoints */
-    0x03,                          /* bInterfaceClass: HID */
-    0x01,                          /* bInterfaceSubClass : 1=BOOT, 0=no boot */
-    0x00,                          /* nInterfaceProtocol : 0=none, 1=keyboard, 2=mouse */
-    0,                             /* iInterface: Index of string descriptor */
-    /******************** Descriptor of Custom HID ********************/
-    0x09,                    /* bLength: HID Descriptor size */
-    HID_DESCRIPTOR_TYPE_HID, /* bDescriptorType: HID */
-    0x11,                    /* bcdHID: HID Class Spec release number */
-    0x01,
-    0x00,                        /* bCountryCode: Hardware target country */
-    0x01,                        /* bNumDescriptors: Number of HID class descriptors to follow */
-    0x22,                        /* bDescriptorType */
-    HID_CUSTOM_REPORT_DESC_SIZE, /* wItemLength: Total length of Report descriptor */
-    0x00,
-    /******************** Descriptor of Custom in endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_IN_EP,                 /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_IN_EP_MPS_FS),        /* wMaxPacketSize */
-    HIDRAW_IN_INTERVAL,           /* bInterval: Polling Interval */
-    /******************** Descriptor of Custom out endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_OUT_EP,                /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_OUT_EP_MPS_FS),       /* wMaxPacketSize */
-    HIDRAW_OUT_EP_INTERVAL,       /* bInterval: Polling Interval */
+    HID_CUSTOM_INOUT_DESCRIPTOR_INIT(0x00, 0x01, HID_CUSTOM_REPORT_DESC_SIZE, HIDRAW_OUT_EP, HIDRAW_IN_EP, HIDRAW_IN_EP_MPS_FS, HIDRAW_IN_INTERVAL),
 };
 
 static const uint8_t device_quality_descriptor[] = {
@@ -115,78 +49,12 @@ static const uint8_t device_quality_descriptor[] = {
 
 static const uint8_t other_speed_config_descriptor_hs[] = {
     USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(USB_HID_CONFIG_DESC_SIZ, 0x01, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    /************** Descriptor of Custom interface *****************/
-    0x09,                          /* bLength: Interface Descriptor size */
-    USB_DESCRIPTOR_TYPE_INTERFACE, /* bDescriptorType: Interface descriptor type */
-    0x00,                          /* bInterfaceNumber: Number of Interface */
-    0x00,                          /* bAlternateSetting: Alternate setting */
-    0x02,                          /* bNumEndpoints */
-    0x03,                          /* bInterfaceClass: HID */
-    0x01,                          /* bInterfaceSubClass : 1=BOOT, 0=no boot */
-    0x00,                          /* nInterfaceProtocol : 0=none, 1=keyboard, 2=mouse */
-    0,                             /* iInterface: Index of string descriptor */
-    /******************** Descriptor of Custom HID ********************/
-    0x09,                    /* bLength: HID Descriptor size */
-    HID_DESCRIPTOR_TYPE_HID, /* bDescriptorType: HID */
-    0x11,                    /* bcdHID: HID Class Spec release number */
-    0x01,
-    0x00,                        /* bCountryCode: Hardware target country */
-    0x01,                        /* bNumDescriptors: Number of HID class descriptors to follow */
-    0x22,                        /* bDescriptorType */
-    HID_CUSTOM_REPORT_DESC_SIZE, /* wItemLength: Total length of Report descriptor */
-    0x00,
-    /******************** Descriptor of Custom in endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_IN_EP,                 /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_IN_EP_MPS_FS),        /* wMaxPacketSize */
-    HIDRAW_IN_INTERVAL,           /* bInterval: Polling Interval */
-    /******************** Descriptor of Custom out endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_OUT_EP,                /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_OUT_EP_MPS_FS),       /* wMaxPacketSize */
-    HIDRAW_OUT_EP_INTERVAL,       /* bInterval: Polling Interval */
+    HID_CUSTOM_INOUT_DESCRIPTOR_INIT(0x00, 0x01, HID_CUSTOM_REPORT_DESC_SIZE, HIDRAW_OUT_EP, HIDRAW_IN_EP, HIDRAW_IN_EP_MPS_FS, HIDRAW_IN_INTERVAL),
 };
 
 static const uint8_t other_speed_config_descriptor_fs[] = {
     USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(USB_HID_CONFIG_DESC_SIZ, 0x01, 0x01, USB_CONFIG_BUS_POWERED, USBD_MAX_POWER),
-    /************** Descriptor of Custom interface *****************/
-    0x09,                          /* bLength: Interface Descriptor size */
-    USB_DESCRIPTOR_TYPE_INTERFACE, /* bDescriptorType: Interface descriptor type */
-    0x00,                          /* bInterfaceNumber: Number of Interface */
-    0x00,                          /* bAlternateSetting: Alternate setting */
-    0x02,                          /* bNumEndpoints */
-    0x03,                          /* bInterfaceClass: HID */
-    0x01,                          /* bInterfaceSubClass : 1=BOOT, 0=no boot */
-    0x00,                          /* nInterfaceProtocol : 0=none, 1=keyboard, 2=mouse */
-    0,                             /* iInterface: Index of string descriptor */
-    /******************** Descriptor of Custom HID ********************/
-    0x09,                    /* bLength: HID Descriptor size */
-    HID_DESCRIPTOR_TYPE_HID, /* bDescriptorType: HID */
-    0x11,                    /* bcdHID: HID Class Spec release number */
-    0x01,
-    0x00,                        /* bCountryCode: Hardware target country */
-    0x01,                        /* bNumDescriptors: Number of HID class descriptors to follow */
-    0x22,                        /* bDescriptorType */
-    HID_CUSTOM_REPORT_DESC_SIZE, /* wItemLength: Total length of Report descriptor */
-    0x00,
-    /******************** Descriptor of Custom in endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_IN_EP,                 /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_IN_EP_MPS_HS),        /* wMaxPacketSize */
-    HIDRAW_IN_INTERVAL,           /* bInterval: Polling Interval */
-    /******************** Descriptor of Custom out endpoint ********************/
-    0x07,                         /* bLength: Endpoint Descriptor size */
-    USB_DESCRIPTOR_TYPE_ENDPOINT, /* bDescriptorType: */
-    HIDRAW_OUT_EP,                /* bEndpointAddress: Endpoint Address (IN) */
-    0x03,                         /* bmAttributes: Interrupt endpoint */
-    WBVAL(HIDRAW_OUT_EP_MPS_HS),       /* wMaxPacketSize */
-    HIDRAW_OUT_EP_INTERVAL,       /* bInterval: Polling Interval */
+    HID_CUSTOM_INOUT_DESCRIPTOR_INIT(0x00, 0x01, HID_CUSTOM_REPORT_DESC_SIZE, HIDRAW_OUT_EP, HIDRAW_IN_EP, HIDRAW_IN_EP_MPS_HS, HIDRAW_IN_INTERVAL),
 };
 
 static const char *string_descriptors[] = {

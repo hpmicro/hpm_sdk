@@ -95,13 +95,23 @@ extern void vTaskSwitchContext( void );
 #define portEND_SWITCHING_ISR( xSwitchRequired )    do {\
                                                         if( xSwitchRequired ) {\
                                                             UBaseType_t uxSavedInterruptStatus = portSET_INTERRUPT_MASK_FROM_ISR();\
+                                                            traceISR_EXIT_TO_SCHEDULER();\
                                                             vTaskSwitchContext();\
                                                             portCLEAR_INTERRUPT_MASK_FROM_ISR(uxSavedInterruptStatus);\
+                                                        } else {\
+                                                            traceISR_EXIT();\
                                                         }\
                                                     } while( 0 )
 #else
 /* Preemptive is disabled, no need to mask interrupts */
-#define portEND_SWITCHING_ISR( xSwitchRequired ) do { if( xSwitchRequired ) vTaskSwitchContext(); } while( 0 )
+#define portEND_SWITCHING_ISR( xSwitchRequired )    do {\
+                                                        if( xSwitchRequired ) {\
+                                                            traceISR_EXIT_TO_SCHEDULER();\
+                                                            vTaskSwitchContext();\
+                                                        } else {\
+                                                            traceISR_EXIT();\
+                                                        }\
+                                                    } while( 0 )
 #endif
 #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
 /*-----------------------------------------------------------*/

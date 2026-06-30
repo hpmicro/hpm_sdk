@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -425,6 +425,7 @@ typedef struct {
  * TRIGGER_OUT_SEL (RW)
  *
  * select one from 24 compare result as trigger out, set at compare point, clear at reload point.
+ * default 0x1F select nothing and output 0.
  */
 #define PWMV2_TRIGGER_CFG_TRIGGER_OUT_SEL_MASK (0x1FU)
 #define PWMV2_TRIGGER_CFG_TRIGGER_OUT_SEL_SHIFT (0U)

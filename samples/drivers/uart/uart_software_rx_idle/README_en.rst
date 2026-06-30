@@ -15,19 +15,28 @@ Port Settings
 
 - Serial port baud rate is set to ``115200bps`` , with ``one stop bit``  and ``no parity bit``
 
-Board Setting
--------------
+Hardware Setting
+----------------
 
-- connect uart transmitter tx pin to uart rx pin on baord, connect GND pin between uart transmitter and baord
+This example requires a USB to serial tool.
 
-- connect uart rx pin to trgmux input IO
+- Connect the TX pin of the USB to serial tool to the UART RX pin on the board, and connect the GND pin of the USB to serial tool to the board.
+
+- Connect the UART RX pin on the board to the TRGMUX input IO pin on the board.
+
+- Please refer to :ref:`pin description <board_resource>`.
 
 Running the example
 -------------------
 
-When the project runs correctly, send data through the UART transmitter, such as "1234567890123",  the debug serial port terminal will output the information like:
+Open serial debug assistant 1, configure the port number, baud rate and other parameters used by the USB to serial tool, then send data.
+Open serial debug assistant 2, configure the port number, baud rate and other parameters used by the board debug interface, then you can see the debug information.
+When the project runs correctly, send data through the USB to serial tool's serial assistant, such as "1234567890123", the board debug interface serial assistant will output the information in the following format:
 
-.. code-block:: text
+.. image:: doc/uart_software_rx_idle.png
+   :alt:
+
+.. code-block:: console
 
    uart software rx idle detection.
    uart receive 13 bytes, the received data are:

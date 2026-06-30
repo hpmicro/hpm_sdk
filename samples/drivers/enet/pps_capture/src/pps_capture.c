@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -38,17 +38,19 @@ void isr_pps_capture(void)
  *---------------------------------------------------------------------*/
 static void enet_ptp_init(void)
 {
-    enet_ptp_config_t config;
-    enet_ptp_ts_update_t timestamp;
+    enet_ptp_config_t config = {0};
+    enet_ptp_ts_update_t timestamp = {0};
 
-    /* initialize ptp timer */
+    /* Get default PTP config based on ENET PTP clock frequency */
     enet_get_default_ptp_config(BOARD_ENET_PPS, clock_get_frequency(BOARD_ENET_PPS_PTP_CLOCK), &config);
-    enet_init_ptp(BOARD_ENET_PPS, &config);
 
-    /* set the initial timestamp */
+    /* Set the initial timestamp */
     timestamp.sec = 1651074120UL;
     timestamp.nsec = 0;
-    enet_set_ptp_timestamp(BOARD_ENET_PPS, &timestamp);
+    config.ptp_timestamp = &timestamp;
+
+    /* Initialize PTP timer and set initial time */
+    enet_init_ptp(BOARD_ENET_PPS, &config);
 }
 
 /*---------------------------------------------------------------------*

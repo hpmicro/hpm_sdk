@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -175,8 +175,10 @@ static hpm_spi_cfg_t spi_dma_cfg_table[] = {
 static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t src, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
-    /* For TX: Disable TX DMA request first to ensure SPI starts correctly after DMA configuration */
+
+    /* For TX: Disable SPI TX DMA request first to ensure DMA starts correctly */
     spi_disable_tx_dma(spi_ptr);
+
     dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
     config.dst = (uint32_t)&spi_ptr->DATA;
@@ -192,6 +194,9 @@ static hpm_stat_t hpm_spi_tx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_
 static hpm_stat_t hpm_spi_rx_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, SPI_Type *spi_ptr, uint32_t dst, uint8_t data_width, uint32_t size)
 {
     dma_handshake_config_t config;
+
+    /* For RX: Disable SPI RX DMA request first to ensure DMA starts correctly */
+    spi_disable_rx_dma(spi_ptr);
 
     dma_default_handshake_config(dma_ptr, &config);
     config.ch_index = ch_num;
@@ -426,17 +431,6 @@ static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_con
     /* active spi cs pin */
     context->write_cs(context->cs_pin, SPI_CS_ACTIVE);
 
-    /* config SPI for first dma transmission */
-    stat = spi_setup_dma_transfer(spi_ptr,
-                                config,
-                                &context->cmd,
-                                &context->addr,
-                                MIN(context->tx_count, context->per_trans_max),
-                                MIN(context->rx_count, context->per_trans_max));
-    if (stat != status_success) {
-        return stat;
-    }
-
     if (config->common_config.trans_mode == spi_trans_write_only || config->common_config.trans_mode == spi_trans_dummy_write) {
         /* write only */
         hpm_spi_prepare_dma_tx_descriptors(context, config, trans_count, spi_transctrl, dma_linked_descriptor);
@@ -482,6 +476,16 @@ static hpm_stat_t spi_setup_trans_with_dma_chain(spi_context_t *context, spi_con
         return stat;
     }
 
+    /* config SPI for first dma transmission */
+    stat = spi_setup_dma_transfer(spi_ptr,
+                                config,
+                                &context->cmd,
+                                &context->addr,
+                                MIN(context->tx_count, context->per_trans_max),
+                                MIN(context->rx_count, context->per_trans_max));
+    if (stat != status_success) {
+        return stat;
+    }
     return stat;
 }
 

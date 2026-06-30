@@ -8,7 +8,7 @@ Overview
 
 The HPM6P00 is a dual-core MCU running 600MHz with high computing power and abundant peripheral resources.
 
-The HPM6P00EVK is an evaluation board for the HPM6P00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/SEI/PWM/ADC), CAN interface, Ethernet interface, USB interface, audio interface, PPI/FREMC interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
+The HPM6P00EVK is an evaluation board for the HPM6P00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/SEI/PWM/ADC), CAN interface, Ethernet interface, USB interface, audio interface, PPI/FEMC interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
 
 .. image:: doc/hpm6p00evk.png
    :alt: hpm6p00evk
@@ -30,6 +30,7 @@ Hardware
 
   - Line in
   - Mic
+  - Speaker
   - DAO
 
 - Motor
@@ -60,7 +61,9 @@ Hardware
 DIP Switch
 ----------
 
-.. list-table:: DIP Switch
+- Bit 1 and 2 control the boot mode
+
+.. list-table::
    :header-rows: 1
 
    * - bit[2:1]
@@ -80,7 +83,7 @@ DIP Switch
 Button
 ------
 
-.. list-table:: Button Functions
+.. list-table::
    :header-rows: 1
 
    * - Name
@@ -97,7 +100,7 @@ Plug-in
 
 - SEI CLK Section:
 
-  .. list-table:: SEI CLK Section
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -109,7 +112,7 @@ Plug-in
 
 - PWM/RDC interface section
 
-  .. list-table:: PWM/RDC interface section
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -123,7 +126,7 @@ Plug-in
 
 - USB/RGMII interface section
 
-  .. list-table:: USB/RGMII interface section
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -137,7 +140,7 @@ Plug-in
 
 - SDM/QEO interface section
 
-  .. list-table:: SDM/QEO interface section
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -156,7 +159,7 @@ Plug-in
 
 - Debug interface select
 
-  .. list-table:: Debug interface select
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -170,19 +173,19 @@ Plug-in
 
 - PPI/FEMC interface
 
-  .. list-table:: PPI/FEMC interface
+  .. list-table::
      :header-rows: 1
 
      * - Function
        - Position
        - Note
      * - PPI/FEMC interface
-       - CN1
+       - CN4
        - Connecting to PPI or FEMC expansion board
 
 - PPI/FEMC expansion board interface select
 
-  .. list-table:: PPI/FEMC expansion board interface
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -206,24 +209,24 @@ Pin Description
 - PUART Pin:
   The PUART is used for low power mode testing, such as wakeup, etc.
 
-  .. list-table:: PUART Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
        - Pin
        - Position
      * - PUART.TX
-       - PY0
-       - P5[10]
-     * - PUART.RX
-       - PY1
+       - PY00
        - P5[8]
+     * - PUART.RX
+       - PY01
+       - P5[10]
 
 - UART0 Pin:
 
   The UART0 use for core0 debugger console:
 
-  .. list-table:: UART0 Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -240,7 +243,7 @@ Pin Description
 
   The UART4 is used for core1 debugger console or some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU, lin etc.
 
-  .. list-table:: UART4 Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -249,11 +252,11 @@ Pin Description
        - Remark
      * - UART4.TX
        - PY00
-       - P5[8]
+       - P5[10]
        -
      * - UART4.RX
        - PY01
-       - P5[10]
+       - P5[8]
        -
      * - UART4.break
        - PY05
@@ -262,7 +265,7 @@ Pin Description
 
 - CAN Pin
 
-  .. list-table:: CAN Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -274,7 +277,7 @@ Pin Description
 
 - Audio Pin
 
-  .. list-table:: Audio Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -290,7 +293,7 @@ Pin Description
 
 - ADC Pin
 
-  .. list-table:: ADC Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -298,9 +301,26 @@ Pin Description
      * - ADC Input
        - J4[2]
 
+- ADC16 Differential Input
+
+  Used by ``samples/drivers/adc/adc16_differential`` and other differential ADC16 examples.
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Function
+       - Pin
+       - Position
+     * - ADC16 diff master (ADC2)
+       - PD24 (ADC2.IN08)
+       - J4[14] (ADC_IV)
+     * - ADC16 diff slave (ADC3)
+       - PD25 (ADC3.IN09)
+       - J4[15] (ADC_IW)
+
 - DAC Pin
 
-  .. list-table:: DAC Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -310,7 +330,7 @@ Pin Description
 
 - ACMP pin
 
-  .. list-table:: ACMP pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -320,7 +340,7 @@ Pin Description
 
 - Quadrature Encoder Pin
 
-  .. list-table:: Quadrature Encoder Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -340,7 +360,7 @@ Pin Description
 
 - HALL Pin
 
-The HALL pin of the hpm6200evk needs to be connected.
+The HALL pin of the hpm6p00evk needs to be wired separately.
 
 .. list-table::
     :header-rows: 1
@@ -363,7 +383,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - PWM Output Pin
 
-  .. list-table:: PWM Output Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -385,7 +405,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - SEI Pin
 
-  .. list-table:: SEI Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -412,7 +432,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - QEIV2 Sin/Cos Pin
 
-  .. list-table:: QEIV2 Sin/Cos Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -427,7 +447,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - RDC pin
 
-  .. list-table:: RDC pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -448,7 +468,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - PLB Pulse Output Pin
 
-  .. list-table:: PLB Pulse Output Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -460,7 +480,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
   This pin is used for UART LIN Slave baudrate adaptive demo to detect the clock of RX signal
 
-  .. list-table:: PLB LIN Clock Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -470,7 +490,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - PLB Filter Output Pin
 
-  .. list-table:: PLB Filter Output Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -482,7 +502,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - LOBS Pin
 
-  .. list-table:: LOBS Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -497,40 +517,40 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - GPTMR Pin
 
-  .. list-table:: GPTMR Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
        - Position
        - Remark
-     * - GPTMR4.CAPT_0
-       - J4[3]
-       -
-     * - GPTMR4.COMP_0
-       - J4[1]
+     * - GPTMR3.CAPT_0
+       - P5[8]
+       - SENT decode input pin (idle high and low levels share the same pin)
+     * - GPTMR3.COMP_0
+       - P5[10]
        - BLCK of i2s emulation
-     * - GPTMR0.COMP_0
-       - J4[26]
-       - LRCK of i2s emulation
-     * - GPTMR5.COMP_2
+     * - GPTMR3.COMP_2
        - J4[5]
+       - LRCK of i2s emulation
+     * - GPTMR0.COMP_2
+       - J4[9]
        - MCLK of i2s emulation
 
-- CS Pin of i2s emulation  **todo**
+- CS Pin of i2s emulation
 
-  .. list-table:: CS Pin of i2s emulation
+  .. list-table::
      :header-rows: 1
 
      * - Pin
        - Position
        - Remark
-     * - PA11
-       - P1[4]
+     * - PA16
+       - P5[11]
        - The pin that controls the SPI slave CS
 
 - SPI Pin
 
-  .. list-table:: SPI Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -551,7 +571,7 @@ The HALL pin of the hpm6200evk needs to be connected.
 
 - I2C Pin
 
-  .. list-table:: I2C Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function
@@ -561,9 +581,9 @@ The HALL pin of the hpm6200evk needs to be connected.
      * - I2C1.SDA
        - P5[3]
 
-- Ethernet PPS PPS Pin
+- Ethernet PPS Pin
 
-  .. list-table:: Ethernet PPS PPS Pin
+  .. list-table::
      :header-rows: 1
 
      * - Function

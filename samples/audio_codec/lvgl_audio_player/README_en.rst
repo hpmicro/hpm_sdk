@@ -11,9 +11,11 @@ The music player demo shows what kind of modern, smartphone-like user interfaces
 Please refer to `official lv_demos github <https://github.com/lvgl/lv_demos>`_
 
 Project Configuration
----------------------
+-----------------------
 
-- In the file `CMakeLists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+- In the `CMakeLists.txt` file, configure the type of audio playback device according to requirements. The default playback uses DAO.
+
+- If using the onboard Audio Codec chip, the Audio Codec type is automatically matched with the hardware based on the feature settings in `boards/<board_name>/<board_name>.yaml` (feature: board_codec_xxxx) by default. To specify an audio codec type, set the following in `CMakeLists.txt`: set(CONFIG_CODEC_NAME "wm8960").
 
 Board Settings
 --------------

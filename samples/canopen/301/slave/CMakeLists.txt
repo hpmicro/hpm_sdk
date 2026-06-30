@@ -9,9 +9,9 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 project(canopen_slave_example)
 
 sdk_inc(.)
-sdk_inc(../OD)
+sdk_inc(OD)
 
 sdk_app_src(src/slave_canopen_demo.c)
-sdk_app_src(../OD/OD.c)
+sdk_app_src(OD/OD.c)
 
 generate_ide_projects()

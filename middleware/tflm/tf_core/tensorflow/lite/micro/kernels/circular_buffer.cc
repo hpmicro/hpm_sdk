@@ -24,6 +24,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/op_macros.h"
 #include "tensorflow/lite/micro/flatbuffer_utils.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 /*
  * The circular buffer custom operator is used to implement strided streaming
@@ -90,16 +91,15 @@ TfLiteStatus CircularBufferEval(TfLiteContext* context, TfLiteNode* node) {
     EvalInt8(tflite::micro::GetTensorData<int8_t>(input), num_slots, depth,
              tflite::micro::GetTensorData<int8_t>(output));
   } else {
-    TF_LITE_KERNEL_LOG(context, "Type %s (%d) not supported.",
-                       TfLiteTypeGetName(input->type), input->type);
+    MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
+                input->type);
     return kTfLiteError;
   }
 
   if (--data->cycles_until_run != 0) {
     // Signal the interpreter to end current run if the delay before op invoke
     // has not been reached.
-    // TODO(b/149795762): Add kTfLiteAbort to TfLiteStatus enum.
-    return static_cast<TfLiteStatus>(kTfLiteAbort);
+    return kTfLiteAbort;
   }
 
   data->cycles_until_run = data->cycles_max;
@@ -107,15 +107,9 @@ TfLiteStatus CircularBufferEval(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-TfLiteRegistration* Register_CIRCULAR_BUFFER() {
-  static TfLiteRegistration r = {/*init=*/CircularBufferInit,
-                                 /*free=*/nullptr,
-                                 /*prepare=*/CircularBufferPrepare,
-                                 /*invoke=*/CircularBufferEval,
-                                 /*profiling_string=*/nullptr,
-                                 /*builtin_code=*/0,
-                                 /*custom_name=*/nullptr,
-                                 /*version=*/0};
+TFLMRegistration* Register_CIRCULAR_BUFFER() {
+  static TFLMRegistration r = tflite::micro::RegisterOp(
+      CircularBufferInit, CircularBufferPrepare, CircularBufferEval);
   return &r;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -37,6 +37,8 @@ typedef struct {
     bool cs_valid_polarity;             /**< cs valid polarity */
     bool dm_valid_polarity;             /**< dm valid polarity */
     bool addr_valid_polarity;           /**< addr valid polarity */
+    bool cs_sync_clk_en;                /**< cs sync clock enable */
+    uint8_t cs_sync_clk_sel;            /**< cs sync clock select, range: 0 ~ clkpin_cfg.cycle */
     uint8_t adv_ctrl_pin;               /**< adv ctrl pin number, 0 - 7 */
     uint8_t rel_ctrl_pin;               /**< rel ctrl pin number, 0 - 7 */
     uint8_t wel_ctrl_pin;               /**< wel ctrl pin number, 0 - 7 */

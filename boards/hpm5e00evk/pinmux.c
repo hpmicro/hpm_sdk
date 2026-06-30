@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -479,6 +479,14 @@ void init_adc16_pins(void)
     HPM_IOC->PAD[IOC_PAD_PF26].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
 }
 
+void init_adc16_diff_pins(void)
+{
+    /* PF28: ADC0.IN05 (J3 ADC_IU); PF30: ADC1.IN06 (J3 ADC_IW) */
+    HPM_IOC->PAD[IOC_PAD_PF28].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
+
+    HPM_IOC->PAD[IOC_PAD_PF30].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
+}
+
 void init_owr_pins_without_param(void)
 {
     HPM_IOC->PAD[IOC_PAD_PC00].FUNC_CTL = IOC_PC00_FUNC_CTL_OWR0_DAT;
@@ -821,4 +829,15 @@ void board_init_i2c_eeprom_pin(void)
 
     HPM_IOC->PAD[IOC_PAD_PD09].FUNC_CTL = IOC_PD09_FUNC_CTL_I2C0_SDA | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
     HPM_IOC->PAD[IOC_PAD_PD09].PAD_CTL = IOC_PAD_PAD_CTL_PE_SET(1) | IOC_PAD_PAD_CTL_PS_SET(1) | IOC_PAD_PAD_CTL_OD_SET(1);
+}
+
+void init_trgm_gptmr0_cap2_invert_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PC00].FUNC_CTL = IOC_PC00_FUNC_CTL_TRGM_P_00;
+
+    trgm_output_t trgm0_io_config0 = {0};
+    trgm0_io_config0.invert = 1;
+    trgm0_io_config0.type = trgm_output_same_as_input;
+    trgm0_io_config0.input = HPM_TRGM0_INPUT_SRC_TRGM0_P00;
+    trgm_output_config(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_GPTMR0_CAPT_2, &trgm0_io_config0);
 }

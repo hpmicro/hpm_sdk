@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,8 +7,8 @@
 
 #include "board.h"
 #include "hpm_tsw_drv.h"
-#include "hpm_enet_drv.h"
-#include "hpm_enet_phy_common.h"
+#include "hpm_tsw_phy_adaptive_glue.h"
+#include "hpm_tsw_phy_adaptive_util.h"
 
 #ifndef DEST_MAC0
 #define DEST_MAC0 (0x982cbcb19f17)
@@ -29,107 +29,70 @@
 #define APP_TSW BOARD_TSW
 #define APP_TIMER_INTERVAL (1) /* 1 ms*/
 
-typedef void (*enet_get_phy_status)(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status);
-
 uint8_t mac1[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17};
 uint8_t mac2[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x18};
 uint8_t mac3[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x19};
 
 static uint32_t sys_tick = 0;
-static enet_phy_status_t last_status[] = {{.enet_phy_link = enet_phy_link_unknown}, {.enet_phy_link = enet_phy_link_unknown}, {.enet_phy_link = enet_phy_link_unknown}};
+static tsw_phy_status_t last_status[] = {
+    {.tsw_phy_link = tsw_phy_link_unknown},
+    {.tsw_phy_link = tsw_phy_link_unknown},
+    {.tsw_phy_link = tsw_phy_link_unknown},
+};
 
-hpm_stat_t jl111_phy_init(ENET_Type *ptr)
+static const uint8_t dest_port[] = {tsw_dst_port_1, tsw_dst_port_2, tsw_dst_port_3};
+
+static void print_mac_addr(const uint8_t *mac)
 {
-    jl1111_config_t phy_config;
-    hpm_stat_t stat1, stat2;
-
-    /* Switch to smi group 0 */
-    board_switch_tsw_smi_group(BOARD_TSW_PORT1_SMI_GROUP);
-
-    /* Initialize PHY on TSW port 1 */
-    jl1111_reset(ptr, BOARD_TSW_PORT1_PHY_ADDR);
-    jl1111_basic_mode_default_config(ptr, &phy_config);
-    if (jl1111_basic_mode_init(ptr, BOARD_TSW_PORT1_PHY_ADDR, &phy_config) == true) {
-        printf("TSW PHY on Port1 init passed !\n");
-       stat1 = status_success;
-    } else {
-        printf("TSW PHY on Port1 init failed !\n");
-       stat1 = status_fail;
-    }
-
-    /* Initialize PHY on TSW port 2 */
-    board_switch_tsw_smi_group(BOARD_TSW_PORT2_SMI_GROUP);
-    jl1111_reset(ptr, BOARD_TSW_PORT2_PHY_ADDR);
-    jl1111_disable_broadcast_response(ptr, BOARD_TSW_PORT2_PHY_ADDR);
-    jl1111_basic_mode_default_config(ptr, &phy_config);
-    if (jl1111_basic_mode_init(ptr, BOARD_TSW_PORT2_PHY_ADDR, &phy_config) == true) {
-        printf("TSW PHY on Port2 init passed !\n");
-        stat2 = status_success;
-    } else {
-        printf("TSW PHY on Port2 init failed !\n");
-       stat2 = status_fail;
-    }
-
-    return stat1 || stat2;
+    printf("%02x:%02x:%02x:%02x:%02x:%02x",
+           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
-hpm_stat_t rtl8211_phy_init(ENET_Type *ptr)
+static void print_lookup_mac(uint64_t mac)
 {
-    rtl8211_config_t phy_config;
-
-    /* Switch to smi group 3 */
-    board_switch_tsw_smi_group(BOARD_TSW_PORT3_SMI_GROUP);
-
-    /* Initialize PHY on TSW port 3 */
-    rtl8211_reset(ptr, BOARD_TSW_PORT3_PHY_ADDR);
-    rtl8211_basic_mode_default_config(ptr, &phy_config);
-    if (rtl8211_basic_mode_init(ptr, BOARD_TSW_PORT3_PHY_ADDR, &phy_config) == true) {
-        printf("TSW PHY on Port3 init passed !\n");
-        return status_success;
-    } else {
-        printf("TSW PHY on Port3 init failed !\n");
-        return status_fail;
-    }
+    printf("%02x:%02x:%02x:%02x:%02x:%02x",
+           (unsigned int)((mac >> 40) & 0xffU), (unsigned int)((mac >> 32) & 0xffU),
+           (unsigned int)((mac >> 24) & 0xffU), (unsigned int)((mac >> 16) & 0xffU),
+           (unsigned int)((mac >> 8) & 0xffU), (unsigned int)(mac & 0xffU));
 }
 
-void enet_self_adaptive_port_speed(void)
+static void print_tsn_switch_port_info(void)
 {
-    enet_phy_status_t status = {0};
-    uint8_t smi_group[] = {BOARD_TSW_PORT1_SMI_GROUP, BOARD_TSW_PORT2_SMI_GROUP, BOARD_TSW_PORT3_SMI_GROUP};
-    enet_line_speed_t port_speed[] = {enet_line_speed_10mbps, enet_line_speed_100mbps, enet_line_speed_1000mbps};
-    enet_get_phy_status get_phy_status[] = {jl1111_get_phy_status, jl1111_get_phy_status, rtl8211_get_phy_status};
-    char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
-    char *duplex_str[] = {"Half duplex", "Full duplex"};
-    uint8_t dest_port[] = {tsw_dst_port_1, tsw_dst_port_2, tsw_dst_port_3};
+    static const uint8_t * const port_mac[] = {mac1, mac2, mac3};
+    static const uint64_t lookup_mac[] = {DEST_MAC1, DEST_MAC2, DEST_MAC3};
+    static const char * const port_itf[] = {"MII", "MII", "RGMII"};
+    static const char * const port_speed[] = {"100Mbps", "100Mbps", "1000Mbps"};
 
     for (uint8_t i = 0; i < BOARD_TSW_PORT_NUM; i++) {
-        board_switch_tsw_smi_group(smi_group[i]);
-        get_phy_status[i](BOARD_TSW_PHY_SMI, i, &status);
-        if (status.enet_phy_link || (status.enet_phy_link != last_status[i].enet_phy_link)) {
-            if (memcmp(&last_status[i], &status, sizeof(enet_phy_status_t)) != 0) {
-                memcpy(&last_status[i], &status, sizeof(enet_phy_status_t));
+        printf("Port%u: %s %s, Switch MAC ", i + 1U, port_itf[i], port_speed[i]);
+        print_mac_addr(port_mac[i]);
+        printf(", Lookup dest MAC ");
+        print_lookup_mac(lookup_mac[i]);
+        printf("\n");
+    }
+}
 
-                printf("================ TSW PHY on Port%d ================\n", i+1);
-                if (status.enet_phy_link) {
-                    printf("Link Status: Up\n");
-                    printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
-                    printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
+void tsw_self_adaptive_port_speed(void)
+{
+    for (uint8_t i = 0; i < BOARD_TSW_PORT_NUM; i++) {
+        tsw_phy_adaptive_binding_t binding = {
+            .last = &last_status[i],
+            .tsw_base = BOARD_TSW,
+            .tsw_port = i,
+            .frame_dst_port = dest_port[i],
+            .log_prefix = NULL,
+            .print_port_banner = true,
+            .notify_netif = false,
+        };
+        enet_phy_status_t enet_status = {0};
+        tsw_phy_status_t status = {0};
 
-                    tsw_set_port_speed(BOARD_TSW, i, port_speed[status.enet_phy_speed]);
-                    tsw_set_unknown_frame_action(APP_TSW, dest_port[i]);
-                    tsw_set_broadcast_frame_action(APP_TSW, dest_port[i]);
-
-                    if (!status.enet_phy_duplex) {
-                        printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
-                        return;
-                    }
-                } else {
-                    printf("Link Status: Down\n");
-                    tsw_clear_unknown_frame_action(APP_TSW, dest_port[i]);
-                    tsw_clear_broadcast_frame_action(APP_TSW, dest_port[i]);
-                }
-            }
+        if (board_get_tsw_phy_status(i, &enet_status) != status_success) {
+            continue;
         }
+
+        tsw_phy_adaptive_enet_to_tsw_status(&enet_status, &status);
+        tsw_phy_adaptive_binding_poll(&binding, &status);
     }
 }
 
@@ -138,7 +101,7 @@ void sys_timer_callback(void)
     sys_tick++;
 
     if (sys_tick % (2000 * APP_TIMER_INTERVAL) == 0) {
-        enet_self_adaptive_port_speed();
+        tsw_self_adaptive_port_speed();
     }
 }
 
@@ -202,11 +165,11 @@ int main(void)
     tsw_enable_store_forward_mode(APP_TSW, TSW_TSNPORT_PORT2);
     tsw_enable_store_forward_mode(APP_TSW, TSW_TSNPORT_PORT3);
 
-    /* JL1111 initialization */
-    jl111_phy_init(BOARD_TSW_PHY_SMI);
-
-    /* RTL8211 initialization */
-    rtl8211_phy_init(BOARD_TSW_PHY_SMI);
+    if (board_init_tsw_phy(BOARD_TSW_PHY_SMI) == status_success) {
+        printf("TSW PHY init passed !\n");
+    } else {
+        printf("TSW PHY init failed !\n");
+    }
 
     /* Start a board timer */
     board_timer_create(APP_TIMER_INTERVAL, sys_timer_callback);
@@ -216,7 +179,10 @@ int main(void)
     printf("1. Network devices can be connected to TSN switch ports.\n");
     printf("2. If no specified MAC address is defined, frames will be forwarded to all ports.\n");
     printf("3. If one or more specified MAC addresses are defined, frames will be forwarded to the matched destination port(s).\n");
+    print_tsn_switch_port_info();
     printf("\n======================================================================================================================================\n");
+
+    tsw_self_adaptive_port_speed();
 
     while (1) {
 
@@ -224,4 +190,3 @@ int main(void)
 
     return 0;
 }
-

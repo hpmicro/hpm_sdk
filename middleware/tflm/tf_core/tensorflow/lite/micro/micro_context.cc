@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,42 +15,21 @@ limitations under the License.
 
 #include "tensorflow/lite/micro/micro_context.h"
 
+#include <algorithm>
 #include <cstdarg>
 #include <cstddef>
-#include <cstdint>
 
-#include "tensorflow/lite/micro/micro_error_reporter.h"
+#include "tensorflow/lite/kernels/internal/compatibility.h"
+#include "tensorflow/lite/micro/kernels/decompress.h"
+#include "tensorflow/lite/micro/memory_helpers.h"
+#include "tensorflow/lite/micro/micro_common.h"
+#include "tensorflow/lite/micro/micro_log.h"
+#include "tensorflow/lite/micro/micro_utils.h"
 
 namespace tflite {
-MicroContext::MicroContext(MicroAllocator* allocator, const Model* model,
-                           MicroGraph* graph)
-    : allocator_(*allocator), graph_(*graph), model_(model) {}
+namespace {
 
-MicroContext::~MicroContext() {}
-
-void* MicroContext::AllocatePersistentBuffer(size_t bytes) {
-  return allocator_.AllocatePersistentBuffer(bytes);
-}
-
-TfLiteStatus MicroContext::RequestScratchBufferInArena(size_t bytes,
-                                                       int* buffer_idx) {
-  return allocator_.RequestScratchBufferInArena(
-      bytes, graph_.GetCurrentSubgraphIndex(), buffer_idx);
-}
-
-void* MicroContext::GetScratchBuffer(int buffer_idx) {
-  ScratchBufferHandle* handle = scratch_buffer_handles_ + buffer_idx;
-  return handle->data;
-}
-
-TfLiteTensor* MicroContext::AllocateTempTfLiteTensor(int tensor_idx) {
-  return allocator_.AllocateTempTfLiteTensor(model_, graph_.GetAllocations(),
-                                             tensor_idx,
-                                             graph_.GetCurrentSubgraphIndex());
-}
-
-int MicroContext::GetTensorIndex(int index, int max_size,
-                                 const int* tensor_indices) {
+int GetTensorIndex(int index, int max_size, const int* tensor_indices) {
   if (index >= 0 && index < max_size) {
     const int tensor_index = tensor_indices[index];
     if (tensor_index != kTfLiteOptionalTensor) {
@@ -59,6 +38,8 @@ int MicroContext::GetTensorIndex(int index, int max_size,
   }
   return -1;
 }
+
+}  // namespace
 
 TfLiteTensor* MicroContext::AllocateTempInputTensor(const TfLiteNode* node,
                                                     int index) {
@@ -80,40 +61,117 @@ TfLiteTensor* MicroContext::AllocateTempOutputTensor(const TfLiteNode* node,
   return AllocateTempTfLiteTensor(tensor_index);
 }
 
-void MicroContext::DeallocateTempTfLiteTensor(TfLiteTensor* tensor) {
-  return allocator_.DeallocateTempTfLiteTensor(tensor);
-}
-
-TfLiteEvalTensor* MicroContext::GetEvalTensor(int tensor_idx) {
-  return &graph_.GetAllocations()[graph_.GetCurrentSubgraphIndex()]
-              .tensors[tensor_idx];
-}
-
-void MicroContext::SetScratchBufferHandles(
-    ScratchBufferHandle* scratch_buffer_handles) {
-  scratch_buffer_handles_ = scratch_buffer_handles;
-}
-
-TfLiteStatus MicroContext::set_external_context(
-    void* external_context_payload) {
-  if (external_context_payload == nullptr ||
-      external_context_payload_ != nullptr) {
-    MicroPrintf(
-        "Attempting to set external context to %x but it was %x already",
-        external_context_payload, external_context_payload_);
-    return kTfLiteError;
+TfLiteTensor* MicroContext::AllocateTempIntermediateTensor(
+    const TfLiteNode* node, int index) {
+  const int tensor_index = GetTensorIndex(index, node->intermediates->size,
+                                          node->intermediates->data);
+  if (tensor_index < 0) {
+    return nullptr;
   }
-
-  external_context_payload_ = external_context_payload;
-  return kTfLiteOk;
+  return AllocateTempTfLiteTensor(tensor_index);
 }
 
 void MicroContextReportOpError(struct TfLiteContext* context,
                                const char* format, ...) {
   va_list args;
   va_start(args, format);
-  GetMicroErrorReporter()->Report(format, args);
+  VMicroPrintf(format, args);
   va_end(args);
+}
+
+#ifdef USE_TFLM_COMPRESSION
+
+void* MicroContext::DecompressTensorToBuffer(
+    const TfLiteEvalTensor& tensor,
+    const CompressionTensorData& compression_data, void* buffer) {
+  TFLITE_DCHECK(compression_data.scheme == CompressionScheme::kBinQuant);
+  TFLITE_DCHECK(buffer != nullptr);
+  size_t count = ElementCount(*tensor.dims);
+  size_t num_channels = 1;
+
+  if (compression_data.data.lut_data->is_per_channel_quantized) {
+    const size_t channel_axis =
+        compression_data.data.lut_data->use_alternate_axis
+            ? tensor.dims->size - 1
+            : 0;
+    num_channels = tensor.dims->data[channel_axis];
+  }
+
+  DecompressionState ds(static_cast<uint8_t*>(tensor.data.data), count,
+                        compression_data, num_channels, GetAlternateProfiler());
+
+  switch (tensor.type) {
+    case kTfLiteBool: {
+      return ds.DecompressToBuffer<bool>(buffer);
+    } break;
+    case kTfLiteInt8: {
+      return ds.DecompressToBuffer<int8_t>(buffer);
+    } break;
+    case kTfLiteInt16: {
+      return ds.DecompressToBuffer<int16_t>(buffer);
+    } break;
+    case kTfLiteInt32: {
+      return ds.DecompressToBuffer<int32_t>(buffer);
+    } break;
+    case kTfLiteInt64: {
+      return ds.DecompressToBuffer<int64_t>(buffer);
+    } break;
+    case kTfLiteFloat32: {
+      return ds.DecompressToBuffer<float>(buffer);
+    } break;
+    default: {
+      MicroPrintf("Unsupported decompression tensor type %d", tensor.type);
+    } break;
+  }
+
+  return nullptr;
+}
+
+#endif  // USE_TFLM_COMPRESSION
+
+TfLiteStatus MicroContext::SetDecompressionMemory(
+    const AlternateMemoryRegion* regions, size_t count) {
+  if (decompress_regions_ != nullptr) {
+    return kTfLiteError;
+  }
+
+  decompress_regions_ = regions;
+  decompress_regions_size_ = count;
+  decompress_regions_allocations_ = static_cast<size_t*>(
+      AllocatePersistentBuffer(sizeof(size_t) * decompress_regions_size_));
+  if (decompress_regions_allocations_ == nullptr) {
+    return kTfLiteError;
+  }
+  ResetDecompressionMemoryAllocations();
+
+  return kTfLiteOk;
+}
+
+void* MicroContext::AllocateDecompressionMemory(size_t bytes,
+                                                size_t alignment) {
+  if (decompress_regions_ != nullptr) {
+    for (size_t i = 0; i < decompress_regions_size_; i++) {
+      const AlternateMemoryRegion* region = &decompress_regions_[i];
+      uint8_t* start = static_cast<uint8_t*>(region->address) +
+                       decompress_regions_allocations_[i];
+      uint8_t* aligned_start = AlignPointerUp(start, alignment);
+      size_t total = bytes + (aligned_start - start);
+      if (total + decompress_regions_allocations_[i] <= region->bytes) {
+        decompress_regions_allocations_[i] += total;
+        return aligned_start;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+void MicroContext::ResetDecompressionMemoryAllocations() {
+  if (decompress_regions_ == nullptr) {
+    return;
+  }
+  TFLITE_DCHECK(decompress_regions_allocations_ != nullptr);
+  std::fill_n(decompress_regions_allocations_, decompress_regions_size_, 0);
 }
 
 }  // namespace tflite

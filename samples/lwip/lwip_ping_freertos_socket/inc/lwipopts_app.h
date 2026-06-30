@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,6 +18,14 @@
 #endif
 
 /**
+ * LWIP_SO_RCVTIMEO==1: Enable SO_RCVTIMEO for recv/recvfrom timeout.
+ * Required for ping to avoid blocking indefinitely when a reply is lost.
+ */
+#ifndef LWIP_SO_RCVTIMEO
+#define LWIP_SO_RCVTIMEO 1
+#endif
+
+/**
  * LWIP_DNS==1: Turn on DNS module. UDP must be available for DNS
  * transport.
  */
@@ -26,16 +34,18 @@
 #endif
 
 /*
- * DNS Server Config
- * give hint about defining a DNS server address
- *
+ * DNS Server Config (for static IP mode, LWIP_DHCP=0)
+ * Default 114.114.114.114 for China. Override DNS_SERVER_CONFIG before include if needed.
+ * Tip: If MCU fails to resolve some domains while PC works, try gateway (e.g. 192.168.100.1)
+ *      as DNS. When PC's ipconfig shows DNS=gateway (common for home routers), the gateway
+ *      relays DNS. If PC uses a different DNS IP, use that same IP for MCU.
+ *      Verify: ipconfig (Windows), resolv.conf (Linux), scutil (macOS).
  */
 #if !LWIP_DHCP
 #ifndef DNS_SERVER_CONFIG
-#error "Please define DNS_SERVER_CONFIG!"
-#else
-#define DNS_SERVER_ADDRESS(pdnsserver) ip4addr_aton(HPM_STRINGIFY(DNS_SERVER_CONFIG), pdnsserver)
+#define DNS_SERVER_CONFIG 114.114.114.114
 #endif
+#define DNS_SERVER_ADDRESS(pdnsserver) ip4addr_aton(HPM_STRINGIFY(DNS_SERVER_CONFIG), pdnsserver)
 #endif
 
 /*

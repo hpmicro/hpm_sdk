@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,14 +20,18 @@
 #if defined(HPMSOC_HAS_HPMSDK_QEI)
 #include "hpm_qei_drv.h"
 #endif
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #if defined(HPMSOC_HAS_HPMSDK_QEIV2)
 #include "hpm_qeiv2_drv.h"
 #endif
 #include "hpm_clock_drv.h"
 #include "hpm_uart_drv.h"
 #include "hpm_gpio_drv.h"
-#include "hpm_adc.h"
+#include "hpm_adc_v2.h"
 #include "hpm_mcl_loop.h"
 #include "hpm_mcl_abz.h"
 #include "hpm_mcl_detect.h"
@@ -96,23 +100,6 @@ volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint3
 volatile ATTR_PLACE_AT_FAST_RAM_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pwm_buff[6];
 int32_t motor_clock_hz;
 float abs_position_theta;
-adc_type hpm_adc_u = {
-    #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    .adc_base.adc12 = BOARD_BLDC_ADC_U_BASE,
-    #else
-    .adc_base.adc16 = BOARD_BLDC_ADC_U_BASE,
-    #endif
-    .module = BOARD_BLDC_ADC_MODULE
-};
-adc_type hpm_adc_v = {
-    #if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    .adc_base.adc12 = BOARD_BLDC_ADC_V_BASE,
-    #else
-    .adc_base.adc16 = BOARD_BLDC_ADC_V_BASE,
-    #endif
-    .module = BOARD_BLDC_ADC_MODULE
-};
-
 typedef struct {
     mcl_encoder_t encoder;
     mcl_filter_iir_df1_t encoder_iir;
@@ -263,7 +250,7 @@ void motor_init(void)
     motor0.cfg.mcl.physical.time.speed_loop_ts = (MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY)) * 5;
     motor0.cfg.mcl.physical.time.position_loop_ts = (MCL_FREQUENCY_TO_PERIOD(PWM_FREQUENCY)) * 20;
     motor0.cfg.mcl.physical.time.mcu_clock_tick = clock_get_frequency(clock_cpu0);
-    motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
+    motor0.cfg.mcl.physical.time.pwm_clock_tick = clock_get_frequency(BOARD_BLDC_MOTOR_CLOCK_SOURCE);
 
     motor0.cfg.analog.enable_a_current = true;
     motor0.cfg.analog.enable_b_current = true;
@@ -719,11 +706,11 @@ void pwm_init(void)
     trgm_output_cfg.input  = BOARD_BLDC_DMA_TRG_IN;
     trgm_output_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRG_DST, &trgm_output_cfg);
 
-    dmamux_config(BOARD_APP_DMAMUX, DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN),
+    dmamux_config(BOARD_APP_DMAMUX, DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA0, BOARD_BLDC_DMA_CHN),
                 BOARD_BLDC_DMA_MUX_SRC, true);
     trgm_dma_request_config(BOARD_BLDCPWM_TRGM, BOARD_BLDC_DMA_TRG_INDEX, BOARD_BLDC_DMA_TRG_SRC);
 
-    dma_default_channel_config(BOARD_APP_HDMA, &config);
+    dma_default_channel_config(BOARD_APP_DMA0, &config);
 
     config.src_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&pwm_buff);
     config.dst_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)&MOTOR0_BLDCPWM->CMP[BOARD_BLDCPWM_CMP_INDEX_0]);
@@ -734,9 +721,9 @@ void pwm_init(void)
     config.size_in_byte = 24;
     config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
 
-    dma_setup_channel(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN, &config, true);
-    dma_set_infinite_loop_mode(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN, true);
-    dma_set_handshake_option(BOARD_APP_HDMA, BOARD_BLDC_DMA_CHN, DMA_HANDSHAKE_OPT_ALL_TRANSIZE);
+    dma_setup_channel(BOARD_APP_DMA0, BOARD_BLDC_DMA_CHN, &config, true);
+    dma_set_infinite_loop_mode(BOARD_APP_DMA0, BOARD_BLDC_DMA_CHN, true);
+    dma_set_handshake_option(BOARD_APP_DMA0, BOARD_BLDC_DMA_CHN, DMA_HANDSHAKE_OPT_ALL_TRANSIZE);
 #endif
 }
 #endif
@@ -811,7 +798,11 @@ void pwm_init(void)
     pwmv2_set_reload_update_time(MOTOR0_BLDCPWM, pwm_counter_2, pwm_reload_update_on_reload);
 
     pwmv2_select_cmp_source(MOTOR0_BLDCPWM, 16, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(1));
-    pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, 16);
+    if (status_success != pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, 16)) {
+        printf("failed to set PWMv2 trigger output compare index\n");
+        while (1) {
+        }
+    }
 
     pwmv2_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 
@@ -910,7 +901,11 @@ void pwm_init(void)
     pwmv2_set_reload_update_time(MOTOR0_BLDCPWM, pwm_counter_2, pwm_reload_update_on_reload);
 
     pwmv2_select_cmp_source(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, cmp_value_from_shadow_val, PWMV2_SHADOW_INDEX(9));
-    pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, BOARD_BLDCPWM_CMP_TRIG_CMP);
+    if (status_success != pwmv2_set_trigout_cmp_index(MOTOR0_BLDCPWM, BOARD_BLDC_PWM_TRIG_OUT_CHN, BOARD_BLDCPWM_CMP_TRIG_CMP)) {
+        printf("failed to set PWMv2 trigger output compare index\n");
+        while (1) {
+        }
+    }
     pwmv2_cmp_select_counter(MOTOR0_BLDCPWM, BOARD_BLDCPWM_CMP_TRIG_CMP, pwm_counter_0);
     pwmv2_issue_shadow_register_lock_event(MOTOR0_BLDCPWM);
 
@@ -1008,9 +1003,11 @@ void isr_adc(void)
 {
     uint32_t status;
 
-    status = hpm_adc_get_status_flags(&hpm_adc_u);
-    if ((status & BOARD_BLDC_ADC_TRIG_FLAG) != 0) {
-        hpm_adc_clear_status_flags(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
+
+    adc_v2_handle_t adc_u = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+    status = hpm_adc_v2_get_status_flags(adc_u);
+    if ((status & HPM_ADC_V2_EVENT_TRIG_COMPLETE) != 0) {
+        hpm_adc_v2_clear_status_flags(adc_u, HPM_ADC_V2_EVENT_TRIG_COMPLETE);
         hpm_mcl_encoder_process(&motor0.encoder, motor0.cfg.mcl.physical.time.mcu_clock_tick / PWM_FREQUENCY);
         hpm_mcl_loop(&motor0.loop);
     }
@@ -1018,116 +1015,58 @@ void isr_adc(void)
 
 void init_trigger_cfg(uint8_t trig_ch, bool inten)
 {
-    adc_pmt_config_t pmt_cfg;
+    adc_v2_preempt_config_t pmt_cfg;
+    adc_v2_handle_t adc_handle;
 
-    pmt_cfg.module = BOARD_BLDC_ADC_MODULE;
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    pmt_cfg.config.adc12.trig_ch   = trig_ch;
-    pmt_cfg.config.adc12.trig_len  = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
-    pmt_cfg.config.adc12.inten[0] = inten;
-#else
-    pmt_cfg.config.adc16.trig_ch   = trig_ch;
-    pmt_cfg.config.adc16.trig_len  = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
-    pmt_cfg.config.adc16.inten[0] = inten;
-#endif
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    pmt_cfg.config.adc12.adc_ch[0] = BOARD_BLDC_ADC_CH_V;
-    pmt_cfg.adc_base.adc12 = BOARD_BLDC_ADC_V_BASE;
-#else
-    pmt_cfg.config.adc16.adc_ch[0] = BOARD_BLDC_ADC_CH_V;
-    pmt_cfg.adc_base.adc16 = BOARD_BLDC_ADC_V_BASE;
-#endif
-    hpm_adc_set_preempt_config(&pmt_cfg);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    pmt_cfg.config.adc12.adc_ch[0] = BOARD_BLDC_ADC_CH_U;
-    pmt_cfg.adc_base.adc12 = BOARD_BLDC_ADC_U_BASE;
-#else
-    pmt_cfg.config.adc16.adc_ch[0] = BOARD_BLDC_ADC_CH_U;
-    pmt_cfg.adc_base.adc16 = BOARD_BLDC_ADC_U_BASE;
-#endif
-    hpm_adc_set_preempt_config(&pmt_cfg);
+    pmt_cfg.trig_ch = trig_ch;
+    pmt_cfg.trig_len = BOARD_BLDC_ADC_PREEMPT_TRIG_LEN;
+    pmt_cfg.inten[0] = inten;
+    pmt_cfg.adc_ch[0] = BOARD_BLDC_ADC_CH_V;
+    adc_handle = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_V_BASE);
+    hpm_adc_v2_set_preempt_config(adc_handle, &pmt_cfg);
+    pmt_cfg.adc_ch[0] = BOARD_BLDC_ADC_CH_U;
+    adc_handle = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+    hpm_adc_v2_set_preempt_config(adc_handle, &pmt_cfg);
 }
 
 hpm_mcl_stat_t adc_init(void)
 {
-    adc_config_t cfg;
-    adc_channel_config_t ch_cfg;
-    cfg.module = BOARD_BLDC_ADC_MODULE;
-    hpm_adc_init_default_config(&cfg);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
+    adc_v2_config_t cfg;
+    adc_v2_channel_config_t ch_cfg;
+    adc_v2_handle_t adc_u = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+    adc_v2_handle_t adc_v = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_V_BASE);
+
+    hpm_adc_v2_get_default_config(adc_u, &cfg);
     board_init_adc_clock(BOARD_BLDC_ADC_U_BASE, true);
     board_init_adc_clock(BOARD_BLDC_ADC_V_BASE, true);
     board_init_adc_clock(BOARD_BLDC_ADC_W_BASE, true);
-    cfg.config.adc12.res            = adc12_res_12_bits;
-    cfg.config.adc12.conv_mode      = adc12_conv_mode_preemption;
-    cfg.config.adc12.diff_sel       = adc12_sample_signal_single_ended;
-    cfg.config.adc12.adc_clk_div    = adc12_clock_divider_3;
-    cfg.config.adc12.sel_sync_ahb   = false;
-    cfg.config.adc12.adc_ahb_en = true;
+    cfg.resolution_bits = BOARD_BLDC_ADC_RES_BITS;
+    cfg.conv_mode = adc_v2_conv_mode_preemption;
+    cfg.signal_mode = adc_v2_signal_mode_single_ended;
+    cfg.clock_div = BOARD_BLDC_ADC_CLOCK_DIV;
+    cfg.sel_sync_ahb = false;
+    hpm_adc_v2_init(adc_u, &cfg);
+    hpm_adc_v2_init(adc_v, &cfg);
 
-    cfg.adc_base.adc12 = BOARD_BLDC_ADC_U_BASE;
-    hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc12 = BOARD_BLDC_ADC_V_BASE;
-    hpm_adc_init(&cfg);
-#else
-    board_init_adc_clock(BOARD_BLDC_ADC_U_BASE, true);
-    board_init_adc_clock(BOARD_BLDC_ADC_V_BASE, true);
-    board_init_adc_clock(BOARD_BLDC_ADC_W_BASE, true);
-    cfg.config.adc16.res            = adc16_res_16_bits;
-    cfg.config.adc16.conv_mode      = adc16_conv_mode_preemption;
-    cfg.config.adc16.adc_clk_div    = adc16_clock_divider_4;
-    cfg.config.adc16.sel_sync_ahb   = false;
-    cfg.config.adc16.adc_ahb_en = true;
-
-    cfg.adc_base.adc16 = BOARD_BLDC_ADC_U_BASE;
-    hpm_adc_init(&cfg);
-
-    cfg.adc_base.adc16 = BOARD_BLDC_ADC_V_BASE;
-    hpm_adc_init(&cfg);
-
-#endif
-    ch_cfg.module                        = BOARD_BLDC_ADC_MODULE;
-    hpm_adc_init_channel_default_config(&ch_cfg);
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC12
-    ch_cfg.config.adc12_ch.diff_sel      = adc12_sample_signal_single_ended;
-    ch_cfg.config.adc12_ch.sample_cycle  = 15;
-
-    ch_cfg.adc_base.adc12                = BOARD_BLDC_ADC_U_BASE;
-    ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_U;
-    hpm_adc_channel_init(&ch_cfg);
-
-    ch_cfg.adc_base.adc12                = BOARD_BLDC_ADC_V_BASE;
-    ch_cfg.config.adc12_ch.ch            = BOARD_BLDC_ADC_CH_V;
-    hpm_adc_channel_init(&ch_cfg);
-
-#else
-    ch_cfg.config.adc16_ch.sample_cycle  = 20;
-
-    ch_cfg.adc_base.adc16                = BOARD_BLDC_ADC_U_BASE;
-    ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_U;
-    hpm_adc_channel_init(&ch_cfg);
-
-    ch_cfg.adc_base.adc16                = BOARD_BLDC_ADC_V_BASE;
-    ch_cfg.config.adc16_ch.ch            = BOARD_BLDC_ADC_CH_V;
-    hpm_adc_channel_init(&ch_cfg);
-
-#endif
+    hpm_adc_v2_get_channel_default_config(adc_u, &ch_cfg);
+    ch_cfg.signal_mode = adc_v2_signal_mode_single_ended;
+    ch_cfg.sample_cycle = BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE;
+    ch_cfg.ch = BOARD_BLDC_ADC_CH_U;
+    hpm_adc_v2_init_channel(adc_u, &ch_cfg);
+    ch_cfg.ch = BOARD_BLDC_ADC_CH_V;
+    hpm_adc_v2_init_channel(adc_v, &ch_cfg);
 
     init_trigger_mux(BOARD_BLDCPWM_TRGM);
     init_trigger_cfg(BOARD_BLDC_ADC_TRG, true);
-
-#if BOARD_BLDC_ADC_MODULE == ADCX_MODULE_ADC16
-    adc16_enable_pmt_queue(BOARD_BLDC_ADC_U_BASE, BOARD_BLDC_ADC_TRG);
-    adc16_enable_pmt_queue(BOARD_BLDC_ADC_V_BASE, BOARD_BLDC_ADC_TRG);
+    hpm_adc_v2_enable_pmt_queue(adc_u, BOARD_BLDC_ADC_TRG);
+    hpm_adc_v2_enable_pmt_queue(adc_v, BOARD_BLDC_ADC_TRG);
+    hpm_adc_v2_init_pmt_dma(adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCU_INDEX]));
+    hpm_adc_v2_init_pmt_dma(adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCV_INDEX]));
+#if defined(HW_CURRENT_FOC_ENABLE) && HPM_ADC_V2_HAS_MOTOR_MODE
+    hpm_adc_v2_enable_motor_mode(adc_u);
+    hpm_adc_v2_enable_motor_mode(adc_v);
 #endif
 
-    hpm_adc_init_pmt_dma(&hpm_adc_u, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCU_INDEX]));
-    hpm_adc_init_pmt_dma(&hpm_adc_v, core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)adc_buff[ADCV_INDEX]));
-#if defined(HW_CURRENT_FOC_ENABLE)
-    adc16_enable_motor(BOARD_BLDC_ADC_U_BASE);
-    adc16_enable_motor(BOARD_BLDC_ADC_V_BASE);
-#endif
     return mcl_success;
 }
 
@@ -1349,7 +1288,9 @@ int32_t motor0_clc_float_convert_clc(float realdata)
 
 void adc_isr_enable(void)
 {
-    hpm_adc_enable_interrupts(&hpm_adc_u, BOARD_BLDC_ADC_TRIG_FLAG);
+    adc_v2_handle_t adc_u = HPM_ADC_V2_HANDLE(BOARD_BLDC_ADC_U_BASE);
+
+    hpm_adc_v2_enable_interrupts(adc_u, HPM_ADC_V2_EVENT_TRIG_COMPLETE);
     intc_m_enable_irq_with_priority(BOARD_BLDC_ADC_IRQn, 1);
 }
 
@@ -1439,7 +1380,7 @@ int main(void)
     board_init();
     init_adc_bldc_pins();
     init_pwm_pins(MOTOR0_BLDCPWM);
-    motor_clock_hz = clock_get_frequency(BOARD_BLDC_QEI_CLOCK_SOURCE);
+    motor_clock_hz = clock_get_frequency(BOARD_BLDC_MOTOR_CLOCK_SOURCE);
 #if defined(MCL_HARDWARE_HYBRID_LOOP_ENABLE)
     clc_init();
 #endif

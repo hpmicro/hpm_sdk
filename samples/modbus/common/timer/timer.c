@@ -8,7 +8,11 @@
 #include "board.h"
 #include "timer.h"
 #include "hpm_sysctl_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 
 #define TIMER_GPTMR               BOARD_GPTMR
 #define TIMER_GPTMR_CH            BOARD_GPTMR_CHANNEL

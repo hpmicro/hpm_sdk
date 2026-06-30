@@ -17,7 +17,7 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 - HPM6360IPA微控制器
 - 板载存储
   - 128Mbit（16MB）QSPI NOR Flash
-  - 16位，256MBit SDRAM
+  - 16位，256MBit（32MB） SDRAM
 - USB
   - 1个USB Type-C接口
 - 以太网
@@ -136,7 +136,7 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
        - 备注
      * - GPTMR2.CAPT_0
        - J28[40]
-       -
+       - SENT解码输入引脚（空闲低电平）
      * - GPTMR2.COMP_0
        - J28[35]
        - SPI模拟I2S的MCLK
@@ -146,6 +146,9 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
      * - GPTMR2.COMP_2
        - J28[16]
        - SPI模拟I2S的BLCK
+     * - GPTMR2.COMP_2
+       - J28[16]
+       - SENT解码输入引脚（空闲高电平）
 
 - ADC16引脚
 

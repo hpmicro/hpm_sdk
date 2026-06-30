@@ -86,7 +86,7 @@ typedef enum {
     sysctl_resource_clk_top_uart2 = 88,
     sysctl_resource_clk_top_uart3 = 89,
     sysctl_resource_clk_top_uart4 = 90,
-    sysctl_resource_clk_top_xip0 = 94,
+    sysctl_resource_clk_top_xpi0 = 94,
     sysctl_resource_clk_top_ana0 = 95,
     sysctl_resource_clk_top_ana1 = 96,
     sysctl_resource_clk_top_ana2 = 97,
@@ -203,11 +203,11 @@ typedef enum {
 } clock_source_t;
 
 /**
- * @brief ADC/I2S clock sources
+ * @brief ADC clock sources
  */
 typedef enum {
-    clock_source_adc_ana_clock = 0,
-    clock_source_adc_ahb_clock = 1,
+    clock_source_adc_ahb_clock = 0,
+    clock_source_adc_ana_clock = 1,
     clock_source_adc_clk_end,
 } clock_source_adc_t;
 
@@ -230,12 +230,12 @@ typedef enum {
     monitor_target_clk_usb0_phy = 4,
     monitor_target_clk0_osc0 = 20,
     monitor_target_clk0_pll0 = 21,
-    monitor_target_clk0_pll1 = 22,
-    monitor_target_clk0_pll2 = 23,
-    monitor_target_clk1_pll0 = 24,
+    monitor_target_clk1_pll0 = 22,
+    monitor_target_clk2_pll0 = 23,
+    monitor_target_clk0_pll1 = 24,
     monitor_target_clk1_pll1 = 25,
-    monitor_target_clk1_pll2 = 26,
-    monitor_target_clk1_pll3 = 27,
+    monitor_target_clk2_pll1 = 26,
+    monitor_target_clk3_pll1 = 27,
     monitor_target_clk_top_cpu0 = 128,
     monitor_target_clk_top_mchtmr0 = 129,
     monitor_target_clk_top_gptmr0 = 138,

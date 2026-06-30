@@ -8,5 +8,6 @@ ADC
 
   adc12/README_en
   adc16/README_en
+  adc16_differential/README_en
   adc16_temperature/README_en
 

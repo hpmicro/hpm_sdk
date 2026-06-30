@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -32,7 +32,7 @@ int main(void)
     /* Initialize the LwIP stack */
     tcpip_init(NULL, NULL);
 
-    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE, NULL);
 
     vTaskStartScheduler();
 

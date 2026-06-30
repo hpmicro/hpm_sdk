@@ -281,6 +281,23 @@ HPM6P00EVK为HPM6P00系列MCU的评估板，提供了一系列接口，包括ADC
    * - ADC输入
      - J4[2]
 
+- ADC16 差分输入
+
+  用于 ``samples/drivers/adc/adc16_differential`` 等差分采样示例。
+
+.. list-table::
+   :header-rows: 1
+
+   * - 功能
+     - 引脚
+     - 位置
+   * - ADC16 差分 master (ADC2)
+     - PD24 (ADC2.IN08)
+     - J4[14]（ADC_IV）
+   * - ADC16 差分 slave (ADC3)
+     - PD25 (ADC3.IN09)
+     - J4[15]（ADC_IW）
+
 - DAC 接口
 
 .. list-table::
@@ -488,7 +505,7 @@ hpm6p00evk的HALL引脚需要单独接线
      - 备注
    * - GPTMR3.CAPT_0
      - P5[8]
-     -
+     - SENT解码输入引脚（空闲高低电平共用同一引脚）
    * - GPTMR3.COMP_0
      - P5[10]
      - SPI模拟I2S的BLCK

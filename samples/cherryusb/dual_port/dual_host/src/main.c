@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -30,8 +30,8 @@ int main(void)
 
     printf("Cherryusb dual port host sample. Support HID and MSC class.\n");
 
-    usbh_initialize(0, HPM_USB0_BASE);
-    usbh_initialize(1, HPM_USB1_BASE);
+    usbh_initialize(0, HPM_USB0_BASE, NULL);
+    usbh_initialize(1, HPM_USB1_BASE, NULL);
 
     printf("Start usb host task...\r\n");
 

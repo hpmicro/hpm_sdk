@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_MICRO_RECORDING_MICRO_ALLOCATOR_H_
 #define TENSORFLOW_LITE_MICRO_RECORDING_MICRO_ALLOCATOR_H_
 
+#include "tensorflow/lite/micro/arena_allocator/recording_single_arena_buffer_allocator.h"
 #include "tensorflow/lite/micro/compatibility.h"
 #include "tensorflow/lite/micro/micro_allocator.h"
-#include "tensorflow/lite/micro/recording_simple_memory_allocator.h"
 
 namespace tflite {
 
@@ -33,6 +33,11 @@ enum class RecordedAllocationType {
   kTfLiteTensorVariableBufferData,
   kNodeAndRegistrationArray,
   kOpData,
+#ifdef USE_TFLM_COMPRESSION
+  kCompressionData,
+#endif  // USE_TFLM_COMPRESSION
+
+  kNumAllocationTypes,  // must be last
 };
 
 // Container for holding information about allocation recordings by a given
@@ -48,15 +53,14 @@ struct RecordedAllocation {
 // Utility subclass of MicroAllocator that records all allocations
 // inside the arena. A summary of allocations can be logged through the
 // ErrorReporter by invoking LogAllocations(). This special allocator requires
-// an instance of RecordingSimpleMemoryAllocator to capture allocations in the
-// head and tail. Arena allocation recording can be retrieved by type through
-// the GetRecordedAllocation() function. This class should only be used for
-// auditing memory usage or integration testing.
+// an instance of RecordingSingleArenaBufferAllocator to capture allocations in
+// the head and tail. Arena allocation recording can be retrieved by type
+// through the GetRecordedAllocation() function. This class should only be used
+// for auditing memory usage or integration testing.
 class RecordingMicroAllocator : public MicroAllocator {
  public:
   static RecordingMicroAllocator* Create(uint8_t* tensor_arena,
-                                         size_t arena_size,
-                                         ErrorReporter* error_reporter);
+                                         size_t arena_size);
 
   // Returns the fixed amount of memory overhead of RecordingMicroAllocator.
   static size_t GetDefaultTailUsage();
@@ -65,7 +69,7 @@ class RecordingMicroAllocator : public MicroAllocator {
   RecordedAllocation GetRecordedAllocation(
       RecordedAllocationType allocation_type) const;
 
-  const RecordingSimpleMemoryAllocator* GetSimpleMemoryAllocator() const;
+  const RecordingSingleArenaBufferAllocator* GetSimpleMemoryAllocator() const;
 
   // Logs out through the ErrorReporter all allocation recordings by type
   // defined in RecordedAllocationType.
@@ -78,8 +82,9 @@ class RecordingMicroAllocator : public MicroAllocator {
       const Model* model, SubgraphAllocations* subgraph_allocations) override;
   TfLiteStatus AllocateTfLiteEvalTensors(
       const Model* model, SubgraphAllocations* subgraph_allocations) override;
-  TfLiteStatus AllocateVariables(const SubGraph* subgraph,
-                                 TfLiteEvalTensor* eval_tensors) override;
+  TfLiteStatus AllocateVariables(
+      const SubGraph* subgraph, TfLiteEvalTensor* eval_tensors,
+      const int32_t* offline_planner_offsets) override;
   // TODO(b/162311891): Once all kernels have been updated to the new API drop
   // this method. It is only used to record TfLiteTensor persistent allocations.
   TfLiteTensor* AllocatePersistentTfLiteTensorInternal() override;
@@ -93,10 +98,16 @@ class RecordingMicroAllocator : public MicroAllocator {
                                                   int subgraph_index,
                                                   bool allocate_temp) override;
 
+#ifdef USE_TFLM_COMPRESSION
+
+  TfLiteStatus AllocateCompressedTensorsList(
+      const Model* model, SubgraphAllocations* subgraph_allocations) override;
+
+#endif  // USE_TFLM_COMPRESSION
+
  private:
-  RecordingMicroAllocator(RecordingSimpleMemoryAllocator* memory_allocator,
-                          MicroMemoryPlanner* memory_planner,
-                          ErrorReporter* error_reporter);
+  RecordingMicroAllocator(RecordingSingleArenaBufferAllocator* memory_allocator,
+                          MicroMemoryPlanner* memory_planner);
 
   void PrintRecordedAllocation(RecordedAllocationType allocation_type,
                                const char* allocation_name,
@@ -106,7 +117,7 @@ class RecordingMicroAllocator : public MicroAllocator {
   void RecordAllocationUsage(const RecordedAllocation& snapshotted_allocation,
                              RecordedAllocation& recorded_allocation);
 
-  const RecordingSimpleMemoryAllocator* recording_memory_allocator_;
+  const RecordingSingleArenaBufferAllocator* recording_memory_allocator_;
 
   RecordedAllocation recorded_tflite_eval_tensor_data_ = {};
   RecordedAllocation recorded_persistent_tflite_tensor_data_ = {};
@@ -114,6 +125,9 @@ class RecordingMicroAllocator : public MicroAllocator {
   RecordedAllocation recorded_persistent_buffer_data_ = {};
   RecordedAllocation recorded_tflite_tensor_variable_buffer_data_ = {};
   RecordedAllocation recorded_node_and_registration_array_data_ = {};
+#ifdef USE_TFLM_COMPRESSION
+  RecordedAllocation recorded_compression_data_ = {};
+#endif  // USE_TFLM_COMPRESSION
 
   // TODO(b/187993291): Re-enable OpData allocating tracking.
   RecordedAllocation recorded_op_data_ = {};

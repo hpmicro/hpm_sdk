@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -56,21 +56,21 @@ typedef enum {
 
 #define LWIP_NETIF_IDX  (1)
 
-#if defined(RGMII) && RGMII
+#if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
 #define ENET_INF_TYPE       enet_inf_rgmii
 #define ENET                BOARD_ENET_RGMII
 #if defined(LWIP_PTP) && LWIP_PTP
 #define ENET_PTP_CLK        BOARD_ENET_RGMII_PTP_CLOCK
 #define ENET_PPS_PINOUT     BOARD_ENET_RGMII_PPS0_PINOUT
 #endif
-#elif defined(RMII) && RMII
+#elif defined(HPM_ENET_RMII) && HPM_ENET_RMII
 #define ENET_INF_TYPE       enet_inf_rmii
 #define ENET                BOARD_ENET_RMII
 #if defined(LWIP_PTP) && LWIP_PTP
 #define ENET_PTP_CLK        BOARD_ENET_RMII_PTP_CLOCK
 #define ENET_PPS_PINOUT     BOARD_ENET_RMII_PPS0_PINOUT
 #endif
-#elif defined(MII) && MII
+#elif defined(HPM_ENET_MII) && HPM_ENET_MII
 #define ENET_INF_TYPE       enet_inf_mii
 #define ENET                BOARD_ENET_RMII
 #endif

@@ -8,7 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,6 +28,10 @@
 #include "./sdxc/hpm_sdmmc_disk.h"
 #endif
 
+#endif
+
+#if defined(SPI_NOR_FATFS_ENABLE) && SPI_NOR_FATFS_ENABLE
+#include "./spi_nor/hpm_spi_nor_disk.h"
 #endif
 
 #if !defined(FATFS_ONLY_NONCACHEABLE_BUF) || !FATFS_ONLY_NONCACHEABLE_BUF
@@ -75,6 +79,12 @@ DSTATUS disk_status(
         break;
 #endif
 
+#if defined(SPI_NOR_FATFS_ENABLE) && SPI_NOR_FATFS_ENABLE
+    case DEV_SPI_NOR:
+        stat = spi_nor_disk_status(pdrv);
+        break;
+#endif
+
     default:
         break;
     }
@@ -116,6 +126,13 @@ void disk_deinitialize(
 #endif
         break;
 #endif
+
+#if defined(SPI_NOR_FATFS_ENABLE) && SPI_NOR_FATFS_ENABLE
+    case DEV_SPI_NOR:
+        spi_nor_disk_deinitialize(pdrv);
+        break;
+#endif
+
     default:
         break;
     }
@@ -154,6 +171,13 @@ DSTATUS disk_initialize(
 #endif
         break;
 #endif
+
+#if defined(SPI_NOR_FATFS_ENABLE) && SPI_NOR_FATFS_ENABLE
+    case DEV_SPI_NOR:
+        stat = spi_nor_disk_initialize(pdrv);
+        break;
+#endif
+
     default:
         break;
     }
@@ -200,6 +224,13 @@ static DRESULT disk_read_private(
 #endif
         break;
 #endif
+
+#if defined(SPI_NOR_FATFS_ENABLE) && SPI_NOR_FATFS_ENABLE
+    case DEV_SPI_NOR:
+        res = spi_nor_disk_read(pdrv, buff, sector, count);
+        break;
+#endif
+
     default:
         res = RES_PARERR;
         break;
@@ -288,6 +319,13 @@ static DRESULT disk_write_private(
 #endif
         break;
 #endif
+
+#if defined(SPI_NOR_FATFS_ENABLE) && SPI_NOR_FATFS_ENABLE
+    case DEV_SPI_NOR:
+        res = spi_nor_disk_write(pdrv, buff, sector, count);
+        break;
+#endif
+
     default:
         res = RES_PARERR;
         break;
@@ -369,6 +407,12 @@ DRESULT disk_ioctl(
 #else
         res = sd_disk_ioctl(pdrv, cmd, buff);
 #endif
+        break;
+#endif
+
+#if defined(SPI_NOR_FATFS_ENABLE) && SPI_NOR_FATFS_ENABLE
+    case DEV_SPI_NOR:
+        res = spi_nor_disk_ioctl(pdrv, cmd, buff);
         break;
 #endif
 

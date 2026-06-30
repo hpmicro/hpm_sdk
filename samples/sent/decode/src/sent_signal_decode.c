@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include <math.h>
 #include "board.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 #include "hpm_dmamux_drv.h"
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
@@ -17,32 +21,41 @@
 #include "hpm_dma_drv.h"
 #endif
 
+#ifndef SENT_IDLE_HIGH
+#define SENT_IDLE_HIGH          (0U)
+#endif
 
+#if SENT_IDLE_HIGH && defined(HPMSOC_HAS_HPMSDK_TRGM)
+#define APP_BOARD_GPTMR               BOARD_SENT_IDLE_HIGH_GPTMR
+#define APP_BOARD_GPTMR_CH            BOARD_SENT_IDLE_HIGH_GPTMR_CHANNEL
+#define APP_BOARD_GPTMR_CLOCK         BOARD_SENT_IDLE_HIGH_GPTMR_CLK_NAME
+#define APP_BOARD_GPTMR_IRQ           BOARD_SENT_IDLE_HIGH_GPTMR_IRQ
+#else
 #define APP_BOARD_GPTMR               BOARD_GPTMR
 #define APP_BOARD_GPTMR_CH            BOARD_GPTMR_CHANNEL
 #define APP_BOARD_GPTMR_CLOCK         BOARD_GPTMR_CLK_NAME
+#define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_IRQ
+#endif
 
 #define APP_BOARD_TIMER_CH            (APP_BOARD_GPTMR_CH + 1)
-#define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_IRQ
-
 #ifndef CONFIG_SENT_IDLE_INTERVAL_US
 #define CONFIG_SENT_IDLE_INTERVAL_US  (1000U)
 #endif
 
 #define APP_GPTMR_DMAMUX              BOARD_APP_DMAMUX
-#if defined(DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)
+#if (defined(DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && defined(HPM_XDMA_BASE)
 /* XDMA is 64bit width.so can transfer gptmr two 32bit register,it's include CAPPRD, CAPDTY. */
-#define APP_GPTMR_DMA                 BOARD_APP_XDMA
-#define APP_GPTMR_DMA_IRQ             BOARD_APP_XDMA_IRQ
+#define APP_GPTMR_DMA                 BOARD_APP_DMA1
+#define APP_GPTMR_DMA_IRQ             BOARD_APP_DMA1_IRQ
 #define APP_GPTMR_DMA_MUX_CH          DMAMUX_MUXCFG_XDMA_MUX0
 #define APP_DMA_SRC_WIDTH             DMA_TRANSFER_WIDTH_DOUBLE_WORD
 #define APP_DMA_DST_WIDTH             DMA_TRANSFER_WIDTH_DOUBLE_WORD
 #define APP_GPTMR_DMA_SRC             BOARD_GPTMR_DMA_SRC
 #else
 /* HDMA is 32bit width.so can transfer gptmr one 32bit register,it's only include CAPPRD */
-#define APP_GPTMR_DMA                 BOARD_APP_HDMA
-#define APP_GPTMR_DMA_IRQ             BOARD_APP_HDMA_IRQ
-#define APP_GPTMR_DMA_MUX_CH          DMAMUX_MUXCFG_HDMA_MUX0
+#define APP_GPTMR_DMA                 BOARD_APP_DMA0
+#define APP_GPTMR_DMA_IRQ             BOARD_APP_DMA0_IRQ
+#define APP_GPTMR_DMA_MUX_CH          DMA_SOC_CHN_TO_DMAMUX_CHN(APP_GPTMR_DMA, 0)
 #define APP_DMA_SRC_WIDTH             DMA_TRANSFER_WIDTH_WORD
 #define APP_DMA_DST_WIDTH             DMA_TRANSFER_WIDTH_WORD
 #define APP_GPTMR_DMA_SRC             BOARD_GPTMR_DMA_SRC
@@ -75,7 +88,7 @@ typedef enum {
 
 typedef struct {
     uint32_t period;
-#if defined(DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)
+#if (defined(DMA_SOC_MAX_COUNT) && (DMA_SOC_MAX_COUNT == 2)) && defined(HPM_XDMA_BASE)
     uint32_t duty;
 #endif
 } pwm_measure_cfg_t;
@@ -170,7 +183,7 @@ int main(void)
     uint16_t buf_len = 0;
     uint16_t len = 0;
     board_init();
-    init_gptmr_pins(APP_BOARD_GPTMR); 
+    init_sent_decode_pins(SENT_IDLE_HIGH);
     printf("sent signal decode demo\n");
     timer_config();
     dma_transfer_config();

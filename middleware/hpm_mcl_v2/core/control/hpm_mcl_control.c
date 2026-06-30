@@ -514,9 +514,12 @@ hpm_mcl_stat_t hpm_mcl_delta_pid(float setpoint, float feedback, mcl_control_pid
     /* Limit the output value to ensure it does not exceed the configured output range. */
     MCL_VALUE_LIMIT(val, pid_x->cfg.output_min, pid_x->cfg.output_max);
 
-    /* Update the error values for the next computation. */
-    pid_x->error_n1 = err;
+    /* Update the error values for the next computation.
+     * NOTE: shift in this order so error_n2 holds the previous error_n1 value;
+     * otherwise both terms collapse to the current err and the D term degenerates.
+     */
     pid_x->error_n2 = pid_x->error_n1;
+    pid_x->error_n1 = err;
     /* Store the calculated output value in the output variable. */
     *output = val;
 

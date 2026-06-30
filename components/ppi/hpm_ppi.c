@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -25,6 +25,8 @@ void ppi_get_async_sram_defconfig(PPI_Type *ppi, ppi_async_sram_config_t *config
     config->cs_valid_polarity = false;
     config->dm_valid_polarity = false;
     config->addr_valid_polarity = true;
+    config->cs_sync_clk_en = false;
+    config->cs_sync_clk_sel = 0;
     config->adv_ctrl_pin = 0;
     config->rel_ctrl_pin = 1;
     config->wel_ctrl_pin = 2;
@@ -256,8 +258,8 @@ void ppi_config_async_sram(PPI_Type *ppi, uint8_t cs_index, uint8_t cmd_start_in
     cs_config.addr_end_high_12bits = ((config->base_address + (config->size_in_byte - 1u)) & 0xFFF00000u) >> 20u;
     cs_config.port_size = config->port_size;
     cs_config.addr_mask = 0xFFFFu;
-    cs_config.sync_clk_en = false;
-    cs_config.sync_clk_sel = 0;
+    cs_config.sync_clk_en = config->cs_sync_clk_en;
+    cs_config.sync_clk_sel = config->cs_sync_clk_sel;
     cs_config.interval_cycle = 2;
     cs_config.rcmd_start0 = cmd_start_index;
     cs_config.rcmd_end0 = cmd_start_index + 3;

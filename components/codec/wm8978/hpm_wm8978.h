@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,6 +10,7 @@
 
 #include "hpm_i2c_drv.h"
 #include "hpm_wm8978_regs.h"
+#include "hpm_codec_control.h"
 
 typedef enum wm8978_audio_interface {
     wm8978_right_justified = 0,  /* Right Justified */
@@ -50,10 +51,6 @@ typedef enum output_channel_flag {
     out_3_4_on                 = 0x08,    /* OUT3 and OUT4 output mono audio*/
 } output_channel_flag_t;
 
-typedef struct {
-    I2C_Type *ptr;                      /* I2C bus */
-    uint8_t device_address;             /* code device address */
-} wm8978_context_t;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -65,7 +62,7 @@ extern "C" {
  * @param [in] control WM8979 control structure.
  * @retval hpm_stat_t status_success if init without any error
  */
-hpm_stat_t wm8979_init(wm8978_context_t *control);
+hpm_stat_t wm8979_init(codec_control_t *control);
 
 /**
  * @brief WM8979 set out volume function.
@@ -75,7 +72,7 @@ hpm_stat_t wm8979_init(wm8978_context_t *control);
  * @param [in] volume volume value
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_set_out_volume(wm8978_context_t *control, wm8978_out_channel_t channel, uint8_t volume);
+hpm_stat_t wm8978_set_out_volume(codec_control_t *control, wm8978_out_channel_t channel, uint8_t volume);
 
 /**
  * @brief WM8979 read out volume function.
@@ -85,7 +82,7 @@ hpm_stat_t wm8978_set_out_volume(wm8978_context_t *control, wm8978_out_channel_t
  * @param [out] volume volume points value
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_get_out_volume(wm8978_context_t *control, wm8978_out_channel_t channel, uint8_t *volume);
+hpm_stat_t wm8978_get_out_volume(codec_control_t *control, wm8978_out_channel_t channel, uint8_t *volume);
 
 /**
  * @brief WM8979 set out mute.
@@ -95,7 +92,7 @@ hpm_stat_t wm8978_get_out_volume(wm8978_context_t *control, wm8978_out_channel_t
  * @param [in] mute if mute is set to true
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_set_out_mute(wm8978_context_t *control, wm8978_out_channel_t channel, bool mute);
+hpm_stat_t wm8978_set_out_mute(codec_control_t *control, wm8978_out_channel_t channel, bool mute);
 
 /**
  * @brief WM8979 set gain of mic.
@@ -104,7 +101,7 @@ hpm_stat_t wm8978_set_out_mute(wm8978_context_t *control, wm8978_out_channel_t c
  * @param [in] gain gain value, range: 0 ~ 63
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_set_mic_gain(wm8978_context_t *control, uint8_t gain);
+hpm_stat_t wm8978_set_mic_gain(codec_control_t *control, uint8_t gain);
 
 /**
  * @brief WM8979 set the gain of the Line input channel
@@ -113,7 +110,7 @@ hpm_stat_t wm8978_set_mic_gain(wm8978_context_t *control, uint8_t gain);
  * @param [in] gain volume value, range: 0 ~ 7
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_set_line_gain(wm8978_context_t *control, uint8_t gain);
+hpm_stat_t wm8978_set_line_gain(codec_control_t *control, uint8_t gain);
 
 /**
  * @brief WM8979 enter power down mode
@@ -121,7 +118,7 @@ hpm_stat_t wm8978_set_line_gain(wm8978_context_t *control, uint8_t gain);
  * @param [in] control WM8979 control structure.
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_power_down(wm8978_context_t *control);
+hpm_stat_t wm8978_power_down(codec_control_t *control);
 
 /**
  * @brief Control the GPIO1 pin of WM8978 to output high or low
@@ -130,7 +127,7 @@ hpm_stat_t wm8978_power_down(wm8978_context_t *control);
  * @param [in] value output high or low. if true, it's high
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_ctrl_gpio1(wm8978_context_t *control, bool value);
+hpm_stat_t wm8978_ctrl_gpio1(codec_control_t *control, bool value);
 
 /**
  * @brief Configuring the audio interface of WM8978
@@ -140,7 +137,7 @@ hpm_stat_t wm8978_ctrl_gpio1(wm8978_context_t *control, bool value);
  * @param [in] word_len wm8978_word_length_t structure
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control,
+hpm_stat_t wm8978_cfg_audio_interface(codec_control_t *control,
                                         wm8978_audio_interface_t standard,
                                         wm8978_word_length_t word_len);
 
@@ -150,7 +147,7 @@ hpm_stat_t wm8978_cfg_audio_interface(wm8978_context_t *control,
  * @param control WM8979 control structure.
  * @param invert true for invert LRCLK polarity.
  */
-hpm_stat_t wm8978_invert_lrclk_polarity(wm8978_context_t *control, bool invert);
+hpm_stat_t wm8978_invert_lrclk_polarity(codec_control_t *control, bool invert);
 
 /**
  * @brief Configure wm8978 audio channel
@@ -160,7 +157,7 @@ hpm_stat_t wm8978_invert_lrclk_polarity(wm8978_context_t *control, bool invert);
  * @param [in] out_flags Flags for the output channel
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control,
+hpm_stat_t wm8978_cfg_audio_channel(codec_control_t *control,
                                     uint8_t in_flags,
                                     uint8_t out_flags);
 
@@ -173,7 +170,7 @@ hpm_stat_t wm8978_cfg_audio_channel(wm8978_context_t *control,
  * @param [in] nfa1 Notch Filter1 value
  * @retval hpm_stat_t status_success if set without any error
  */
-hpm_stat_t wm8978_notch_filter(wm8978_context_t *control, uint16_t nfa0, uint16_t nfa1);
+hpm_stat_t wm8978_notch_filter(codec_control_t *control, uint16_t nfa0, uint16_t nfa1);
 
 /**
  * @brief Write register to WM8978 using I2C.
@@ -181,7 +178,7 @@ hpm_stat_t wm8978_notch_filter(wm8978_context_t *control, uint16_t nfa0, uint16_
  * @param [in] control WM8978 control structure.
  * @retval hpm_stat_t status_success if reset without any error
  */
-hpm_stat_t wm8978_reset(wm8978_context_t *control);
+hpm_stat_t wm8978_reset(codec_control_t *control);
 
 /**
  * @brief Write register to WM8978 using I2C.
@@ -191,7 +188,7 @@ hpm_stat_t wm8978_reset(wm8978_context_t *control);
  * @param [in] val Value needs to write into the register.
  * @retval hpm_stat_t status_success if write reg without any error
  */
-hpm_stat_t wm8978_write_reg(wm8978_context_t *control, uint8_t reg, uint16_t val);
+hpm_stat_t wm8978_write_reg(codec_control_t *control, uint8_t reg, uint16_t val);
 
 /**
  * @brief Read register from WM8978 using I2C.
@@ -200,7 +197,7 @@ hpm_stat_t wm8978_write_reg(wm8978_context_t *control, uint8_t reg, uint16_t val
  * @param [out] val Value point read to.
  * @retval hpm_stat_t status_success if read reg without any error
  */
-hpm_stat_t wm8978_read_reg(wm8978_context_t *control, uint8_t reg, uint16_t *val);
+hpm_stat_t wm8978_read_reg(codec_control_t *control, uint8_t reg, uint16_t *val);
 
 /**
  * @brief Modify some bits in the register using I2C.
@@ -210,7 +207,7 @@ hpm_stat_t wm8978_read_reg(wm8978_context_t *control, uint8_t reg, uint16_t *val
  * @param [in] val Value needs to write into the register.
  * @retval hpm_stat_t status_success if modify reg without any error
  */
-hpm_stat_t wm8978_modify_reg(wm8978_context_t *control, uint8_t reg, uint16_t mask, uint16_t val);
+hpm_stat_t wm8978_modify_reg(codec_control_t *control, uint8_t reg, uint16_t mask, uint16_t val);
 
 #ifdef __cplusplus
 }

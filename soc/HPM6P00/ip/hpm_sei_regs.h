@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -367,8 +367,8 @@ typedef struct {
  * TRISMP (RW)
  *
  * Tipple sampe
- * 0: sample 1 time for data transition
- * 1: sample 3 times in receive and result in 2oo3
+ * 0: sample 1 time for data transmission
+ * 1: sample 3 times for data transmission and take the same value twice as the sampling result
  */
 #define SEI_CTRL_XCVR_CTRL_TRISMP_MASK (0x1000U)
 #define SEI_CTRL_XCVR_CTRL_TRISMP_SHIFT (12U)

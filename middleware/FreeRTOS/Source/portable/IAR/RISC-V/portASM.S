@@ -58,6 +58,9 @@
  */
 
 #include "portContext.h"
+#ifdef CONFIG_SEGGER_SYSVIEW
+#include <SEGGER_SYSVIEW_FreeRTOS_S.h>
+#endif
 
 #if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
 #include "freertos_hpmicro_vectors.h"
@@ -233,10 +236,7 @@ chip_specific_stack_frame:              /* First add any chip specific registers
     addi t0, t0, -1                     /* Decrement the count of chip specific registers remaining. */
     j chip_specific_stack_frame         /* Until no more chip specific registers. */
 no_more_regs:
-#ifdef USE_SYSCALL_INTERRUPT_PRIORITY
-    li   t0, 0x888
-    store_x t0, 4(a0)                   /* MIE */
-#endif
+
 #ifdef __riscv_flen
     add a0, a0, -portFPU_CONTEXT_SIZE
     mv t2, a0
@@ -408,9 +408,29 @@ handle_interrupt:
 #else
         bne a0, t1, processed_source
 #endif
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+        EXTERN traceISR_ENTER
+        EXTERN traceISR_EXIT
+        EXTERN traceISR_EXIT_TO_SCHEDULER
+        EXTERN traceISR_SETID
+
+        li a0, 4007
+        call traceISR_SETID
+        call traceISR_ENTER
+#endif
         portUPDATE_MTIMER_COMPARE_REGISTER
         call xTaskIncrementTick
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+        bne a0, x0, _record_exit_isr_to_scheduler
+        mv s1, a0
+        call traceISR_EXIT
+        mv a0, s1
+_record_exit_isr_to_scheduler:
+#endif
         beqz a0, processed_source       /* Don't switch context if incrementing tick didn't unblock a task. */
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+        call traceISR_EXIT_TO_SCHEDULER
+#endif
         call vTaskSwitchContext
         j processed_source
 
@@ -425,9 +445,23 @@ handle_exception:
     /* a0 contains mcause. */
     li t0, 11                                   /* 11 == environment call. */
     bne a0, t0, application_exception_handler   /* Not an M environment call, so some other exception. */
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+    li a0, 4011
+    call traceISR_SETID
+    call traceISR_ENTER
+#endif
     csrr t0, mscratch
     /* Disable task scheduler, if it's already in ISR */
     addi t1, t0, -1
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+    bgtz t1, _record_exit_ecall
+_record_exit_ecall_to_scheduler:
+    call traceISR_EXIT_TO_SCHEDULER
+    j _record_exit_end
+_record_exit_ecall:
+    call traceISR_EXIT
+_record_exit_end:
+#endif
     bgtz t1, processed_source
     call vTaskSwitchContext
     j processed_source

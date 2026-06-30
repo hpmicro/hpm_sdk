@@ -217,12 +217,12 @@
 #define CDC_SERIAL_STATE_BREAK          (1 << 2) /* state of break detection */
 #define CDC_SERIAL_STATE_BREAK_Pos      (2)
 #define CDC_SERIAL_STATE_BREAK_Msk      (1 << CDC_SERIAL_STATE_BREAK_Pos)
-#define CDC_SERIAL_STATE_TX_CARRIER     (1 << 1) /* state of transmission carrier */
-#define CDC_SERIAL_STATE_TX_CARRIER_Pos (1)
-#define CDC_SERIAL_STATE_TX_CARRIER_Msk (1 << CDC_SERIAL_STATE_TX_CARRIER_Pos)
-#define CDC_SERIAL_STATE_RX_CARRIER     (1 << 0) /* state of receiver carrier */
-#define CDC_SERIAL_STATE_RX_CARRIER_Pos (0)
-#define CDC_SERIAL_STATE_RX_CARRIER_Msk (1 << CDC_SERIAL_STATE_RX_CARRIER_Pos)
+#define CDC_SERIAL_STATE_DSR            (1 << 1) /* state of transmission carrier */
+#define CDC_SERIAL_STATE_DSR_Pos        (1)
+#define CDC_SERIAL_STATE_DSR_Msk        (1 << CDC_SERIAL_STATE_DSR_Pos)
+#define CDC_SERIAL_STATE_DCD            (1 << 0) /* state of receiver carrier */
+#define CDC_SERIAL_STATE_DCD_Pos        (0)
+#define CDC_SERIAL_STATE_DCD_Msk        (1 << CDC_SERIAL_STATE_DCD_Pos)
 
 #define CDC_ECM_XMIT_OK                                     (1 << 0)
 #define CDC_ECM_RVC_OK                                      (1 << 1)
@@ -550,8 +550,8 @@ struct cdc_ncm_ndp16 {
 
 #define DBVAL_BE(x) ((x >> 24) & 0xFF), ((x >> 16) & 0xFF), ((x >> 8) & 0xFF), (x & 0xFF)
 
-/*Length of template descriptor: 71 bytes*/
-#define CDC_ECM_DESCRIPTOR_LEN (8 + 9 + 5 + 5 + 13 + 7 + 9 + 7 + 7)
+/*Length of template descriptor: 79 bytes*/
+#define CDC_ECM_DESCRIPTOR_LEN (8 + 9 + 5 + 5 + 13 + 7 + 9 + 9 + 7 + 7)
 // clang-format off
 #define CDC_ECM_DESCRIPTOR_INIT(bFirstInterface, int_ep, out_ep, in_ep, wMaxPacketSize, str_idx) \
     /* Interface Associate */                                                                  \
@@ -600,6 +600,15 @@ struct cdc_ncm_ndp16 {
     USB_DESCRIPTOR_TYPE_INTERFACE,                         /* bDescriptorType */               \
     (uint8_t)(bFirstInterface + 1),                        /* bInterfaceNumber */              \
     0x00,                                                  /* bAlternateSetting */             \
+    0x00,                                                  /* bNumEndpoints */                 \
+    CDC_DATA_INTERFACE_CLASS,                              /* bInterfaceClass */               \
+    0x00,                                                  /* bInterfaceSubClass */            \
+    0x00,                                                  /* bInterfaceProtocol */            \
+    0x00,                                                  /* iInterface */                    \
+    0x09,                                                  /* bLength */                       \
+    USB_DESCRIPTOR_TYPE_INTERFACE,                         /* bDescriptorType */               \
+    (uint8_t)(bFirstInterface + 1),                        /* bInterfaceNumber */              \
+    0x01,                                                  /* bAlternateSetting */             \
     0x02,                                                  /* bNumEndpoints */                 \
     CDC_DATA_INTERFACE_CLASS,                              /* bInterfaceClass */               \
     0x00,                                                  /* bInterfaceSubClass */            \
@@ -619,8 +628,8 @@ struct cdc_ncm_ndp16 {
     0x00                                                   /* bInterval */
 // clang-format on
 
-/*Length of template descriptor: 77 bytes*/
-#define CDC_NCM_DESCRIPTOR_LEN (8 + 9 + 5 + 5 + 13 + 6 + 7 + 9 + 7 + 7)
+/*Length of template descriptor: 86 bytes*/
+#define CDC_NCM_DESCRIPTOR_LEN (8 + 9 + 5 + 5 + 13 + 6 + 7 + 9 + 9 + 7 + 7)
 // clang-format off
 #define CDC_NCM_DESCRIPTOR_INIT(bFirstInterface, int_ep, out_ep, in_ep, wMaxPacketSize, str_idx) \
     /* Interface Associate */                                                                  \
@@ -674,6 +683,15 @@ struct cdc_ncm_ndp16 {
     USB_DESCRIPTOR_TYPE_INTERFACE,                         /* bDescriptorType */               \
     (uint8_t)(bFirstInterface + 1),                        /* bInterfaceNumber */              \
     0x00,                                                  /* bAlternateSetting */             \
+    0x00,                                                  /* bNumEndpoints */                 \
+    CDC_DATA_INTERFACE_CLASS,                              /* bInterfaceClass */               \
+    0x00,                                                  /* bInterfaceSubClass */            \
+    0x00,                                                  /* bInterfaceProtocol */            \
+    0x00,                                                  /* iInterface */                    \
+    0x09,                                                  /* bLength */                       \
+    USB_DESCRIPTOR_TYPE_INTERFACE,                         /* bDescriptorType */               \
+    (uint8_t)(bFirstInterface + 1),                        /* bInterfaceNumber */              \
+    0x01,                                                  /* bAlternateSetting */             \
     0x02,                                                  /* bNumEndpoints */                 \
     CDC_DATA_INTERFACE_CLASS,                              /* bInterfaceClass */               \
     0x00,                                                  /* bInterfaceSubClass */            \

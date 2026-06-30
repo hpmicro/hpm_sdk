@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 3.13)
 
 set(SES_TOOLCHAIN_VARIANT "Andes")
 
-set(RV_ABI "ilp32d")
-set(RV_ARCH "rv32gc")
+set(RV_ABI "ilp32f")
+set(RV_ARCH "rv32imafc")
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

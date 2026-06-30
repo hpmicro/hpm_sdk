@@ -1,4 +1,4 @@
-# Copyright 2021-2022,2024 HPMicro
+# Copyright 2021-2022,2024,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 cmake_minimum_required(VERSION 3.13)
 
@@ -88,6 +88,23 @@ if(${found} GREATER_EQUAL 0)
         set(LINK_TO_FLASH 1)
         set(EXCLUDE_BOOTHEADER 1)
         sdk_compile_definitions("-DFLASH_UF2=1")
+        sdk_compile_definitions("-DINIT_EXT_RAM_FOR_DATA=1")
+    endif()
+
+    string(FIND ${hpm_build_type} "flash_dfu" found)
+    if(${found} GREATER_EQUAL 0)
+        set(FLASH_DFU 1)
+        set(LINK_TO_FLASH 1)
+        set(EXCLUDE_BOOTHEADER 1)
+        sdk_compile_definitions("-DFLASH_DFU=1")
+    endif()
+
+    string(FIND ${hpm_build_type} "flash_sdram_dfu" found)
+    if(${found} GREATER_EQUAL 0)
+        set(FLASH_SDRAM_DFU 1)
+        set(LINK_TO_FLASH 1)
+        set(EXCLUDE_BOOTHEADER 1)
+        sdk_compile_definitions("-DFLASH_DFU=1")
         sdk_compile_definitions("-DINIT_EXT_RAM_FOR_DATA=1")
     endif()
 

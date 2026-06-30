@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -55,16 +55,82 @@
 #define APP_ADC16_TRIG_SRC_FREQUENCY         (20000U)
 #endif
 
+/*
+ * SAMPLE_CFG.ADC_LOOP exponent n when IP has ADC_LOOP: repeat count is 2^n (0 = once).
+ * Max n is ADC16_SOC_ADC_LOOP_MAX_EXP for the SoC.
+ * Override: -DAPP_ADC16_CH_ADC_LOOP_EXP=n.
+ */
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+#ifndef APP_ADC16_CH_ADC_LOOP_EXP
+#define APP_ADC16_CH_ADC_LOOP_EXP (0U)
+#endif
+#endif
+
+/*
+ * Sequence mode DMA 16-bit (ADC_CFG0 DMA_SEQ16BIT): 0=32-bit packed (default), 1=16-bit per sample.
+ * Override: -DAPP_ADC16_ENABLE_SEQ_DMA_16BIT=1.
+ */
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+#ifndef APP_ADC16_ENABLE_SEQ_DMA_16BIT
+#define APP_ADC16_ENABLE_SEQ_DMA_16BIT (0)
+#endif
+#endif
+
+/*
+ * 1: after each result, append ", LOOP exp=... (repeat ...)" from adc16_get_channel_adc_loop (exp read as 0 if IP has no ADC_LOOP).
+ * 0: omit.
+ * Override: -DAPP_ADC16_ENABLE_LOOP_EXP_LOG=1
+ */
+#ifndef APP_ADC16_ENABLE_LOOP_EXP_LOG
+#define APP_ADC16_ENABLE_LOOP_EXP_LOG (0)
+#endif
+
+/*
+ * Stop after this many printed result lines (all modes). 0 = unlimited.
+ * Override: -DAPP_ADC16_CAPTURE_MAX=N.
+ */
+#ifndef APP_ADC16_CAPTURE_MAX
+#define APP_ADC16_CAPTURE_MAX (1000U)
+#endif
+
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t seq_buff[APP_ADC16_SEQ_DMA_BUFF_LEN_IN_4BYTES];
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pmt_buff[APP_ADC16_PMT_DMA_BUFF_LEN_IN_4BYTES];
 
+/** Oneshot mode: channels to init and poll; log order matches adc16_print_loop per channel. */
+uint8_t oneshot_adc_channel[] = {BOARD_APP_ADC16_CH_1};
+/** Period mode: channels to init and adc16_set_prd_config; log order per period tick. */
+uint8_t period_adc_channel[] = {BOARD_APP_ADC16_CH_1};
+/** Sequence mode: channel order in seq queue, DMA and logs (init_sequence_config). */
 uint8_t seq_adc_channel[] = {BOARD_APP_ADC16_CH_1};
+/** Preemption mode: channels bound to trigger (init_preemption_config). */
 uint8_t trig_adc_channel[] = {BOARD_APP_ADC16_CH_1};
+
 uint8_t current_cycle_bit;
 
 __IO uint8_t seq_complete_flag;
 __IO uint8_t trig_complete_flag;
 __IO uint32_t res_out_of_thr_flag;
+
+static uint32_t s_oneshot_capture_count;
+static uint32_t s_sequence_capture_count;
+static uint32_t s_period_capture_count;
+static uint32_t s_preemption_capture_count;
+
+#if APP_ADC16_ENABLE_LOOP_EXP_LOG
+static void adc16_print_loop(uint8_t ch)
+{
+    uint8_t exp;
+
+    if (adc16_get_channel_adc_loop(BOARD_APP_ADC16_BASE, ch, &exp) == status_success) {
+        printf(", LOOP exp=%u (repeat %u)", (unsigned int)exp, (unsigned int)(1U << exp));
+    }
+}
+#else
+static void adc16_print_loop(uint8_t ch)
+{
+    (void)ch;
+}
+#endif
 
 static uint8_t get_adc_conv_mode(void)
 {
@@ -113,14 +179,34 @@ void isr_adc16(void)
     }
 }
 
-hpm_stat_t process_seq_data(uint32_t *buff, int32_t start_pos, uint32_t len)
+/**
+ * Seq DMA 16-bit mode: each DMA item is one 16-bit conversion result only (no cycle bit/sequence num /channel flags).
+ * 32-bit packed mode: each dword is adc16_seq_dma_data_t as in the reference manual.
+ */
+hpm_stat_t process_seq_data(uint32_t *buff, int32_t start_pos, uint32_t len, bool seq_dma_16bit)
 {
-    adc16_seq_dma_data_t *dma_data = (adc16_seq_dma_data_t *)buff;
+    adc16_seq_dma_data_t *dma_data;
 
-    if (ADC16_IS_SEQ_DMA_BUFF_LEN_INVLAID(len)) {
-        return status_invalid_argument;
+    if (seq_dma_16bit) {
+        uint16_t *p = (uint16_t *)buff;
+        const uint32_t seq_ch_cnt = (uint32_t)sizeof(seq_adc_channel);
+        uint32_t rel;
+        uint8_t adc_ch;
+
+        for (uint32_t i = (uint32_t)start_pos; i < (uint32_t)start_pos + len; i++) {
+            rel = i - (uint32_t)start_pos;
+            adc_ch = seq_adc_channel[rel % seq_ch_cnt];
+
+            printf("Sequence Mode - %s - ", BOARD_APP_ADC16_NAME);
+            printf("ADC Channel: %02d - ", (unsigned int)adc_ch);
+            printf("Result (16-bit DMA): 0x%04x", p[i]);
+            adc16_print_loop(adc_ch);
+            printf("\n");
+        }
+        return status_success;
     }
 
+    dma_data = (adc16_seq_dma_data_t *)buff;
     current_cycle_bit = !current_cycle_bit;
 
     for (uint32_t i = start_pos; i < start_pos + len; i++) {
@@ -128,7 +214,9 @@ hpm_stat_t process_seq_data(uint32_t *buff, int32_t start_pos, uint32_t len)
         printf("Cycle Bit: %02d - ",   dma_data[i].cycle_bit);
         printf("Sequence Number:%02d - ", dma_data[i].seq_num);
         printf("ADC Channel: %02d - ",  dma_data[i].adc_ch);
-        printf("Result: 0x%04x\n", dma_data[i].result);
+        printf("Result: 0x%04x", dma_data[i].result);
+        adc16_print_loop((uint8_t)dma_data[i].adc_ch);
+        printf("\n");
 
         if (dma_data[i].cycle_bit != current_cycle_bit) {
             printf("Error: Cycle bit is not expected value[%d]!\n", current_cycle_bit);
@@ -157,7 +245,9 @@ hpm_stat_t process_pmt_data(uint32_t *buff, int32_t start_pos, uint32_t len)
         printf("Cycle Bit: %02d - ", dma_data[i].cycle_bit);
         printf("Sequence Number: %02d - ", dma_data[i].seq_num);
         printf("ADC Channel: %02d - ", dma_data[i].adc_ch);
-        printf("Result: 0x%04x\n", dma_data[i].result);
+        printf("Result: 0x%04x", dma_data[i].result);
+        adc16_print_loop((uint8_t)dma_data[i].adc_ch);
+        printf("\n");
 
         if (dma_data[i].cycle_bit == current_cycle_bit) {
             dma_data[i].cycle_bit = 0;
@@ -191,7 +281,11 @@ void init_trigger_source(PWMV2_Type *ptr)
     pwmv2_counter_select_data_offset_from_shadow_value(ptr, pwm_counter_0, PWMV2_SHADOW_INDEX(0));
     pwmv2_counter_burst_disable(ptr, pwm_counter_0);
 
-    pwmv2_set_trigout_cmp_index(ptr, APP_ADC16_HW_TRGM_SRC_OUT_CH, 16);
+    if (status_success != pwmv2_set_trigout_cmp_index(ptr, APP_ADC16_HW_TRGM_SRC_OUT_CH, 16)) {
+        printf("failed to set PWMv2 trigger output compare index\n");
+        while (1) {
+        }
+    }
     pwmv2_enable_counter(ptr, pwm_counter_0);
 }
 
@@ -293,12 +387,15 @@ hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
     cfg.adc_clk_div    = adc16_clock_divider_4;
+#if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb   = (APP_ADC16_CLOCK_BUS == clock_get_source(BOARD_APP_ADC16_CLK_NAME)) ? true : false;
+#endif
 
-    if (cfg.conv_mode == adc16_conv_mode_sequence ||
-        cfg.conv_mode == adc16_conv_mode_preemption) {
-        cfg.adc_ahb_en = true;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+    if (cfg.conv_mode == adc16_conv_mode_sequence) {
+        cfg.dma_seq16bit = (APP_ADC16_ENABLE_SEQ_DMA_16BIT != 0);
     }
+#endif
 
     /* adc16 initialization */
     if (adc16_init(BOARD_APP_ADC16_BASE, &cfg) == status_success) {
@@ -329,18 +426,26 @@ void channel_result_out_of_threshold_handler(void)
     }
 }
 
-void init_oneshot_config(void)
+hpm_stat_t init_oneshot_config(void)
 {
     adc16_channel_config_t ch_cfg;
+    hpm_stat_t st;
 
     /* get a default channel config */
     adc16_get_channel_default_config(&ch_cfg);
 
-    /* initialize an ADC channel */
-    ch_cfg.ch           = BOARD_APP_ADC16_CH_1;
     ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+    ch_cfg.adc_loop_exp = APP_ADC16_CH_ADC_LOOP_EXP;
+#endif
 
-    adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+    for (uint32_t i = 0; i < sizeof(oneshot_adc_channel); i++) {
+        ch_cfg.ch = oneshot_adc_channel[i];
+        st = adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+        if (st != status_success) {
+            return st;
+        }
+    }
 
     adc16_set_nonblocking_read(BOARD_APP_ADC16_BASE);
 
@@ -348,64 +453,122 @@ void init_oneshot_config(void)
     /* enable oneshot mode */
     adc16_enable_oneshot_mode(BOARD_APP_ADC16_BASE);
 #endif
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_oneshot_capture_count = 0U;
+#endif
+    return status_success;
 }
 
-void oneshot_handler(void)
+bool oneshot_handler(void)
 {
     uint16_t result;
+    uint8_t ch;
+    uint32_t printed;
 
-    if (adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result) == status_success) {
-        if (adc16_is_nonblocking_mode(BOARD_APP_ADC16_BASE)) {
-            adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result);
+    printed = 0U;
+    for (uint32_t i = 0; i < sizeof(oneshot_adc_channel); i++) {
+        ch = oneshot_adc_channel[i];
+        if (adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, ch, &result) == status_success) {
+            if (adc16_is_nonblocking_mode(BOARD_APP_ADC16_BASE)) {
+                adc16_get_oneshot_result(BOARD_APP_ADC16_BASE, ch, &result);
+            }
+            printf("Oneshot Mode - %s [channel %02d] - Result: 0x%04x", BOARD_APP_ADC16_NAME, ch, result);
+            adc16_print_loop(ch);
+            printf("\n");
+            printed++;
         }
-        printf("Oneshot Mode - %s [channel %02d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
     }
+    if (printed == 0U) {
+        return false;
+    }
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_oneshot_capture_count += printed;
+    if (s_oneshot_capture_count >= APP_ADC16_CAPTURE_MAX) {
+        printf("Oneshot Test: captured %u results, stop.\n", (unsigned int)APP_ADC16_CAPTURE_MAX);
+        return true;
+    }
+#endif
+    return false;
 }
 
-void init_period_config(void)
+hpm_stat_t init_period_config(void)
 {
     adc16_channel_config_t ch_cfg;
     adc16_prd_config_t prd_cfg;
+    hpm_stat_t st;
 
     /* get a default channel config */
     adc16_get_channel_default_config(&ch_cfg);
 
-    /* initialize an ADC channel */
-    ch_cfg.ch           = BOARD_APP_ADC16_CH_1;
     ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+    ch_cfg.adc_loop_exp = APP_ADC16_CH_ADC_LOOP_EXP;
+#endif
 
-    adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+    for (uint32_t i = 0; i < sizeof(period_adc_channel); i++) {
+        ch_cfg.ch = period_adc_channel[i];
+        st = adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+        if (st != status_success) {
+            return st;
+        }
+    }
 
-    prd_cfg.ch           = BOARD_APP_ADC16_CH_1;
     prd_cfg.prescale     = 22;    /* Set divider: 2^22 clocks */
     prd_cfg.period_count = 5;     /* 6 periods */
-
-    adc16_set_prd_config(BOARD_APP_ADC16_BASE, &prd_cfg);
+    for (uint32_t i = 0; i < sizeof(period_adc_channel); i++) {
+        prd_cfg.ch = period_adc_channel[i];
+        adc16_set_prd_config(BOARD_APP_ADC16_BASE, &prd_cfg);
+    }
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_period_capture_count = 0U;
+#endif
+    return status_success;
 }
 
-void period_handler(void)
+bool period_handler(void)
 {
     uint16_t result;
+    uint8_t ch;
 
-    adc16_get_prd_result(BOARD_APP_ADC16_BASE, BOARD_APP_ADC16_CH_1, &result);
-    printf("Period Mode - %s [channel %02d] - Result: 0x%04x\n", BOARD_APP_ADC16_NAME, BOARD_APP_ADC16_CH_1, result);
+    for (uint32_t i = 0; i < sizeof(period_adc_channel); i++) {
+        ch = period_adc_channel[i];
+        adc16_get_prd_result(BOARD_APP_ADC16_BASE, ch, &result);
+        printf("Period Mode - %s [channel %02d] - Result: 0x%04x", BOARD_APP_ADC16_NAME, ch, result);
+        adc16_print_loop(ch);
+        printf("\n");
+    }
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_period_capture_count += sizeof(period_adc_channel);
+    if (s_period_capture_count >= APP_ADC16_CAPTURE_MAX) {
+        printf("Period test: captured %u results, stop.\n", (unsigned int)APP_ADC16_CAPTURE_MAX);
+        return true;
+    }
+#endif
+    return false;
 }
 
-void init_sequence_config(void)
+hpm_stat_t init_sequence_config(void)
 {
     adc16_seq_config_t seq_cfg;
     adc16_dma_config_t dma_cfg;
     adc16_channel_config_t ch_cfg;
+    hpm_stat_t st;
 
     /* get a default channel config */
     adc16_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
     ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+    ch_cfg.adc_loop_exp = APP_ADC16_CH_ADC_LOOP_EXP;
+#endif
 
     for (uint32_t i = 0; i < sizeof(seq_adc_channel); i++) {
-        ch_cfg.ch           = seq_adc_channel[i];
-        adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+        ch_cfg.ch = seq_adc_channel[i];
+        st = adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+        if (st != status_success) {
+            return st;
+        }
     }
 
     /* Set a sequence config */
@@ -436,28 +599,38 @@ void init_sequence_config(void)
     /* Initialize a sequence */
     adc16_set_seq_config(BOARD_APP_ADC16_BASE, &seq_cfg);
 
-    /* Set a DMA config */
-    dma_cfg.start_addr         = (uint32_t *)core_local_mem_to_sys_address(APP_ADC16_CORE, (uint32_t)seq_buff);
-    dma_cfg.buff_len_in_4bytes = sizeof(seq_adc_channel);
+    /* DMA buffer length: buff_len_in_2bytes when DMA_SEQ16BIT, else buff_len_in_4bytes (same union storage). */
+    dma_cfg.start_addr = (uint32_t *)core_local_mem_to_sys_address(APP_ADC16_CORE, (uint32_t)seq_buff);
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+    if (adc16_is_seq_dma_16bit_enabled(BOARD_APP_ADC16_BASE)) {
+        dma_cfg.buff_len_in_2bytes = (uint32_t)sizeof(seq_adc_channel);
+    } else {
+        dma_cfg.buff_len_in_4bytes = (uint32_t)sizeof(seq_adc_channel);
+    }
+#else
+    dma_cfg.buff_len_in_4bytes = (uint32_t)sizeof(seq_adc_channel);
+#endif
     dma_cfg.stop_en            = false;
     dma_cfg.stop_pos           = 0;
 
     /* Initialize DMA for the sequence mode */
     adc16_init_seq_dma(BOARD_APP_ADC16_BASE, &dma_cfg);
 
-    /* Enable sequence complete interrupt */
-    adc16_enable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_SEQ_IRQ_EVENT);
-
 #if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
-    /* Trigger mux initialization */
+    /* TRGM + PWM before IRQ so the first HW edge does not fire before the path is armed */
     init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_IN, APP_ADC16_HW_TRGM_OUT_SEQ);
-
-    /* Trigger source initialization */
     init_trigger_source(APP_ADC16_HW_TRIG_SRC);
 #endif
+
+    /* Enable sequence complete interrupt */
+    adc16_enable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_SEQ_IRQ_EVENT);
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_sequence_capture_count = 0U;
+#endif
+    return status_success;
 }
 
-void sequence_handler(void)
+bool sequence_handler(void)
 {
 #if defined(ADC_SOC_NO_HW_TRIG_SRC) || defined(__ADC16_USE_SW_TRIG)
     /* SW trigger */
@@ -473,8 +646,17 @@ void sequence_handler(void)
     /* Stop the trigger source output */
     stop_trigger_source(APP_ADC16_HW_TRIG_SRC);
 #endif
-    /* Process data */
-    process_seq_data(seq_buff, APP_ADC16_SEQ_START_POS, sizeof(seq_adc_channel));
+    /* Process data (16-bit DMA packs each sample as low halfword then high halfword in memory) */
+    process_seq_data(seq_buff, APP_ADC16_SEQ_START_POS, sizeof(seq_adc_channel), adc16_is_seq_dma_16bit_enabled(BOARD_APP_ADC16_BASE));
+
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_sequence_capture_count += (uint32_t)sizeof(seq_adc_channel);
+    if (s_sequence_capture_count >= APP_ADC16_CAPTURE_MAX) {
+        printf("Sequence Test: captured %u results, stop.\n", (unsigned int)APP_ADC16_CAPTURE_MAX);
+        seq_complete_flag = 0;
+        return true;
+    }
+#endif
 
     /* Clear the flag */
     seq_complete_flag = 0;
@@ -485,21 +667,29 @@ void sequence_handler(void)
 
     adc16_seq_enable_hw_trigger(BOARD_APP_ADC16_BASE);
 #endif
+    return false;
 }
 
-void init_preemption_config(void)
+hpm_stat_t init_preemption_config(void)
 {
     adc16_channel_config_t ch_cfg;
+    hpm_stat_t st;
 
     /* get a default channel config */
     adc16_get_channel_default_config(&ch_cfg);
 
     /* initialize an ADC channel */
     ch_cfg.sample_cycle = APP_ADC16_CH_SAMPLE_CYCLE;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+    ch_cfg.adc_loop_exp = APP_ADC16_CH_ADC_LOOP_EXP;
+#endif
 
     for (uint32_t i = 0; i < sizeof(trig_adc_channel); i++) {
         ch_cfg.ch = trig_adc_channel[i];
-        adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+        st = adc16_init_channel(BOARD_APP_ADC16_BASE, &ch_cfg);
+        if (st != status_success) {
+            return st;
+        }
     }
 
     /* Trigger target initialization */
@@ -508,19 +698,21 @@ void init_preemption_config(void)
     /* Set DMA start address for preemption mode */
     adc16_init_pmt_dma(BOARD_APP_ADC16_BASE, core_local_mem_to_sys_address(APP_ADC16_CORE, (uint32_t)pmt_buff));
 
-    /* Enable trigger complete interrupt */
-    adc16_enable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_IRQ_EVENT);
-
 #if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
-    /* Trigger mux initialization */
+    /* TRGM + PWM before IRQ so the first HW edge does not fire before the path is armed */
     init_trigger_mux(APP_ADC16_HW_TRGM, APP_ADC16_HW_TRGM_IN, APP_ADC16_HW_TRGM_OUT_PMT);
-
-    /* Trigger source initialization */
     init_trigger_source(APP_ADC16_HW_TRIG_SRC);
 #endif
+
+    /* Enable trigger complete interrupt */
+    adc16_enable_interrupts(BOARD_APP_ADC16_BASE, APP_ADC16_PMT_IRQ_EVENT);
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_preemption_capture_count = 0U;
+#endif
+    return status_success;
 }
 
-void preemption_handler(void)
+bool preemption_handler(void)
 {
 #if defined(ADC_SOC_NO_HW_TRIG_SRC) || defined(__ADC16_USE_SW_TRIG)
     /* SW trigger */
@@ -546,10 +738,19 @@ void preemption_handler(void)
     /* Clear the flag */
     trig_complete_flag = 0;
 
+#if APP_ADC16_CAPTURE_MAX > 0
+    s_preemption_capture_count += (uint32_t)sizeof(trig_adc_channel);
+    if (s_preemption_capture_count >= APP_ADC16_CAPTURE_MAX) {
+        printf("Preemption Test: captured %u results, stop.\n", (unsigned int)APP_ADC16_CAPTURE_MAX);
+        return true;
+    }
+#endif
+
 #if !defined(ADC_SOC_NO_HW_TRIG_SRC) && !defined(__ADC16_USE_SW_TRIG)
     /* Start the trigger source output */
-     start_trigger_source(APP_ADC16_HW_TRIG_SRC);
+    start_trigger_source(APP_ADC16_HW_TRIG_SRC);
 #endif
+    return false;
 }
 
 bool abort_handler(uint8_t conv_mode)
@@ -580,6 +781,7 @@ bool abort_handler(uint8_t conv_mode)
 int main(void)
 {
     uint8_t conv_mode;
+    hpm_stat_t mode_cfg_st = status_success;
 
     /* Bsp initialization */
     board_init();
@@ -602,23 +804,28 @@ int main(void)
         /* ADC16 read patter and DMA initialization */
         switch (conv_mode) {
         case adc16_conv_mode_oneshot:
-            init_oneshot_config();
+            mode_cfg_st = init_oneshot_config();
             break;
 
         case adc16_conv_mode_period:
-            init_period_config();
+            mode_cfg_st = init_period_config();
             break;
 
         case adc16_conv_mode_sequence:
-            init_sequence_config();
+            mode_cfg_st = init_sequence_config();
             break;
 
         case adc16_conv_mode_preemption:
-            init_preemption_config();
+            mode_cfg_st = init_preemption_config();
             break;
 
         default:
             break;
+        }
+
+        if (mode_cfg_st != status_success) {
+            printf("ADC mode initialization failed (status=%d). Check channel and sampling parameters, then select again.\n", (int)mode_cfg_st);
+            continue;
         }
 
         /* Main loop */
@@ -626,13 +833,21 @@ int main(void)
             channel_result_out_of_threshold_handler();
 
             if (conv_mode == adc16_conv_mode_oneshot) {
-                oneshot_handler();
+                if (oneshot_handler()) {
+                    break;
+                }
             } else if (conv_mode == adc16_conv_mode_period) {
-                period_handler();
+                if (period_handler()) {
+                    break;
+                }
             } else if (conv_mode == adc16_conv_mode_sequence) {
-                sequence_handler();
+                if (sequence_handler()) {
+                    break;
+                }
             } else if (conv_mode == adc16_conv_mode_preemption) {
-                preemption_handler();
+                if (preemption_handler()) {
+                    break;
+                }
             } else {
                 printf("Conversion mode is not supported!\n");
             }

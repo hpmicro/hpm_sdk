@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,9 +39,37 @@ void show_menu(void)
         "*     c - DGO Turn off, System auto wakeup                            *\n"
         "*         Note: After wake-up, use option 'a' to test auto wake-up    *\n"
         "*     d - DGO GPR retention, System one-shot wakeup                   *\n"
+        "*     e - DGO Turn off, WKUP pin wakeup                               *\n"
+        "*     f - DGO Turn off, WUIO pins wakeup                              *\n"
+        "*     g - DGO Turn off, PCAP wakeup                                   *\n"
+        "*     h - DGO Turn off, PCNT wakeup                                   *\n"
         "*                                                                     *\n"
         "***********************************************************************\n";
     printf("%s", menu_str);
+}
+
+ATTR_WEAK void dgo_turn_off_wkup_pin_wakeup(uint32_t turnoff_in_us)
+{
+    (void)turnoff_in_us;
+    printf("DGO Turn off by WKUP pin wakeup is not supported on this SoC\n");
+}
+
+ATTR_WEAK void dgo_turn_off_wuio_wakeup(uint32_t turnoff_in_us)
+{
+    (void)turnoff_in_us;
+    printf("DGO Turn off by WUIO pins wakeup is not supported on this SoC\n");
+}
+
+ATTR_WEAK void dgo_turn_off_pcap_wakeup(uint32_t turnoff_in_us)
+{
+    (void)turnoff_in_us;
+    printf("DGO Turn off by PCAP wakeup is not supported on this SoC\n");
+}
+
+ATTR_WEAK void dgo_turn_off_pcnt_wakeup(uint32_t turnoff_in_us)
+{
+    (void)turnoff_in_us;
+    printf("DGO Turn off by PCNT wakeup is not supported on this SoC\n");
 }
 
 int main(void)
@@ -73,6 +101,18 @@ int main(void)
             break;
         case 'd':
             dgo_gpr_retention_oneshot_wakeup(TURNOFF_IN_US_DEFAULT, WAKEUP_IN_US_DEFAULT);
+            break;
+        case 'e':
+            dgo_turn_off_wkup_pin_wakeup(TURNOFF_IN_US_DEFAULT);
+            break;
+        case 'f':
+            dgo_turn_off_wuio_wakeup(TURNOFF_IN_US_DEFAULT);
+            break;
+        case 'g':
+            dgo_turn_off_pcap_wakeup(TURNOFF_IN_US_DEFAULT);
+            break;
+        case 'h':
+            dgo_turn_off_pcnt_wakeup(TURNOFF_IN_US_DEFAULT);
             break;
         default:
             show_menu();

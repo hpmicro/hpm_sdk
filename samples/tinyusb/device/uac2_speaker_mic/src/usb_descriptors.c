@@ -24,6 +24,13 @@
  *
  */
 
+/*
+ * Copyright (c) 2022-2026 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+
 #include "bsp/board_api.h"
 #include "tusb.h"
 #include "usb_descriptors.h"
@@ -132,7 +139,7 @@ static char const *string_desc_arr[] = {
     (const char[]){ 0x09, 0x04 }, /* 0: is supported language is English (0x0409) */
     "TinyUSB",                    /* 1: Manufacturer */
     "TinyUSB Headset",            /* 2: Product */
-    NULL,                         /* 3: Serials, should use chip ID */
+    "2026060508",                 /* 3: Serials */
     "TinyUSB Speakers",           /* 4: Audio Interface */
     "TinyUSB Microphone",         /* 5: Audio Interface */
 };

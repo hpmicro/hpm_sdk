@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -88,6 +88,7 @@ void init_tamper_pins(void);
 void init_uart_break_signal_pin(void);
 void init_clk_ref_pin(void);
 void init_brownout_indicate_pin(void);
+void init_trgm_gptmr5_cap2_invert_pins(void);
 
 #ifdef __cplusplus
 }

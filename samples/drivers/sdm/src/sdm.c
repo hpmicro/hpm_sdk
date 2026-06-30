@@ -22,7 +22,11 @@
 #include "hpm_sdm_drv.h"
 #include "hpm_trgmmux_src.h"
 #include "hpm_trgm_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #if defined(BOARD_SDM_SENSOR_REQUIRE_CLK) && BOARD_SDM_SENSOR_REQUIRE_CLK
 #include "hpm_pwmv2_drv.h"
 #endif

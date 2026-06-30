@@ -10,6 +10,14 @@ This example project shows USB Audio V2 speaker device.
 
 - PC sees a CherryUSB speaker via Device Manager
 
+Project Configuration
+-----------------------
+
+- In the `CMakeLists.txt` file, configure the type of audio playback device according to requirements. The default playback uses DAO.
+
+- If using the onboard Audio Codec chip, the Audio Codec type is automatically matched with the hardware based on the feature settings in `boards/<board_name>/<board_name>.yaml` (feature: board_codec_xxxx) by default. To specify an audio codec type, set the following in `CMakeLists.txt`: set(CONFIG_CODEC_NAME "wm8960").
+
+
 Board Setting
 -------------
 
@@ -17,7 +25,7 @@ Board Setting
 
 - Connect a USB port on PC to one of USB port on the development board with a USB Type-C cable
 
-- Connect speaker to DAO interface
+- According to project configuration, connect speaker to  :ref:`DAO <board_resource>`  interface if using DAO as player, connect headphone to  :ref:`headphone <board_resource>`  interface if using audio codec as player.
 
 Running the example
 -------------------

@@ -1,4 +1,4 @@
-# Copyright (c) 2022 HPMicro
+# Copyright (c) 2022-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)

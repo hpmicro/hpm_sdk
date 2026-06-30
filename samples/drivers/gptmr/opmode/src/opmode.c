@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -7,7 +7,11 @@
 
 #include <stdio.h>
 #include "board.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 
 #define APP_BOARD_GPTMR               BOARD_GPTMR
@@ -15,6 +19,10 @@
 #define APP_BOARD_GPTMR_IRQ           BOARD_GPTMR_IRQ
 
 #define APP_TICK_MS                   (1000)
+
+#ifndef APP_GPTMR_TARGET_FREQ
+#define APP_GPTMR_TARGET_FREQ         (100000UL) /* 100KHz */
+#endif
 
 static void opmode_config(void);
 
@@ -50,10 +58,18 @@ static void opmode_config(void)
 
     gptmr_freq = board_init_gptmr_clock(APP_BOARD_GPTMR);
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+    config.prescaler = gptmr_freq / APP_GPTMR_TARGET_FREQ;
+    config.reload = ((uint64_t)APP_TICK_MS * gptmr_freq) / ((uint64_t)config.prescaler * 1000);
+#else
     config.reload = gptmr_freq / 1000 * APP_TICK_MS;
+#endif
     config.cmp[0] = config.reload - 1;
     config.enable_opmode = true;
-    gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
+    if (gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false) != status_success) {
+        printf("config gptmr channel failed\n");
+        return;
+    }
     if (gptmr_channel_is_opmode(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH) == true) {
         printf("now gptmr is opmode one-shot mode\n");
     } else {

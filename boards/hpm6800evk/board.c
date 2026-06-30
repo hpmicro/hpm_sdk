@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  *
@@ -12,6 +12,7 @@
 #include "hpm_i2c_drv.h"
 #include "hpm_gpio_drv.h"
 #include "pinmux.h"
+#include "clock.h"
 #include "hpm_pmp_drv.h"
 #include "hpm_clock_drv.h"
 #include "hpm_sysctl_drv.h"
@@ -23,6 +24,9 @@
 #include "hpm_pixelmux_drv.h"
 #include "hpm_lvb_drv.h"
 #include "hpm_enet_drv.h"
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+#include "hpm_enet_phy_port.h"
+#endif
 #include "hpm_usb_drv.h"
 #include "hpm_mipi_dsi_drv.h"
 #include "hpm_mipi_dsi_phy_drv.h"
@@ -89,6 +93,10 @@ __attribute__((section(".nor_cfg_option"), used)) const uint32_t option[4] = { 0
 ATTR_PLACE_AT(".uf2_signature") __attribute__((used)) const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
 #endif
 
+#if defined(FLASH_DFU) && FLASH_DFU
+ATTR_PLACE_AT(".dfu_signature") __attribute__((used)) const uint32_t dfu_signature = BOARD_DFU_SIGNATURE;
+#endif
+
 void board_init_console(void)
 {
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
@@ -101,7 +109,7 @@ void board_init_console(void)
      */
     init_uart_pins((UART_Type *) BOARD_CONSOLE_UART_BASE);
 
-    clock_add_to_group(BOARD_CONSOLE_UART_CLK_NAME, 0);
+    board_init_uart_clock((UART_Type *) BOARD_CONSOLE_UART_BASE);
 
     cfg.type = BOARD_CONSOLE_TYPE;
     cfg.base = (uint32_t) BOARD_CONSOLE_UART_BASE;
@@ -218,7 +226,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
     timer_cb = cb;
     gptmr_channel_get_default_config(BOARD_CALLBACK_TIMER, &config);
 
-    clock_add_to_group(BOARD_CALLBACK_TIMER_CLK_NAME, 0);
+    init_gptmr3_clock();
     gptmr_freq = clock_get_frequency(BOARD_CALLBACK_TIMER_CLK_NAME);
 
     config.reload = gptmr_freq / 1000 * ms;
@@ -253,16 +261,16 @@ uint32_t board_init_i2c_clock(I2C_Type *ptr)
     uint32_t freq = 0;
 
     if (ptr == HPM_I2C0) {
-        clock_add_to_group(clock_i2c0, 0);
+        init_i2c0_clock();
         freq = clock_get_frequency(clock_i2c0);
     } else if (ptr == HPM_I2C1) {
-        clock_add_to_group(clock_i2c1, 0);
+        init_i2c1_clock();
         freq = clock_get_frequency(clock_i2c1);
     } else if (ptr == HPM_I2C2) {
-        clock_add_to_group(clock_i2c2, 0);
+        init_i2c2_clock();
         freq = clock_get_frequency(clock_i2c2);
     } else if (ptr == HPM_I2C3) {
-        clock_add_to_group(clock_i2c3, 0);
+        init_i2c3_clock();
         freq = clock_get_frequency(clock_i2c3);
     } else {
         ;
@@ -276,7 +284,7 @@ uint32_t board_init_i2c_eeprom_clock(I2C_Type *ptr)
     uint32_t freq = 0;
 
     if (ptr == HPM_I2C1) {
-        clock_add_to_group(clock_i2c1, 0);
+        init_i2c1_clock();
         freq = clock_get_frequency(clock_i2c1);
     }
 
@@ -306,13 +314,13 @@ void board_init_i2c(I2C_Type *ptr)
 uint32_t board_init_spi_clock(SPI_Type *ptr)
 {
     if (ptr == HPM_SPI1) {
-        clock_add_to_group(clock_spi1, 0);
+        init_spi1_clock();
         return clock_get_frequency(clock_spi1);
     } else if (ptr == HPM_SPI2) {
-        clock_add_to_group(clock_spi2, 0);
+        init_spi2_clock();
         return clock_get_frequency(clock_spi2);
     } else if (ptr == HPM_SPI3) {
-        clock_add_to_group(clock_spi3, 0);
+        init_spi3_clock();
         return clock_get_frequency(clock_spi3);
     }
     return 0;
@@ -321,7 +329,7 @@ uint32_t board_init_spi_clock(SPI_Type *ptr)
 uint32_t board_init_spi_eeprom_clock(SPI_Type *ptr)
 {
     if (ptr == HPM_SPI3) {
-        clock_add_to_group(clock_spi3, 0);
+        init_spi3_clock();
         return clock_get_frequency(clock_spi3);
     }
     return 0;
@@ -425,7 +433,7 @@ void board_init_pmp(void)
         index++;
     }
 
-#ifdef CONFIG_VGLITE
+#if defined(CONFIG_VGLITE) || defined(LV_USE_VG_LITE_DRIVER)
     extern uint32_t __gpu_start__[];
     extern uint32_t __gpu_end__[];
     uint32_t gpu_start_addr = (uint32_t) __gpu_start__;
@@ -445,22 +453,6 @@ void board_init_pmp(void)
     pmp_config(&pmp_entry[0], index);
 }
 
-void board_init_display_system_clock(void)
-{
-    clock_add_to_group(clock_gpu0, 0);
-    clock_add_to_group(clock_gwc0, 0);
-    clock_add_to_group(clock_gwc1, 0);
-    clock_add_to_group(clock_lvb, 0);
-    clock_add_to_group(clock_lcb, 0);
-    clock_add_to_group(clock_lcd0, 0);
-    clock_add_to_group(clock_dsi0, 0);
-    clock_add_to_group(clock_dsi1, 0);
-    clock_add_to_group(clock_camera0, 0);
-    clock_add_to_group(clock_camera1, 0);
-    clock_add_to_group(clock_jpeg, 0);
-    clock_add_to_group(clock_pdma, 0);
-}
-
 void board_init_clock(void)
 {
     uint32_t cpu0_freq = clock_get_frequency(clock_cpu0);
@@ -472,40 +464,20 @@ void board_init_clock(void)
         sysctl_clock_set_preset(HPM_SYSCTL, 2);
     }
     /* Add clocks to group 0 */
-    clock_add_to_group(clock_cpu0, 0);
-    clock_add_to_group(clock_ahb, 0);
-    clock_add_to_group(clock_axic, 0);
-    clock_add_to_group(clock_axis, 0);
-    clock_add_to_group(clock_axiv, 0);
-    clock_add_to_group(clock_axid, 0);
-    clock_add_to_group(clock_axig, 0);
-    clock_add_to_group(clock_mchtmr0, 0);
-    clock_add_to_group(clock_xpi0, 0);
-    clock_add_to_group(clock_xdma, 0);
-    clock_add_to_group(clock_hdma, 0);
-    clock_add_to_group(clock_xram, 0);
-    clock_add_to_group(clock_lmm0, 0);
-    clock_add_to_group(clock_gpio, 0);
-    clock_add_to_group(clock_ptpc, 0);
-    board_init_display_system_clock();
+    init_board_clock();
+    init_display_system_clock();
     /* Connect Group0 to CPU0 */
     clock_connect_group_to_cpu(0, 0);
 
+    /* Note: When using an external DCDC, don't set the internal DCDC voltage. The following call of pcfg_dcdc_set_voltage() function should be commented out. */
     /* Bump up DCDC voltage to 1275mv */
     pcfg_dcdc_set_voltage(HPM_PCFG, 1275);
 
     /* Configure PLL0_CLK0 Post Divider to 1 */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk0, pllctlv2_div_1p0);
-    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll0, BOARD_CPU_FREQ);
-
     /* Configure axis to 200MHz */
-    clock_set_source_divider(clock_axis, clk_src_pll1_clk0, 4);
-
     /* Configure axig/clock_gpu0 to 400MHz */
-    clock_set_source_divider(clock_axig, clk_src_pll1_clk0, 2);
-
     /* Configure mchtmr to 24MHz */
-    clock_set_source_divider(clock_mchtmr0, clk_src_osc24m, 1);
+    init_board_clock_source();
 
     clock_update_core_clock();
 }
@@ -520,43 +492,35 @@ uint32_t board_init_can_clock(MCAN_Type *ptr)
     uint32_t freq = 0;
     if (ptr == HPM_MCAN0) {
         /* Set the CAN0 peripheral clock to 80MHz */
-        clock_set_source_divider(clock_can0, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can0, 0);
+        init_can0_clock();
         freq = clock_get_frequency(clock_can0);
     } else if (ptr == HPM_MCAN1) {
         /* Set the CAN1 peripheral clock to 80MHz */
-        clock_set_source_divider(clock_can1, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can1, 0);
+        init_can1_clock();
         freq = clock_get_frequency(clock_can1);
     } else if (ptr == HPM_MCAN2) {
         /* Set the CAN2 peripheral clock to 8MHz */
-        clock_set_source_divider(clock_can2, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can2, 0);
+        init_can2_clock();
         freq = clock_get_frequency(clock_can2);
     } else if (ptr == HPM_MCAN3) {
         /* Set the CAN3 peripheral clock to 80MHz */
-        clock_set_source_divider(clock_can3, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can3, 0);
+        init_can3_clock();
         freq = clock_get_frequency(clock_can3);
     } else if (ptr == HPM_MCAN4) {
         /* Set the CAN4 peripheral clock to 80MHz */
-        clock_set_source_divider(clock_can4, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can4, 0);
+        init_can4_clock();
         freq = clock_get_frequency(clock_can4);
     } else if (ptr == HPM_MCAN5) {
         /* Set the CAN5 peripheral clock to 80MHz */
-        clock_set_source_divider(clock_can5, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can5, 0);
+        init_can5_clock();
         freq = clock_get_frequency(clock_can5);
     } else if (ptr == HPM_MCAN6) {
         /* Set the CAN6 peripheral clock to 80MHz */
-        clock_set_source_divider(clock_can6, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can6, 0);
+        init_can6_clock();
         freq = clock_get_frequency(clock_can6);
     } else if (ptr == HPM_MCAN7) {
         /* Set the CAN7 peripheral clock to 80MHz */
-        clock_set_source_divider(clock_can7, clk_src_pll1_clk0, 10);
-        clock_add_to_group(clock_can7, 0);
+        init_can7_clock();
         freq = clock_get_frequency(clock_can7);
     } else {
         /* Invalid CAN instance */
@@ -577,19 +541,19 @@ uint32_t board_init_uart_clock(UART_Type *ptr)
 {
     uint32_t freq = 0U;
     if (ptr == HPM_UART0) {
-        clock_add_to_group(clock_uart0, 0);
+        init_uart0_clock();
         freq = clock_get_frequency(clock_uart0);
     } else if (ptr == HPM_UART1) {
-        clock_add_to_group(clock_uart1, 0);
+        init_uart1_clock();
         freq = clock_get_frequency(clock_uart1);
     } else if (ptr == HPM_UART2) {
-        clock_add_to_group(clock_uart2, 0);
+        init_uart2_clock();
         freq = clock_get_frequency(clock_uart2);
     } else if (ptr == HPM_UART3) {
-        clock_add_to_group(clock_uart3, 0);
+        init_uart3_clock();
         freq = clock_get_frequency(clock_uart3);
     } else if (ptr == HPM_PUART) {
-        clock_add_to_group(clock_puart, 0);
+        init_puart_clock();
         freq = clock_get_frequency(clock_puart);
     } else {
         /* Not supported */
@@ -874,10 +838,7 @@ void board_panel_para_to_lcdc(lcdc_config_t *config)
 
 void board_init_gwc(void)
 {
-    clock_add_to_group(clock_gwc0, 0);
-    clock_add_to_group(clock_gwc1, 0);
-    clock_add_to_group(clock_lcd0, 0);
-    clock_add_to_group(clock_crc0, 0);
+    init_gwc_clock();
 }
 
 void board_init_cap_touch(void)
@@ -921,13 +882,11 @@ uint32_t board_init_cam_clock(CAM_Type *ptr)
     uint32_t freq = 0;
     if (ptr == HPM_CAM0) {
         /* Configure camera clock to 24MHz */
-        clock_set_source_divider(clock_camera0, clk_src_osc24m, 1U);
-        clock_add_to_group(clock_camera0, 0);
+        init_camera0_clock();
         freq = clock_get_frequency(clock_camera0);
     } else if (ptr == HPM_CAM1) {
         /* Configure camera clock to 24MHz */
-        clock_set_source_divider(clock_camera1, clk_src_osc24m, 1U);
-        clock_add_to_group(clock_camera1, 0);
+        init_camera1_clock();
         freq = clock_get_frequency(clock_camera1);
     } else {
         /* Invalid camera instance */
@@ -968,10 +927,8 @@ void init_ddr2_800(void)
     HPM_PCFG->DCDCM_MODE = PCFG_DCDCM_MODE_VOLT_SET(1800) | PCFG_DCDCM_MODE_MODE_SET(1);
 
     /* Change DDR clock to 200MHz, namely: DDR2-800 */
-    clock_set_source_divider(clock_axif, clk_src_pll1_clk0, 4);
-
     /* Enable DDR clock first */
-    clock_add_to_group(clock_ddr0, 0);
+    init_ddr2_800_clock();
 
     /* Wait until the clock is stable */
     uint32_t core_clock_freq = clock_get_frequency(clock_cpu0);
@@ -1100,10 +1057,8 @@ void init_ddr3l_1333(void)
     HPM_PCFG->DCDCM_MODE = PCFG_DCDCM_MODE_VOLT_SET(1400) | PCFG_DCDCM_MODE_MODE_SET(1);
 
     /* Change DDR clock to 333.33MHz, namely: DDR3-1333 */
-    clock_set_source_divider(clock_axif, clk_src_pll1_clk1, 2);
-
     /* Enable DDR clock first */
-    clock_add_to_group(clock_ddr0, 0);
+    init_ddr3l_1333_clock();
 
     /* Wait until the clock is stable */
     uint32_t core_clock_freq = clock_get_frequency(clock_cpu0);
@@ -1210,7 +1165,7 @@ void board_init_usb(USB_Type *ptr)
 {
     if (ptr == HPM_USB0) {
         init_usb_pins(ptr);
-        clock_add_to_group(clock_usb0, 0);
+        init_usb0_clock();
 
         usb_hcd_set_power_ctrl_polarity(ptr, true);
         /* Wait USB_PWR pin control vbus power stable. Time depend on decoupling capacitor, you can decrease or increase this time */
@@ -1278,7 +1233,7 @@ uint32_t board_sd_configure_clock(SDXC_Type *ptr, uint32_t freq, bool need_inver
 
 uint32_t board_init_dao_clock(void)
 {
-    clock_add_to_group(clock_dao, 0);
+    init_dao_clock();
 
     board_config_i2s_clock(DAO_I2S, 48000);
 
@@ -1287,7 +1242,7 @@ uint32_t board_init_dao_clock(void)
 
 uint32_t board_init_pdm_clock(void)
 {
-    clock_add_to_group(clock_pdm, 0);
+    init_pdm_clock();
 
     board_config_i2s_clock(PDM_I2S, 16000);
 
@@ -1299,31 +1254,25 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
     uint32_t freq = 0;
 
     if (ptr == HPM_I2S0) {
-        clock_add_to_group(clock_i2s0, 0);
         if ((sample_rate % 22050) == 0) {
-            clock_set_source_divider(clock_aud0, clk_src_pll1_clk0, 71); /* config clock_aud1 for 22050*n sample rate */
+            init_i2s0_clock_22050();
         } else {
-            clock_set_source_divider(clock_aud0, clk_src_pll3_clk0, 21); /* default 24576000Hz */
+            init_i2s0_clock_default();
         }
-        clock_set_i2s_source(clock_i2s0, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud0 */
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
-        clock_add_to_group(clock_i2s1, 0);
         if ((sample_rate % 22050) == 0) {
-            clock_set_source_divider(clock_aud1, clk_src_pll1_clk0, 71); /* config clock_aud1 for 22050*n sample rate */
+            init_i2s1_clock_22050();
         } else {
-            clock_set_source_divider(clock_aud1, clk_src_pll3_clk0, 21); /* default 24576000Hz */
+            init_i2s1_clock_default();
         }
-        clock_set_i2s_source(clock_i2s1, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud1 */
         freq = clock_get_frequency(clock_i2s1);
     } else if (ptr == HPM_I2S3) {
-        clock_add_to_group(clock_i2s3, 0);
         if ((sample_rate % 22050) == 0) {
-            clock_set_source_divider(clock_aud3, clk_src_pll1_clk0, 71); /* config clock_aud1 for 22050*n sample rate */
+            init_i2s3_clock_22050();
         } else {
-            clock_set_source_divider(clock_aud3, clk_src_pll3_clk0, 21); /* default 24576000Hz */
+            init_i2s3_clock_default();
         }
-        clock_set_i2s_source(clock_i2s3, clk_i2s_src_audn);  /* clk_i2s_src_audn is equal to clk_i2s_src_aud3 */
         freq = clock_get_frequency(clock_i2s3);
     }
 
@@ -1356,6 +1305,65 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
 
     return status_success;
 }
+
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+static hpm_stat_t board_get_enet_phy_config(ENET_Type *ptr, hpm_enet_phy_port_config_t *phy_config)
+{
+    if ((ptr != HPM_ENET0) || (phy_config == NULL)) {
+        return status_invalid_argument;
+    }
+
+    phy_config->base = ptr;
+#if defined(__USE_RTL8211) && __USE_RTL8211
+    phy_config->type = hpm_enet_phy_rtl8211;
+#else
+    return status_invalid_argument;
+#endif
+    phy_config->addr = HPM_ENET_PHY_USE_DEFAULT_ADDR;
+    phy_config->rmii_refclk_dir = 0;
+    phy_config->init_flags = 0;
+#if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
+    phy_config->interface = BOARD_ENET_RGMII_PHY_ITF;
+#elif defined(HPM_ENET_RMII) && HPM_ENET_RMII
+    phy_config->interface = BOARD_ENET_RMII_PHY_ITF;
+    if (hpm_enet_phy_port_needs_rmii_refclk(phy_config->interface)) {
+        phy_config->rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
+    }
+#else
+    return status_invalid_argument;
+#endif
+
+    return status_success;
+}
+
+hpm_stat_t board_init_enet_phy(ENET_Type *ptr)
+{
+    hpm_enet_phy_port_config_t phy_config;
+    hpm_stat_t stat;
+
+    stat = board_get_enet_phy_config(ptr, &phy_config);
+    if (stat != status_success) {
+        return stat;
+    }
+
+    return hpm_enet_phy_port_init(&phy_config);
+}
+
+void board_get_enet_phy_status(uint8_t idx, void *status)
+{
+    hpm_enet_phy_port_config_t phy_config;
+
+    if ((idx != 0U) || (status == NULL)) {
+        return;
+    }
+
+    if (board_get_enet_phy_config(HPM_ENET0, &phy_config) != status_success) {
+        return;
+    }
+
+    (void) hpm_enet_phy_port_get_status(&phy_config, (enet_phy_status_t *)status);
+}
+#endif
 
 uint8_t board_get_enet_dma_pbl(ENET_Type *ptr)
 {
@@ -1401,23 +1409,13 @@ hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr)
 {
     /* set clock source */
     if (ptr == HPM_ENET0) {
-        clock_add_to_group(clock_ptp0, BOARD_RUNNING_CORE & 0x1);
-        /* make sure pll0_clk0 output clock at 800MHz to get a clock at 100MHz for the enet0 ptp function */
-        clock_set_source_divider(clock_ptp0, clk_src_pll1_clk0, 8); /* 100MHz */
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_ptp0_clock();
+#else
+        init_ptp0_clock_group1();
+#endif
     } else {
         return status_invalid_argument;
-    }
-
-    return status_success;
-}
-
-hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
-{
-    (void) ptr;
-    (void) internal;
-
-    if (ptr == HPM_ENET0) {
-        clock_add_to_group(clock_eth0, BOARD_RUNNING_CORE & 0x1);
     }
 
     return status_success;
@@ -1426,7 +1424,11 @@ hpm_stat_t board_init_enet_rmii_reference_clock(ENET_Type *ptr, bool internal)
 hpm_stat_t board_init_enet_rgmii_clock_delay(ENET_Type *ptr)
 {
     if (ptr == HPM_ENET0) {
-        clock_add_to_group(clock_eth0, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_eth0_clock();
+#else
+        init_eth0_clock_group1();
+#endif
         return enet_rgmii_set_clock_delay(ptr, BOARD_ENET_RGMII_TX_DLY, BOARD_ENET_RGMII_RX_DLY);
     }
 
@@ -1445,13 +1447,11 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
     if (ptr == (void *)HPM_ADC0) {
         if (clk_src_bus) {
             /* Configure the ADC clock from AXI (@200MHz by default)*/
-            clock_set_adc_source(clock_adc0, clk_adc_src_axi0);
+            init_adc0_bus_clock();
         } else {
-            /* Configure the ADC clock from pll0_clk1 divided by 4 (@200MHz by default) */
-            clock_set_adc_source(clock_adc0, clk_adc_src_ana0);
-            clock_set_source_divider(clock_ana0, clk_src_pll1_clk0, 4U);
+            /* Configure the ADC clock from pll1_clk0 via ana divider (/4, @200MHz by default) */
+            init_adc0_analog_clock();
         }
-        clock_add_to_group(clock_adc0, 0);
         freq = clock_get_frequency(clock_adc0);
     }
 
@@ -1472,31 +1472,67 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
 {
     uint32_t freq = 0U;
     if (ptr == HPM_GPTMR0) {
-        clock_add_to_group(clock_gptmr0, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr0_clock();
+#else
+        init_gptmr0_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr0);
     } else if (ptr == HPM_GPTMR1) {
-        clock_add_to_group(clock_gptmr1, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr1_clock();
+#else
+        init_gptmr1_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr1);
     } else if (ptr == HPM_GPTMR2) {
-        clock_add_to_group(clock_gptmr2, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr2_clock();
+#else
+        init_gptmr2_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr2);
     } else if (ptr == HPM_GPTMR3) {
-        clock_add_to_group(clock_gptmr3, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr3_clock();
+#else
+        init_gptmr3_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr3);
     } else if (ptr == HPM_GPTMR4) {
-        clock_add_to_group(clock_gptmr4, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr4_clock();
+#else
+        init_gptmr4_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr4);
     } else if (ptr == HPM_GPTMR5) {
-        clock_add_to_group(clock_gptmr5, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr5_clock();
+#else
+        init_gptmr5_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr5);
     } else if (ptr == HPM_GPTMR6) {
-        clock_add_to_group(clock_gptmr6, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr6_clock();
+#else
+        init_gptmr6_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr6);
     } else if (ptr == HPM_GPTMR7) {
-        clock_add_to_group(clock_gptmr7, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_gptmr7_clock();
+#else
+        init_gptmr7_clock_group1();
+#endif
         freq = clock_get_frequency(clock_gptmr7);
     } else if (ptr == HPM_PTMR) {
-        clock_add_to_group(clock_ptmr, BOARD_RUNNING_CORE & 0x1);
+#if BOARD_RUNNING_CORE == HPM_CORE0
+        init_ptmr_clock();
+#else
+        init_ptmr_clock_group1();
+#endif
         freq = clock_get_frequency(clock_ptmr);
     } else {
         /* Not supported */
@@ -1533,8 +1569,6 @@ void init_i2c_pins(I2C_Type *ptr)
         init_i2c1_pins();
     } else if (ptr == HPM_I2C0) {         /* Touch Panel/ Camera */
         init_i2c0_pins();
-    } else {
-        ;
     }
 }
 
@@ -1707,3 +1741,10 @@ void board_init_brownout_indicate_pin(void)
     init_brownout_indicate_pin();
     gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
 }
+
+void init_sent_decode_pins(bool idle_high)
+{
+    (void)idle_high;
+    init_gptmr2_channel0_pin_as_capture();
+}
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -93,6 +93,42 @@ typedef struct {
     void *dst;                  /* !< Destination data buffer */
     uint32_t interrupt_mask;    /* !< Interrupt mask */
 } fir_xfer_t;
+
+/**
+ * @brief Chained command descriptor length definitions
+ *
+ * The command length specifies how many 32-bit words to transfer for chained operations.
+ * Different operations use different numbers of registers:
+ * - FFT: op_ctrl + op_cmd + op_reg0~4 = 7 words
+ * - FIR: op_ctrl + op_cmd + op_reg0~5 = 8 words
+ * - op_reg6, op_reg7: reserved for future use
+ *
+ * @note The cmd_len must match the registers actually used in corresponding operation.
+ *       Using incorrect cmd_len may cause undefined behavior.
+ */
+#define FFA_CHAINED_CMD_LEN_FFT     (7U)    /*!< FFT: op_ctrl + op_cmd + op_reg0~4 */
+#define FFA_CHAINED_CMD_LEN_FIR     (8U)    /*!< FIR: op_ctrl + op_cmd + op_reg0~5 */
+#define FFA_CHAINED_CMD_LEN_MAX     (10U)   /*!< Maximum: op_ctrl + op_cmd + op_reg0~7 (reserved) */
+
+/**
+ * @brief FFA chained command descriptor
+ *
+ * This structure represents a descriptor for chained FFA operations.
+ * Each descriptor contains configuration values for OP_CTRL to OP_REG7.
+ * Must be 4-byte aligned.
+ */
+typedef struct {
+    uint32_t op_ctrl;   /* !< OP_CTRL: NXT_EN, NXT_ADDR, EN */
+    uint32_t op_cmd;    /* !< OP_CMD: CMD, data types, NXT_CMD_LEN */
+    uint32_t op_reg0;   /* !< OP_REG0: FFT/FIR misc */
+    uint32_t op_reg1;   /* !< OP_REG1: FIR misc1 */
+    uint32_t op_reg2;   /* !< OP_REG2: FFT input buffer / FIR reserved */
+    uint32_t op_reg3;   /* !< OP_REG3: FIR input buffer */
+    uint32_t op_reg4;   /* !< OP_REG4: FIR coeff / FFT output */
+    uint32_t op_reg5;   /* !< OP_REG5: FIR output buffer */
+    uint32_t op_reg6;   /* !< OP_REG6: reserved */
+    uint32_t op_reg7;   /* !< OP_REG7: reserved */
+} ffa_chained_desc_t;
 
 /**
  * @brief FFA error codes
@@ -253,6 +289,53 @@ hpm_stat_t ffa_calculate_fft_blocking(FFA_Type *ptr, fft_xfer_t *fft_xfer);
  */
 hpm_stat_t ffa_calculate_fir_blocking(FFA_Type *ptr, fir_xfer_t *fir_xfer);
 
+/**
+ * @brief Build FIR chained descriptor
+ *
+ * @param [out] desc Descriptor to fill
+ * @param [in] fir_xfer FIR transfer context
+ * @param [in] next_desc Next descriptor address (NULL if this is the last descriptor)
+ * @param [in] cmd_len Command length for next descriptor (number of 32-bit words to transfer,
+ *                     use FFA_CHAINED_CMD_LEN_xxx macros, ignored if next_desc is NULL)
+ */
+void ffa_build_fir_chained_desc(ffa_chained_desc_t *desc,
+                                fir_xfer_t *fir_xfer,
+                                ffa_chained_desc_t *next_desc,
+                                uint8_t cmd_len);
+
+/**
+ * @brief Build FFT chained descriptor
+ *
+ * @param [out] desc Descriptor to fill
+ * @param [in] fft_xfer FFT transfer context
+ * @param [in] next_desc Next descriptor address (NULL if this is the last descriptor)
+ * @param [in] cmd_len Command length for next descriptor (number of 32-bit words to transfer,
+ *                     use FFA_CHAINED_CMD_LEN_xxx macros, ignored if next_desc is NULL)
+ */
+void ffa_build_fft_chained_desc(ffa_chained_desc_t *desc,
+                                fft_xfer_t *fft_xfer,
+                                ffa_chained_desc_t *next_desc,
+                                uint8_t cmd_len);
+
+/**
+ * @brief Start chained FFA operations
+ *
+ * This function starts the execution of a chain of FFA operations.
+ * The hardware will automatically traverse the descriptor chain.
+ *
+ * @param [in] ptr FFA base address
+ * @param [in] first_desc First descriptor in the chain
+ */
+void ffa_start_chained(FFA_Type *ptr, ffa_chained_desc_t *first_desc);
+
+/**
+ * @brief Perform chained FFA operations in blocking mode
+ *
+ * @param [in] ptr FFA base address
+ * @param [in] first_desc First descriptor in the chain
+ * @return FFA operation result
+ */
+hpm_stat_t ffa_calculate_chained_blocking(FFA_Type *ptr, ffa_chained_desc_t *first_desc);
 
 #ifdef __cplusplus
 }

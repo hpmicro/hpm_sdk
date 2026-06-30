@@ -23,7 +23,7 @@ PPS输出
        .. image:: doc/flexible.png
           :alt: img
 
-  （2）Control模式：
+  （2）Fixed模式：
 
-       .. image:: doc/control.png
+       .. image:: doc/fixed.png
           :alt: img

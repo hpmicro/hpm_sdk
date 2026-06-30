@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,7 +39,7 @@ int main(void)
         hid_mouse_test(USB_BUS_ID);
         if (dtr_enable) {
             u++;
-            board_delay_ms(50);
+            board_delay_ms(500);
             cdc_acm_data_send_with_dtr_test(USB_BUS_ID);
         }
     }

@@ -1,3 +1,2 @@
 dependency:
-  - gptmr
-  - ip_feature_gptmr_monitor
+  - gptmrv2 || ip_feature_gptmr_monitor

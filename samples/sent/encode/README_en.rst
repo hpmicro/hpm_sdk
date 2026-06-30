@@ -24,7 +24,7 @@ Notes
    to 0, or add sdk_compile_definitions(-DSENT_ENABLE_PAUSE_NIBBLE=0) in
    the project’s CMakeLists.txt file.
 -  The default idle polarity of the SENT signal is low. If need to
-   change it to high, redefine SENT_IDLE_POLARITY to 1, or add
+   change it to high, redefine SENT_IDLE_HIGH to 1, or add
    sdk_compile_definitions(-DSENT_IDLE_POLARITY=1) in the project’s
    CMakeLists.txt file.
 

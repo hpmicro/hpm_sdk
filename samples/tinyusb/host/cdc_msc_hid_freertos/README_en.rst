@@ -88,7 +88,7 @@ Connected with a U disk
 Connected with a CDC-ACM device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- When the USB port0 of the development board is connected with a CDC-ACM device, the serial port debugging assistant will display the following data:
+- When the USB port0 of the development board is connected with a CDC-ACM device (the CDC ACM Device sample path is: samples/cherryusb/device/cdc_acm/cdc_acm_vcom), the serial port debugging assistant will display the following data:
 
 
 .. code-block:: text
@@ -99,4 +99,4 @@ Connected with a CDC-ACM device
      Parity  : 0, Data Width: 8
 
 
-- When you type any characters in the console, the CDC device will forward them to the Host, and the Host's console will echo them back.
+- When you type any characters in the Host's console, the Host will send them to the CDC device via the CDC ACM protocol. The CDC device will send the data back to the Host after receiving it, and the Host will print the received data in the console. The expected test result: the Host Console can echo back the input characters.

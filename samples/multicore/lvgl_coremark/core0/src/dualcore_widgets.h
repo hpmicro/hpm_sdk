@@ -31,8 +31,6 @@ typedef struct {
     bool result_ready[2];
 } lv_coremark_ctx_t;
 
-#define COREMARK_BIN_ARRAY ((void *)SEC_CORE_IMG_START)
-
 extern lv_coremark_ctx_t g_lv_cm_ctx;
 
 /**********************
@@ -41,8 +39,6 @@ extern lv_coremark_ctx_t g_lv_cm_ctx;
 void lv_dualcore_coremark_demo(void);
 
 void init_coremark_result(lv_coremark_ctx_t *cm_ctx);
-
-void load_coremark_bin_for_cpu(void);
 
 void init_coremark_cpu_freq(void);
 

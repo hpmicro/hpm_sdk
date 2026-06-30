@@ -13,6 +13,8 @@
 #include "hpm_misc.h"
 #include "hpm_common.h"
 
+#define USB_DEVICE_CHECK_ENDPTSETUPSTAT_TIMEOUT 1000u
+
 #if defined(USB_DEVICE_DTD_POOL_SHARED) && USB_DEVICE_DTD_POOL_SHARED
 #include "hpm_interrupt.h"
 /* Alloc qtd */
@@ -274,7 +276,13 @@ bool usb_device_edpt_xfer(usb_device_handle_t *handle, uint8_t ep_addr, uint8_t 
         /* follows UM Setup packet handling using setup lockout mechanism
          * wait until ENDPTSETUPSTAT before priming data/status in response
          */
-        while (usb_dcd_get_edpt_setup_status(handle->regs) & HPM_BITSMASK(1, 0)) {
+        uint32_t timeout_count = USB_DEVICE_CHECK_ENDPTSETUPSTAT_TIMEOUT;
+        while ((usb_dcd_get_edpt_setup_status(handle->regs) & HPM_BITSMASK(1, 0)) && (timeout_count > 0)) {
+            NOP();
+            timeout_count--;
+            if (timeout_count == 0) {
+                return false;
+            }
         }
     }
 

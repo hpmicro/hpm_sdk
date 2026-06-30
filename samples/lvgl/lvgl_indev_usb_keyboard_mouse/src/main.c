@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 hpmicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -45,7 +45,7 @@ static void lvgl_task(void *pvParameters)
     board_init_usb((USB_Type *)CONFIG_HPM_USBH_BASE);
     /* set irq priority */
     intc_set_irq_priority(CONFIG_HPM_USBH_IRQn, 1);
-    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE, NULL);
 
     hpm_lvgl_init();
     usbh_hid_lvgl_add_mouse(0);

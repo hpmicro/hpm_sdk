@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,6 +20,7 @@
 
 #define BOARD_NAME          "hpm5300evk"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
+#define BOARD_DFU_SIGNATURE (0x48504D21UL)
 
 /* ACMP desction */
 #define BOARD_ACMP             HPM_ACMP
@@ -30,8 +31,8 @@
 #define BOARD_ACMP_MINUS_INPUT ACMP_INPUT_ANALOG_4 /* align with used pin */
 
 /* dma section */
-#define BOARD_APP_HDMA      HPM_HDMA
-#define BOARD_APP_HDMA_IRQ  IRQn_HDMA
+#define BOARD_APP_DMA0      HPM_HDMA
+#define BOARD_APP_DMA0_IRQ  IRQn_HDMA
 #define BOARD_APP_DMAMUX    HPM_DMAMUX
 #define TEST_DMA_CONTROLLER HPM_HDMA
 #define TEST_DMA_IRQ        IRQn_HDMA
@@ -129,6 +130,7 @@
 #define BOARD_GPTMR_PWM_SYNC_CLK_NAME clock_gptmr0
 
 /* User LED */
+#define BOARD_LED_GPIO_NAME  "PA23"
 #define BOARD_LED_GPIO_CTRL  HPM_GPIO0
 #define BOARD_LED_GPIO_INDEX GPIO_DI_GPIOA
 #define BOARD_LED_GPIO_PIN   23
@@ -265,6 +267,7 @@
 #define BOARD_BLDC_QEIV2_IRQ                     IRQn_QEI1
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE              clock_mot0
+#define BOARD_BLDC_MOTOR_CLOCK_SOURCE            clock_mot0
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV   (4000U)
 
 #define BOARD_APP_QEIV2_BASE                  HPM_QEI1
@@ -305,11 +308,12 @@
 #define BOARD_BLDC_HFI_PLL_KI (1.0f)
 
 /*adc*/
-#define BOARD_BLDC_ADC_MODULE    (ADCX_MODULE_ADC16)
 #define BOARD_BLDC_ADC_U_BASE    HPM_ADC0
+#define BOARD_BLDC_ADC_RES_BITS              (16U)
+#define BOARD_BLDC_ADC_CLOCK_DIV             (4U)
+#define BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE  (20U)
 #define BOARD_BLDC_ADC_V_BASE    HPM_ADC1
 #define BOARD_BLDC_ADC_W_BASE    HPM_ADC1
-#define BOARD_BLDC_ADC_TRIG_FLAG adc16_event_trig_complete
 
 #define BOARD_BLDC_ADC_CH_U                   (5U)
 #define BOARD_BLDC_ADC_CH_V                   (6U)
@@ -365,8 +369,9 @@
 #define BOARD_SEI_CLOCK_NAME clock_mot0
 
 /* OPAMP */
-#define BOARD_APP_OPAMP       HPM_OPAMP0
-#define BOARD_APP_OPAMP_CLOCK clock_opa0
+#define BOARD_APP_OPAMP         HPM_OPAMP0
+#define BOARD_APP_OPAMP_CLOCK   clock_opa0
+#define BOARD_APP_OPAMP_INP_PAD inp_pad_vip0
 
 #ifndef BOARD_SHOW_CLOCK
 #define BOARD_SHOW_CLOCK 1
@@ -453,6 +458,14 @@
 #define BOARD_USB_ID_GPIO_INDEX GPIO_DI_GPIOY
 #define BOARD_USB_ID_GPIO_PIN   (0U)
 
+/* sent decode pin */
+
+#define BOARD_SENT_IDLE_HIGH_GPTMR                   HPM_GPTMR0
+#define BOARD_SENT_IDLE_HIGH_GPTMR_IRQ               IRQn_GPTMR0
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CHANNEL           2
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CLK_NAME          clock_gptmr0
+#define BOARD_SENT_IDLE_HIGH_GPTMR_DMA_SRC           HPM_DMA_SRC_GPTMR0_2
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -532,6 +545,7 @@ void init_qeiv2_ab_pins(QEIV2_Type *ptr);
 void init_qeiv2_abz_pins(QEIV2_Type *ptr);
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
 void board_init_brownout_indicate_pin(void);
+void init_sent_decode_pins(bool idle_high);
 
 #if defined(__cplusplus)
 }

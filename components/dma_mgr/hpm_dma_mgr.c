@@ -7,7 +7,6 @@
 
 #include <string.h>
 #include "hpm_dma_mgr.h"
-#include "hpm_soc.h"
 
 /*****************************************************************************************************************
  *
@@ -112,17 +111,17 @@ ATTR_RAMFUNC void dma_mgr_isr_handler(DMA_Type *ptr, uint32_t instance)
     }
 }
 
-SDK_DECLARE_EXT_ISR_M(IRQn_HDMA, dma0_isr)
+SDK_DECLARE_EXT_ISR_M(DMA_MGR_IRQn_DMA0, dma0_isr)
 void dma0_isr(void)
 {
-    dma_mgr_isr_handler(HPM_HDMA, 0);
+    dma_mgr_isr_handler(DMA_MGR_DMA0, 0);
 }
 
-#ifdef HPM_XDMA
-SDK_DECLARE_EXT_ISR_M(IRQn_XDMA, dma1_isr)
+#ifdef DMA_MGR_DMA1
+SDK_DECLARE_EXT_ISR_M(DMA_MGR_IRQn_DMA1, dma1_isr)
 void dma1_isr(void)
 {
-    dma_mgr_isr_handler(HPM_XDMA, 1);
+    dma_mgr_isr_handler(DMA_MGR_DMA1, 1);
 }
 #endif
 
@@ -138,11 +137,11 @@ static void dma_mgr_exit_critical(uint32_t level)
 
 void dma_mgr_init(void)
 {
-    HPM_DMA_MGR->dma_instance[0].base = HPM_HDMA;
-    HPM_DMA_MGR->dma_instance[0].irq_num = IRQn_HDMA;
-#ifdef HPM_XDMA
-    HPM_DMA_MGR->dma_instance[1].base = HPM_XDMA;
-    HPM_DMA_MGR->dma_instance[1].irq_num = IRQn_XDMA;
+    HPM_DMA_MGR->dma_instance[0].base = DMA_MGR_DMA0;
+    HPM_DMA_MGR->dma_instance[0].irq_num = DMA_MGR_IRQn_DMA0;
+#ifdef DMA_MGR_DMA1
+    HPM_DMA_MGR->dma_instance[1].base = DMA_MGR_DMA1;
+    HPM_DMA_MGR->dma_instance[1].irq_num = DMA_MGR_IRQn_DMA1;
 #endif
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -228,7 +228,7 @@ void chry_shell_port_default_handler(chry_shell_t *csh, int sig)
 
 int shell_init(UART_Type *uart, bool need_login)
 {
-    chry_shell_init_t csh_init;
+    chry_shell_init_t csh_init = {0};
 
     if (uart == NULL) {
         return -1;
@@ -273,7 +273,7 @@ int shell_init(UART_Type *uart, bool need_login)
 #endif
 
 #if defined(CONFIG_CSH_PROMPTEDIT) && CONFIG_CSH_PROMPTEDIT
-    static char csh_prompt_buffer[128];
+    static char csh_prompt_buffer[CONFIG_CSH_PROMPTEDIT_BUF_SIZE];
 
     /*!< set prompt buffer */
     csh_init.prompt_buffer = csh_prompt_buffer;
@@ -281,7 +281,7 @@ int shell_init(UART_Type *uart, bool need_login)
 #endif
 
 #if defined(CONFIG_CSH_HISTORY) && CONFIG_CSH_HISTORY
-    static char csh_history_buffer[128];
+    static char csh_history_buffer[CONFIG_CSH_HISTORY_BUF_SIZE];
 
     /*!< set history buffer */
     csh_init.history_buffer = csh_history_buffer;

@@ -346,11 +346,18 @@ void CO_CANclearPendingSyncPDOs(CO_CANmodule_t *CANmodule)
 
 /******************************************************************************/
 /* Get error counters from the module. If necessary, function may use different way to determine errors. */
-static uint16_t rxErrors = 0, txErrors = 0, overflow = 0;
+static uint16_t overflow = 0;
 
 void CO_CANmodule_process(CO_CANmodule_t *CANmodule)
 {
     uint32_t err;
+    uint16_t rxErrors = 0, txErrors = 0;
+    struct can_bus_err_cnt err_cnt;
+
+    if (can_get_state(CANmodule->CANptr, NULL, &err_cnt) == 0) {
+        txErrors = err_cnt.tx_err_cnt;
+        rxErrors = err_cnt.rx_err_cnt;
+    }
 
     err = ((uint32_t)txErrors << 16) | ((uint32_t)rxErrors << 8) | overflow;
 

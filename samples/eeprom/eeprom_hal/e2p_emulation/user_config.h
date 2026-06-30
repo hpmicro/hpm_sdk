@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 #define E2P_DEBUG_LEVEL        E2P_DEBUG_LEVEL_INFO
-#define EEPROM_MAX_VAR_CNT     (100)
+#define E2P_MAX_VAR_CNT        (100)
 
 #ifdef __cplusplus
 }

@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
   while (1) {
     char c;
     c = th_getchar();
-	th_printf("%c", c);
     ee_serial_callback(c);
   }
   return 0;

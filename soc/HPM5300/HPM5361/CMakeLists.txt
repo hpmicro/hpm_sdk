@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 HPMicro
+# Copyright (c) 2023-2024,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(toolchains)
@@ -65,12 +65,14 @@ if(NOT DEFINED USE_CUSTOM_LINKER)
         else()
             if(${FLASH_UF2})
                 set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_uf2.ld PARENT_SCOPE)
+            elseif(${FLASH_SDRAM_UF2})
+                set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_sdram_uf2.ld PARENT_SCOPE)
+            elseif(${FLASH_DFU})
+                set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_dfu.ld PARENT_SCOPE)
+            elseif(${FLASH_SDRAM_DFU})
+                set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_sdram_dfu.ld PARENT_SCOPE)
             else()
-                if(${FLASH_SDRAM_UF2})
-                    set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash_sdram_uf2.ld PARENT_SCOPE)
-                else()
-                    set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash.ld PARENT_SCOPE)
-                endif()
+                set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/toolchains/gcc/flash.ld PARENT_SCOPE)
             endif()
         endif()
     else()

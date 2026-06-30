@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -49,7 +49,7 @@
 #define PLA_TMGW_SPI_DMA_TRANS_DATA_WIDTH     DMA_TRANSFER_WIDTH_HALF_WORD
 
 
-#define SET_DMA_LINK_PTR(addr)  DMA_CHCTRL_LLPOINTER_LLPOINTERL_SET(core_local_mem_to_sys_address(HPM_CORE0, addr) >> 3)
+#define SET_DMA_LINK_PTR(addr)  DMA_CHCTRL_LLPOINTER_LLPOINTERL_SET(core_local_mem_to_sys_address(HPM_CORE0, addr) >> DMA_CHCTRL_LLPOINTER_LLPOINTERL_SHIFT)
 
 /**
  * @brief if define ,will enabled dma refresh by dma_link.
@@ -106,7 +106,7 @@ uint32_t reload;
 uint32_t reload_trg;
 ATTR_RAMFUNC volatile uint16_t receive_buff[20];
 ATTR_RAMFUNC_WITH_ALIGNMENT(8) volatile uint32_t hall_buff[1];
-ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(8) dma_linked_descriptor_t tmgw_dma_linked_descriptors[PLA_TMGW_DMA_LINK_NUM];
+ATTR_PLACE_AT_AHBSRAM_WITH_ALIGNMENT(DMA_LINKED_DESCRIPTOR_ALIGN) dma_linked_descriptor_t tmgw_dma_linked_descriptors[PLA_TMGW_DMA_LINK_NUM];
 void pla_tmgw_init(void);
 hpm_stat_t qei_position_trigger_dma(DMA_Type *dma_ptr, uint8_t ch_num, QEI_Type *qei_x, uint32_t src, uint8_t data_width, uint32_t size);
 void init_qei(void);

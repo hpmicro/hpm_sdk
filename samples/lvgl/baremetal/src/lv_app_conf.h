@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -42,5 +42,8 @@
 
 #undef LV_USE_HPM_PDMA_WAIT_VSYNC
 #define LV_USE_HPM_PDMA_WAIT_VSYNC 0
+
+#undef LV_USE_HPM_3RD_BUFFER
+#define LV_USE_HPM_3RD_BUFFER 0
 
 #endif

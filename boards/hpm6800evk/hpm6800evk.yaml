@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 HPMicro
+# Copyright (c) 2023-2024,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 board:
@@ -17,6 +17,7 @@ board:
       - board_audio_in # PDM
       - board_audio_out # DAO
       - board_audio_codec # I2S codec
+      - board_codec_wm8960 # CMake will set(CONFIG_CODEC_NAME "wm8960") based on this
       - board_gpt_pin
       - board_enet_pps_output_pin
       - board_enet_pps_input_pin

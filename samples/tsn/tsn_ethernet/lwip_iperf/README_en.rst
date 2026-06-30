@@ -47,7 +47,7 @@ Project Configurations
 
 - Compilation configurations
 
-  - When the MCU acts as a TCP/UDP client, it is necessary to specify the server's IP address, and ensure that the specified IP is in the same segment as the MCU's own IP address. The IP_CONFIG, NETMASK_CONFIG, and GW_CONFIG can be redefined to complete the configurations.
+  - When the MCU acts as a TCP/UDP client, enter the server IP address from the serial terminal after selecting TCP/UDP client mode, or press Enter to use the default remote server IP. The default remote server IP can be redefined via ``REMOTE_IP0_CONFIG``. Ensure the remote IP is in the same segment as the MCU IP. ``IP0_CONFIG``, ``NETMASK0_CONFIG``, and ``GW0_CONFIG`` can be redefined as needed.
 
 Run Example
 -----------

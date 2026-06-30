@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -53,7 +53,7 @@ typedef struct {
     __RW uint32_t PHY_CTRL0;                   /* 0x210:  */
     __RW uint32_t PHY_CTRL1;                   /* 0x214:  */
     __R  uint8_t  RESERVED9[8];                /* 0x218 - 0x21F: Reserved */
-    __RW uint32_t TOP_STATUS;                  /* 0x220:  */
+    __R  uint32_t TOP_STATUS;                  /* 0x220:  */
     __RW uint32_t PHY_STATUS;                  /* 0x224:  */
 } USB_Type;
 
@@ -337,7 +337,8 @@ typedef struct {
  *
  * IAA
  * Interrupt on Async Advance Doorbell - Read/Write.
- * This bit is used as a doorbell by software to tell the host controller to issue an interrupt the next time it advances asynchronous schedule. Software must write a 1 to this bit to ring the doorbell.
+ * This bit is used as a doorbell by software to tell the host controller to issue an interrupt the next time it advances asynchronous schedule.
+ *  Software must write a 1 to this bit to ring the doorbell.
  * When the host controller has evicted all appropriate cached schedule states,
  * it sets the Interrupt on Async Advance status bit in the USBSTS register.
  * If the Interrupt on Sync Advance Enable bit in the USBINTR register is one, then the host controller will assert an interrupt at the next interrupt threshold.
@@ -398,7 +399,8 @@ typedef struct {
  *
  * RST
  * Controller Reset (RESET) - Read/Write. Software uses this bit to reset the controller.
- * This bit is set to zero by the Host/Device Controller when the reset process is complete. Software cannot terminate the reset process early by writing a zero to this register.
+ * This bit is set to zero by the Host/Device Controller when the reset process is complete.
+ * Software cannot terminate the reset process early by writing a zero to this register.
  * Host operation mode:
  * When software writes a one to this bit, the Controller resets its internal pipelines, timers, counters, state machines etc. to their initial value.
  * Any transaction currently in progress on USB is immediately terminated. A USB reset is not driven on downstream ports.
@@ -407,7 +409,8 @@ typedef struct {
  * Device operation mode:
  * When software writes a one to this bit, the Controller resets its internal pipelines, timers, counters, state machines etc. to their initial value.
  * Writing a one to this bit when the device is in the attached state is not recommended, because the effect on an attached host is undefined.
- * In order to ensure that the device is not in an attached state before initiating a device controller reset, all primed endpoints should be flushed and the USBCMD Run/Stop bit should be set to 0.
+ * In order to ensure that the device is not in an attached state before initiating a device controller reset,
+ *  all primed endpoints should be flushed and the USBCMD Run/Stop bit should be set to 0.
  */
 #define USB_USBCMD_RST_MASK (0x2U)
 #define USB_USBCMD_RST_SHIFT (1U)
@@ -510,7 +513,8 @@ typedef struct {
  * AS
  * Asynchronous Schedule Status - Read Only.
  * This bit reports the current real status of the Asynchronous Schedule. When set to zero the asynchronous schedule status is disabled and if set to one the status is enabled.
- * The Host Controller is not required to immediately disable or enable the Asynchronous Schedule when software transitions the Asynchronous Schedule Enable bit in the USBCMD register.
+ * The Host Controller is not required to immediately disable or enable the Asynchronous Schedule
+ *  when software transitions the Asynchronous Schedule Enable bit in the USBCMD register.
  * When this bit and the Asynchronous Schedule Enable bit are the same value, the Asynchronous Schedule is either enabled (1) or disabled (0).
  * Only used in the host operation mode.
  */
@@ -1345,8 +1349,10 @@ typedef struct {
  * When in suspend state, downstream propagation of data is blocked on this port, except for port reset.
  * The blocking occurs at the end of the current transaction if a transaction was in progress when this bit was written to 1.
  * In the suspend state, the port is sensitive to resume detection.
- * Note that the bit status does not change until the port is suspended and that there may be a delay in suspending a port if there is a transaction currently in progress on the USB.
- * The host controller will unconditionally set this bit to zero when software sets the Force Port Resume bit to zero. The host controller ignores a write of zero to this bit.
+ * Note that the bit status does not change until the port is suspended
+ * and that there may be a delay in suspending a port if there is a transaction currently in progress on the USB.
+ * The host controller will unconditionally set this bit to zero when software sets the Force Port Resume bit to zero.
+ * The host controller ignores a write of zero to this bit.
  * If host software sets this bit to a one when the port is not enabled (that is, Port enabled bit is a zero) the results are undefined.
  * This field is zero if Port Power(PORTSC1) is zero in host mode.
  * In Device Mode: Read Only.
@@ -1363,12 +1369,14 @@ typedef struct {
  * FPR
  * Force Port Resume -Read/Write. 1= Resume detected/driven on port. 0=No resume (K-state) detected driven on port. Default = 0.
  * In Host Mode:
- * Software sets this bit to one to drive resume signaling. The Host Controller sets this bit to one if a J-to-K transition is detected while the port is in the Suspend state.
+ * Software sets this bit to one to drive resume signaling.
+ * The Host Controller sets this bit to one if a J-to-K transition is detected while the port is in the Suspend state.
  * When this bit transitions to a one because a J-to-K transition is detected, the Port Change Detect bit in the USBSTS register is also set to one.
  * This bit will automatically change to zero after the resume sequence is complete.
  * This behavior is different from EHCI where the host controller driver is required to set this bit to a zero after the resume duration is timed in the driver.
  * Note that when the Host controller owns the port, the resume sequence follows the defined sequence documented in the USB Specification Revision 2.0.
- * The resume signaling (Full-speed 'K') is driven on the port as long as this bit remains a one. This bit will remain a one until the port has switched to the high-speed idle.
+ * The resume signaling (Full-speed 'K') is driven on the port as long as this bit remains a one.
+ * This bit will remain a one until the port has switched to the high-speed idle.
  * Writing a zero has no effect because the port controller will time the resume operation, clear the bit the port control state switches to HS or FS idle.
  * This field is zero if Port Power(PORTSC1) is zero in host mode.
  * This bit is not-EHCI compatible.
@@ -1434,7 +1442,8 @@ typedef struct {
  * In Host Mode:
  * Ports can only be enabled by the host controller as a part of the reset and enable. Software cannot enable a port by writing a one to this field.
  * Ports can be disabled by either a fault condition (disconnect event or other fault condition) or by the host software.
- * Note that the bit status does not change until the port state actually changes. There may be a delay in disabling or enabling a port due to other host controller and bus events.
+ * Note that the bit status does not change until the port state actually changes.
+ * There may be a delay in disabling or enabling a port due to other host controller and bus events.
  * When the port is disabled, (0b) downstream propagation of data is blocked except for reset.
  * This field is zero if Port Power(PORTSC1) is zero in host mode.
  * In Device Mode:
@@ -1636,11 +1645,14 @@ typedef struct {
  * SDIS
  * Stream Disable Mode. (0 - Inactive [default]; 1 - Active)
  * Device Mode: Setting to a '1' disables double priming on both RX and TX for low bandwidth systems.
- * This mode ensures that when the RX and TX buffers are sufficient to contain an entire packet that the standard double buffering scheme is disabled to prevent overruns/underruns in bandwidth limited systems.
+ * This mode ensures that when the RX and TX buffers are sufficient to contain an entire packet
+ * that the standard double buffering scheme is disabled to prevent overruns/underruns in bandwidth limited systems.
  * Note: In High Speed Mode, all packets received are responded to with a NYET handshake when stream disable is active.
  * Host Mode: Setting to a '1' ensures that overruns/underruns of the latency FIFO are eliminated for low bandwidth systems
- * where the RX and TX buffers are sufficient to contain the entire packet. Enabling stream disable also has the effect of ensuring the TX latency is filled to capacity before the packet is launched onto the USB.
- * NOTE: Time duration to pre-fill the FIFO becomes significant when stream disable is active. See TXFILLTUNING and TXTTFILLTUNING [MPH Only] to characterize the adjustments needed for
+ * where the RX and TX buffers are sufficient to contain the entire packet.
+ * Enabling stream disable also has the effect of ensuring the TX latency is filled to capacity before the packet is launched onto the USB.
+ * NOTE: Time duration to pre-fill the FIFO becomes significant when stream disable is active.
+ * See TXFILLTUNING and TXTTFILLTUNING [MPH Only] to characterize the adjustments needed for
  * the scheduler when using this feature.
  * NOTE: The use of this feature substantially limits of the overall USB performance that can be achieved.
  */
@@ -1738,7 +1750,8 @@ typedef struct {
  * PERB (RWS)
  *
  * PERB
- * Prime Endpoint Receive Buffer - R/WS. For each endpoint, a corresponding bit is used to request a buffer prepare for a receive operation for when a USB host initiates a USB OUT transaction.
+ * Prime Endpoint Receive Buffer - R/WS.
+ * For each endpoint, a corresponding bit is used to request a buffer prepare for a receive operation for when a USB host initiates a USB OUT transaction.
  * Software should write a one to the corresponding bit whenever posting a new transfer descriptor to an endpoint queue head.
  * Hardware automatically uses this bit to begin parsing for a new transfer descriptor from the queue head and prepare a receive buffer.
  * Hardware clears this bit when the associated endpoint(s) is (are) successfully primed.
@@ -1820,8 +1833,10 @@ typedef struct {
  * ETCE (RWC)
  *
  * ETCE
- * Endpoint Transmit Complete Event - R/WC. Each bit indicates a transmit event (IN/INTERRUPT) occurred and software should read the corresponding endpoint queue to determine the endpoint status.
- * If the corresponding IOC bit is set in the Transfer Descriptor, then this bit is set simultaneously with the USBINT . Writing one clears the corresponding bit in this register.
+ * Endpoint Transmit Complete Event - R/WC. Each bit indicates a transmit event (IN/INTERRUPT) occurred,
+ *  and software should read the corresponding endpoint queue to determine the endpoint status.
+ * If the corresponding IOC bit is set in the Transfer Descriptor, then this bit is set simultaneously with the USBINT .
+ * Writing one clears the corresponding bit in this register.
  * ETCE[N] - Endpoint #N, N is in 0..7
  */
 #define USB_ENDPTCOMPLETE_ETCE_MASK (0xFFFF0000UL)
@@ -1882,6 +1897,8 @@ typedef struct {
  * 01 Isochronous
  * 10 Bulk
  * 11 Interrupt
+ * NOTE: when this TX endpoint type is set to none-Control type, must set RXT in same register to none-Control type also, even it's not enabled.
+ * (control endpoint must be existed with pair)
  */
 #define USB_ENDPTCTRL_TXT_MASK (0xC0000UL)
 #define USB_ENDPTCTRL_TXT_SHIFT (18U)
@@ -1900,7 +1917,8 @@ typedef struct {
  * Software can write a one to this bit to force the endpoint to return a STALL handshake to the Host.
  * This control will continue to STALL until this bit is either cleared by software or automatically cleared as above for control endpoints.
  * NOTE: [CONTROL ENDPOINT TYPES ONLY]: there is a slight delay (50 clocks max) between the ENDPTSETUPSTAT begin cleared and hardware continuing to clear this bit.
- * In most systems, it is unlikely the DCD software will observe this delay. However, should the DCD observe that the stall bit is not set after writing a one to it then follow this procedure:
+ * In most systems, it is unlikely the DCD software will observe this delay.
+ * However, should the DCD observe that the stall bit is not set after writing a one to it then follow this procedure:
  * continually write this stall bit until it is set or until a new setup has been received by checking the associated endptsetupstat Bit.
  */
 #define USB_ENDPTCTRL_TXS_MASK (0x10000UL)
@@ -1941,10 +1959,12 @@ typedef struct {
  *
  * RXT
  * RX Endpoint Type - Read/Write
- * 00 Control
+ * 00 Control(default)
  * 01 Isochronous
  * 10 Bulk
  * 11 Interrupt
+ * NOTE: when this RX endpoint type is set to none-Control type, must set TXT in same register to none-Control type also, even it's not enabled.
+ * (control endpoint must be existed with pair)
  */
 #define USB_ENDPTCTRL_RXT_MASK (0xCU)
 #define USB_ENDPTCTRL_RXT_SHIFT (2U)
@@ -1980,6 +2000,11 @@ typedef struct {
 /*
  * OTG_WKDPDMCHG_EN (RW)
  *
+ * DP/DM wakeup enable
+ * when USB enters into low power mode(suspend), setting this bit to high, or VBUS is valid(after selected by otg_vbus_source_sel), will wakeup USB(exit suspend),
+ * and send wakeup interrupt if otg_wakeup_int_enable is set to high.
+ * this bit is only used in device mode.
+ * use WKDC/WKCN in PORTSC1 to enable DP/DM wakeup at host mode
  */
 #define USB_OTG_CTRL0_OTG_WKDPDMCHG_EN_MASK (0x2000000UL)
 #define USB_OTG_CTRL0_OTG_WKDPDMCHG_EN_SHIFT (25U)
@@ -1989,6 +2014,8 @@ typedef struct {
 /*
  * AUTORESUME_EN (RW)
  *
+ * auturesume enable
+ * used in host mode only, for response to device remote wakeup if PLL is not enabled in time.
  */
 #define USB_OTG_CTRL0_AUTORESUME_EN_MASK (0x80000UL)
 #define USB_OTG_CTRL0_AUTORESUME_EN_SHIFT (19U)
@@ -1998,6 +2025,7 @@ typedef struct {
 /*
  * OTG_VBUS_WAKEUP_EN (RW)
  *
+ * vbus wakeup enable
  */
 #define USB_OTG_CTRL0_OTG_VBUS_WAKEUP_EN_MASK (0x20000UL)
 #define USB_OTG_CTRL0_OTG_VBUS_WAKEUP_EN_SHIFT (17U)
@@ -2007,6 +2035,7 @@ typedef struct {
 /*
  * OTG_ID_WAKEUP_EN (RW)
  *
+ * ID wakeup enable
  */
 #define USB_OTG_CTRL0_OTG_ID_WAKEUP_EN_MASK (0x10000UL)
 #define USB_OTG_CTRL0_OTG_ID_WAKEUP_EN_SHIFT (16U)
@@ -2016,6 +2045,9 @@ typedef struct {
 /*
  * OTG_VBUS_SOURCE_SEL (RW)
  *
+ * VBUS wakeup source select.
+ * 0:  use vbus valid as wakeup source(>4.2V);
+ * 1:  use session valid as wakeup source(> about 2.4V);
  */
 #define USB_OTG_CTRL0_OTG_VBUS_SOURCE_SEL_MASK (0x2000U)
 #define USB_OTG_CTRL0_OTG_VBUS_SOURCE_SEL_SHIFT (13U)
@@ -2025,7 +2057,10 @@ typedef struct {
 /*
  * OTG_UTMI_SUSPENDM_SW (RW)
  *
- * default 0 for naneng usbphy
+ * software usbphy suspend control.
+ * default 0 will suspend usbphy.
+ * user need to set this bit to 1 during usbphy initiallization
+ * NOTE:  make sure at least 1us between setting this bit and clear otg_utmi_reset_sw
  */
 #define USB_OTG_CTRL0_OTG_UTMI_SUSPENDM_SW_MASK (0x1000U)
 #define USB_OTG_CTRL0_OTG_UTMI_SUSPENDM_SW_SHIFT (12U)
@@ -2035,7 +2070,10 @@ typedef struct {
 /*
  * OTG_UTMI_RESET_SW (RW)
  *
- * default 1 for naneng usbphy
+ * software usbphy reset control.
+ * default 1 will let usbphy in reset state.
+ * user need to clr this bit to 0 during usbphy initiallization
+ * NOTE:  before clearing this bit, make sure at least 1us after setting otg_utmi_suspendm_sw.
  */
 #define USB_OTG_CTRL0_OTG_UTMI_RESET_SW_MASK (0x800U)
 #define USB_OTG_CTRL0_OTG_UTMI_RESET_SW_SHIFT (11U)
@@ -2045,6 +2083,10 @@ typedef struct {
 /*
  * OTG_WAKEUP_INT_ENABLE (RW)
  *
+ * wakeup interrupt enable.
+ * when USB in suspend state(PORTSC1.PHCD is 1), user can close all PLL and external crystal, keep internal 24MHz osc active as wakeup clock.
+ * when receive wakeup event and related enable is set, an interrupt to CPU will be asserted if this bit is set.
+ * the interrupt status bit is located at TOP_STATUS.wakeup_int_status，user need clear this bit to 0 to clear the wakeup interrupt.
  */
 #define USB_OTG_CTRL0_OTG_WAKEUP_INT_ENABLE_MASK (0x400U)
 #define USB_OTG_CTRL0_OTG_WAKEUP_INT_ENABLE_SHIFT (10U)
@@ -2054,6 +2096,10 @@ typedef struct {
 /*
  * OTG_POWER_MASK (RW)
  *
+ * USB*_PWR polarity control
+ * during host mode, user can config IOMUX to output USB*_PWR pin(which is from PORTSC1.PP), to control external VBUS on/off.
+ * this bit can control the polarity of external VBUS control logic active high or active low(default 0).
+ * user can also use a GPIO to control.
  */
 #define USB_OTG_CTRL0_OTG_POWER_MASK_MASK (0x200U)
 #define USB_OTG_CTRL0_OTG_POWER_MASK_SHIFT (9U)
@@ -2063,6 +2109,11 @@ typedef struct {
 /*
  * OTG_OVER_CUR_POL (RW)
  *
+ * overcurrent polarity control.
+ * during host mode, user can config IOMUX to input USB*_OC as overcurrent status indication(generally come from VBUS control logic).
+ * this bit can control the polarity of overcurrent.
+ * 0 for active high;
+ * 1 for active low.
  */
 #define USB_OTG_CTRL0_OTG_OVER_CUR_POL_MASK (0x100U)
 #define USB_OTG_CTRL0_OTG_OVER_CUR_POL_SHIFT (8U)
@@ -2072,6 +2123,8 @@ typedef struct {
 /*
  * OTG_OVER_CUR_DIS (RW)
  *
+ * overcurrent disable.
+ * setting this bit to 1 can disable overcurrent function.
  */
 #define USB_OTG_CTRL0_OTG_OVER_CUR_DIS_MASK (0x80U)
 #define USB_OTG_CTRL0_OTG_OVER_CUR_DIS_SHIFT (7U)
@@ -2081,7 +2134,7 @@ typedef struct {
 /*
  * SER_MODE_SUSPEND_EN (RW)
  *
- * for naneng usbphy, only switch to serial mode when suspend
+ * setting this bit to 1.
  */
 #define USB_OTG_CTRL0_SER_MODE_SUSPEND_EN_MASK (0x10U)
 #define USB_OTG_CTRL0_SER_MODE_SUSPEND_EN_SHIFT (4U)
@@ -2092,6 +2145,10 @@ typedef struct {
 /*
  * GPIO_ID_SEL_N (RW)
  *
+ * ID selection
+ * USBPHY has ID pin, but it maybe not exist in some small package. user can use some GPIO(see pinmux for detail) as ID in these package if need ID functon.
+ * 0:  use usbphy ID.
+ * 1:  use GPIO ID(need config pinmux)
  */
 #define USB_PHY_CTRL0_GPIO_ID_SEL_N_MASK (0x2000000UL)
 #define USB_PHY_CTRL0_GPIO_ID_SEL_N_SHIFT (25U)
@@ -2101,6 +2158,9 @@ typedef struct {
 /*
  * ID_DIG_OVERRIDE (RW)
  *
+ * ID override value.
+ * use this register as ID value if  id_dig_override_en is set to 1.
+ * this feature is useful when external ID is not used.
  */
 #define USB_PHY_CTRL0_ID_DIG_OVERRIDE_MASK (0x4000U)
 #define USB_PHY_CTRL0_ID_DIG_OVERRIDE_SHIFT (14U)
@@ -2110,6 +2170,8 @@ typedef struct {
 /*
  * SESS_VALID_OVERRIDE (RW)
  *
+ * sess_valid override value.
+ * use this register as session valid value if sess_valid_override_enis set to 1.
  */
 #define USB_PHY_CTRL0_SESS_VALID_OVERRIDE_MASK (0x2000U)
 #define USB_PHY_CTRL0_SESS_VALID_OVERRIDE_SHIFT (13U)
@@ -2119,6 +2181,8 @@ typedef struct {
 /*
  * VBUS_VALID_OVERRIDE (RW)
  *
+ * vbus_valid override value.
+ * use this register as vbus valid value if vbus_valid_override_en is set to 1.
  */
 #define USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_MASK (0x1000U)
 #define USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_SHIFT (12U)
@@ -2138,6 +2202,7 @@ typedef struct {
 /*
  * ID_DIG_OVERRIDE_EN (RW)
  *
+ * ID override enable
  */
 #define USB_PHY_CTRL0_ID_DIG_OVERRIDE_EN_MASK (0x4U)
 #define USB_PHY_CTRL0_ID_DIG_OVERRIDE_EN_SHIFT (2U)
@@ -2147,6 +2212,7 @@ typedef struct {
 /*
  * SESS_VALID_OVERRIDE_EN (RW)
  *
+ * SESS_VALID override enable
  */
 #define USB_PHY_CTRL0_SESS_VALID_OVERRIDE_EN_MASK (0x2U)
 #define USB_PHY_CTRL0_SESS_VALID_OVERRIDE_EN_SHIFT (1U)
@@ -2156,6 +2222,7 @@ typedef struct {
 /*
  * VBUS_VALID_OVERRIDE_EN (RW)
  *
+ * VBUS_VALID override enable
  */
 #define USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_EN_MASK (0x1U)
 #define USB_PHY_CTRL0_VBUS_VALID_OVERRIDE_EN_SHIFT (0U)
@@ -2166,6 +2233,9 @@ typedef struct {
 /*
  * UTMI_CFG_RST_N (RW)
  *
+ * usbphy config reset
+ * defult 0 for usbphy config in reset state.
+ * user need set it to 1 during usbphy initialization.
  */
 #define USB_PHY_CTRL1_UTMI_CFG_RST_N_MASK (0x100000UL)
 #define USB_PHY_CTRL1_UTMI_CFG_RST_N_SHIFT (20U)
@@ -2186,18 +2256,23 @@ typedef struct {
 
 /* Bitfield definition for register: TOP_STATUS */
 /*
- * WAKEUP_INT_STATUS (RW)
+ * WAKEUP_INT_STATUS (RO)
  *
+ * wakeup interrupt status bit.
+ * NOTE: this bit is not write 1 clear. user need clear OTG_CTRL0.otg_wakeup_int_enable to clear wakeup interrupt.
  */
 #define USB_TOP_STATUS_WAKEUP_INT_STATUS_MASK (0x80000000UL)
 #define USB_TOP_STATUS_WAKEUP_INT_STATUS_SHIFT (31U)
-#define USB_TOP_STATUS_WAKEUP_INT_STATUS_SET(x) (((uint32_t)(x) << USB_TOP_STATUS_WAKEUP_INT_STATUS_SHIFT) & USB_TOP_STATUS_WAKEUP_INT_STATUS_MASK)
 #define USB_TOP_STATUS_WAKEUP_INT_STATUS_GET(x) (((uint32_t)(x) & USB_TOP_STATUS_WAKEUP_INT_STATUS_MASK) >> USB_TOP_STATUS_WAKEUP_INT_STATUS_SHIFT)
 
 /* Bitfield definition for register: PHY_STATUS */
 /*
  * UTMI_CLK_VALID (RW)
  *
+ * usbphy clock valid status bit.
+ * this bit is used to check whether usbphy is outputing valid UTMI clock.
+ * user need write 1 to clear it first, and read to check whether UTMI clock is valid.
+ * 0 means no valid UTMI clock; 1 means there's valid UTMI clock.
  */
 #define USB_PHY_STATUS_UTMI_CLK_VALID_MASK (0x80000000UL)
 #define USB_PHY_STATUS_UTMI_CLK_VALID_SHIFT (31U)
@@ -2207,6 +2282,9 @@ typedef struct {
 /*
  * LINE_STATE (RW)
  *
+ * USB bus state.
+ * during full speed or low speed, bit7 is DM state, bit6 is DP state.
+ * during high speed, this filed only appeared whether in data transfer(Squelch), 00 means no data transfer, 01 means active data transfer
  */
 #define USB_PHY_STATUS_LINE_STATE_MASK (0xC0U)
 #define USB_PHY_STATUS_LINE_STATE_SHIFT (6U)
@@ -2216,6 +2294,11 @@ typedef struct {
 /*
  * HOST_DISCONNECT (RW)
  *
+ * host disconnection status
+ * this bit is used only for host mode working at high speed.
+ * when high speed device connected, usb host can't use DP/DM status to detect device disconnection.
+ * usbphy will detect device disconnection at end of SOF(32-bit time), by check signal level(400mv or 800mv).
+ * this bit set to 1 means usbphy detect high speed device disconection.
  */
 #define USB_PHY_STATUS_HOST_DISCONNECT_MASK (0x20U)
 #define USB_PHY_STATUS_HOST_DISCONNECT_SHIFT (5U)
@@ -2225,6 +2308,7 @@ typedef struct {
 /*
  * ID_DIG (RW)
  *
+ * usbphy ID pin state.
  */
 #define USB_PHY_STATUS_ID_DIG_MASK (0x10U)
 #define USB_PHY_STATUS_ID_DIG_SHIFT (4U)
@@ -2234,6 +2318,7 @@ typedef struct {
 /*
  * UTMI_SESS_VALID (RW)
  *
+ * usbphy SESS_VALID state.
  */
 #define USB_PHY_STATUS_UTMI_SESS_VALID_MASK (0x4U)
 #define USB_PHY_STATUS_UTMI_SESS_VALID_SHIFT (2U)
@@ -2243,6 +2328,7 @@ typedef struct {
 /*
  * VBUS_VALID (RW)
  *
+ * usbphy VBUS_VALID state.
  */
 #define USB_PHY_STATUS_VBUS_VALID_MASK (0x1U)
 #define USB_PHY_STATUS_VBUS_VALID_SHIFT (0U)

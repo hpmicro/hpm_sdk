@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,7 @@
  * Includes
  *---------------------------------------------------------------------*/
 #include "common.h"
+#include "utils.h"
 #include "netconf.h"
 #include "sys_arch.h"
 #include "lwip.h"
@@ -17,7 +18,7 @@
 #include "hpm_tsw_drv.h"
 
 #ifndef IPERF_UDP_CLIENT_RATE
-#if defined(RGMII) && RGMII
+#if defined(HPM_TSW_RGMII) && HPM_TSW_RGMII
     #define IPERF_UDP_CLIENT_RATE (1000 * 1024 * 1024)
 #else
     #define IPERF_UDP_CLIENT_RATE (100 * 1024 * 1024)
@@ -43,7 +44,6 @@ tsw_frame_t frame[TSW_FRAME_BUFF_COUNT];
  *---------------------------------------------------------------------*/
 hpm_stat_t tsw_init(TSW_Type *ptr)
 {
-    rtl8211_config_t phy_config;
     tsw_dma_config_t config;
     tsw_frame_action_config_t internal_config, broadcast_config, unknown_config;
 
@@ -83,10 +83,6 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     /* Initialize DMA for sending */
     tsw_init_send(ptr, &config);
 
-    for (uint8_t i = 0; i < TSW_SEND_DESC_COUNT; i++) {
-        *send_buff[i] = BOARD_TSW_PORT + 1;
-    }
-
     /* Initialize DMA for receiving */
 #if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
     config.irq = true;
@@ -113,9 +109,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_ep_set_mdio_config(ptr, BOARD_TSW_PORT, 19);
 
     /* Initialize PHY */
-    rtl8211_reset(ptr, BOARD_TSW_PORT);
-    rtl8211_basic_mode_default_config(ptr, &phy_config);
-    if (rtl8211_basic_mode_init(ptr, BOARD_TSW_PORT, &phy_config) == true) {
+    if (board_init_tsw_port_phy(ptr) == status_success) {
         printf("TSW phy init passed !\n");
         return status_success;
     } else {
@@ -195,6 +189,7 @@ void *start_iperf(void)
     enum lwiperf_client_type client_type;
     void *session;
     ip_addr_t remote_addr;
+    uint8_t cmd_str_buff[20];
 
     if (!select_mode(&gnetif, &server, &tcp, &client_type)) {
         return NULL;
@@ -208,7 +203,12 @@ void *start_iperf(void)
                                                lwiperf_report, NULL);
         }
     } else {
-        ip4addr_aton(HPM_STRINGIFY(REMOTE_IP_CONFIG), &remote_addr);
+        while (!fetch_ip_addr_from_serial_terminal(0, cmd_str_buff, sizeof(cmd_str_buff))) {
+
+        }
+
+        ip4addr_aton((char *)cmd_str_buff, &remote_addr);
+
         if (tcp) {
             session = lwiperf_start_tcp_client_default(&remote_addr, lwiperf_report, NULL);
         } else {
@@ -265,7 +265,7 @@ int main(void)
 
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-#if defined(RGMII) && RGMII
+#if defined(HPM_TSW_RGMII) && HPM_TSW_RGMII
     board_init_tsw_rgmii_clock_delay(BOARD_TSW, BOARD_TSW_PORT);
 #endif
 

@@ -18,6 +18,29 @@ tsn_switch
 
 与交换机相连接的两台PC（或网络设备）可以相互通讯
 
+启动完成后，串口会先打印三个端口的配置信息，并在链路状态变化时打印对应端口信息，例如：
+
+.. code-block:: console
+
+   Port1: MII 100Mbps, Switch MAC 98:2c:bc:b1:9f:17, Lookup dest MAC 38:14:28:14:90:78
+   Port2: MII 100Mbps, Switch MAC 98:2c:bc:b1:9f:18, Lookup dest MAC 38:14:28:14:90:79
+   Port3: RGMII 1000Mbps, Switch MAC 98:2c:bc:b1:9f:19, Lookup dest MAC 38:14:28:14:90:7a
+
+   ================ TSW PHY on Port1 ================
+   Link Status: Up
+   Link Speed:  100Mbps
+   Link Duplex: Full duplex
+
+   ================ TSW PHY on Port2 ================
+   Link Status: Up
+   Link Speed:  100Mbps
+   Link Duplex: Full duplex
+
+   ================ TSW PHY on Port3 ================
+   Link Status: Up
+   Link Speed:  1000Mbps
+   Link Duplex: Full duplex
+
 注意
 ------
 

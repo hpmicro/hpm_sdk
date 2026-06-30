@@ -126,10 +126,10 @@
 
 /*------------- CDC -------------*/
 
-/* Set Line Control state on enumeration/mounted:
+/* Unset Line Control state on enumeration/mounted:
  * DTR ( bit 0), RTS (bit 1)
  */
-#define CFG_TUH_CDC_LINE_CONTROL_ON_ENUM    (CDC_CONTROL_LINE_STATE_DTR | CDC_CONTROL_LINE_STATE_RTS)
+#define CFG_TUH_CDC_LINE_CONTROL_ON_ENUM    (0)
 
 /* Set Line Coding on enumeration/mounted, value for cdc_line_coding_t
  * bit rate = 115200, 1 stop bit, no parity, 8 bit data width

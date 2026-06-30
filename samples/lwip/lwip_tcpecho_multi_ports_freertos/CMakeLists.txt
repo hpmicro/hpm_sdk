@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 HPMicro
+# Copyright (c) 2024-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -27,7 +27,10 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-DENET_MULTIPLE_PORT=1)
-sdk_compile_definitions(-DLWIP_DHCP=0)
+if (NOT DEFINED LWIP_DHCP)
+    set(LWIP_DHCP 0)
+endif()
+sdk_compile_definitions(-DLWIP_DHCP=${LWIP_DHCP})
 sdk_compile_definitions(-DUSE_LWIPOPTS_APP_H=1)
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)
 sdk_compile_definitions(-DDISABLE_IRQ_PREEMPTIVE=1)
@@ -44,6 +47,7 @@ sdk_inc(inc/app)
 sdk_app_src(../ports/freertos/multiple/arch/sys_arch.c)
 sdk_app_src(../ports/freertos/multiple/ethernetif.c)
 sdk_app_src(../common/multiple/common.c)
+sdk_app_src(../common/enet_phy_adaptive_lwip.c)
 sdk_app_src(../common/multiple/netconf.c)
 sdk_app_src(src/app/tcp_echo.c)
 sdk_app_src(src/lwip.c)

@@ -7,6 +7,10 @@ excluded_targets:
   - flash_uf2_release
   - flash_sdram_uf2
   - flash_sdram_uf2_release
+  - flash_dfu
+  - flash_dfu_release
+  - flash_sdram_dfu
+  - flash_sdram_dfu_release
 
 dependency:
   - pllctl

@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2026 HPMicro
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
+#ifndef HPM_SOC_IP_FEATURE_H
+#define HPM_SOC_IP_FEATURE_H
+
+/* PLIC related feature */
+#define HPM_IP_FEATURE_PLIC_HIGHEST_PRIORITY 31
+#define HPM_IP_FEATURE_PLIC_HAS_TRIGGER_TYPE 1
+
+/* GPTMR related feature */
+#define HPM_IP_FEATURE_GPTMR_MONITOR 1
+#define HPM_IP_FEATURE_GPTMR_OP_MODE 1
+
+/* UART related feature */
+#define HPM_IP_FEATURE_UART_RX_IDLE_DETECT 1
+#define HPM_IP_FEATURE_UART_FCRR 1
+#define HPM_IP_FEATURE_UART_RX_EN 1
+#define HPM_IP_FEATURE_UART_E00018_FIX 1
+#define HPM_IP_FEATURE_UART_9BIT_MODE 1
+#define HPM_IP_FEATURE_UART_TX_IDLE_DETECT 1
+#define HPM_IP_FEATURE_UART_ADDR_MATCH 1
+#define HPM_IP_FEATURE_UART_TRIG_MODE 1
+#define HPM_IP_FEATURE_UART_FINE_FIFO_THRLD 1
+#define HPM_IP_FEATURE_UART_IIR2 1
+#define HPM_IP_FEATURE_UART_STOP_BIT 1
+
+/* I2C related feature */
+#define HPM_IP_FEATURE_I2C_SUPPORT_RESET 1
+
+/* SPI related feature */
+#define HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT 1
+#define HPM_IP_FEATURE_SPI_CS_SELECT 1
+#define HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO 1
+
+/* EWDG related feature */
+#define HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT 1
+
+/* PWM related feature */
+#define HPM_IP_FEATURE_PWM_COUNTER_RESET 1
+
+/* TRGM related feature */
+#define HPM_IP_FEATURE_TRGM_HAS_TRGM_IN_OUT_STATUS 1
+
+/* ADC16 related feature */
+#define HPM_IP_FEATURE_ADC16_HAS_MOT_EN 1
+#define HPM_IP_FEATURE_ADC16_SEQ_HCFG_EN 1
+#define HPM_IP_FEATURE_ADC16_HAS_BUS_MODE_EN 1
+
+/* OPAMP related feature */
+#define HPM_IP_FEATURE_OPAMP_NO_OUTPUT_SEL 1
+
+/* ACMP related feature */
+#define HPM_IP_FEATURE_ACMP_DAC_MATRIX 1
+
+#endif /* HPM_SOC_IP_FEATURE_H */

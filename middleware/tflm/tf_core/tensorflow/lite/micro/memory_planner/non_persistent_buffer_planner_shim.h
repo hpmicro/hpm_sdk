@@ -107,14 +107,17 @@ class NonPersistentMemoryPlannerShim : public MicroMemoryPlanner {
   explicit NonPersistentMemoryPlannerShim(const BufferPlan* buffer_plan);
   ~NonPersistentMemoryPlannerShim() override;
 
-  TfLiteStatus GetOffsetForBuffer(ErrorReporter* error_reporter,
-                                  int buffer_request_index,
+  TfLiteStatus GetOffsetForBuffer(int buffer_request_index,
                                   int* offset) override;
 
-  TfLiteStatus AddBuffer(tflite::ErrorReporter* error_reporter, int size,
-                         int first_time_used, int last_time_used) override;
+  TfLiteStatus AddBuffer(int size, int first_time_used,
+                         int last_time_used) override;
   size_t GetMaximumMemorySize() override;
   int GetBufferCount() override;
+
+  // Returns False because the NonPersistentMemoryPlannerShim doesn't preserves
+  // all tensors after invocation.
+  bool preserves_all_tensors() const override { return false; }
 
  private:
   const BufferPlan* buffer_plan_;  // not owned, can't be null

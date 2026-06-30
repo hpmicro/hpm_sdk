@@ -23,6 +23,8 @@
  * Date         Author      Notes
  * 2024-12-26   Evlers      first implementation
  * 2025-9-23    HPMicro     adapted for FreeRTOS and LwIP
+ * 2026-6-10    HPMicro     fix dhcp_sta_thread: use permanent loop state machine
+ *                          to support DHCP re-acquisition after STA reconnect
  */
 
 /* FreeRTOS kernel includes. */
@@ -207,29 +209,47 @@ static void dhcp_sta_thread(void *param)
 {
     struct dhcp *dhcp;
     struct netif *netif = (struct netif *)param;
-    while (g_sta_connected == false) {
-        vTaskDelay(pdMS_TO_TICKS(200));
-    }
+
     if (hpm_esp_hosted_wifi_get_mac(WIFI_IF_STA, g_esp_hosted_wifi_netif[0].hwaddr) != status_success) {
         ESP_LOGE(TAG, "get sta mac address failed");
+        vTaskDelete(NULL);
         return;
     }
-    vTaskDelay(pdMS_TO_TICKS(200));
-    dhcp_start(netif);
+
     while (1) {
-        if (netif_is_up(netif) && (g_sta_connected == true)) {
+        /* State 1: Wait for STA to connect */
+        while (g_sta_connected == false) {
+            vTaskDelay(pdMS_TO_TICKS(200));
+        }
+
+        /* State 2: Connected, clean up previous DHCP and restart */
+        vTaskDelay(pdMS_TO_TICKS(200));
+        dhcp_stop(netif);
+        dhcp_cleanup(netif);
+        IP4_ADDR(&netif->ip_addr, 0, 0, 0, 0);
+        IP4_ADDR(&netif->netmask, 0, 0, 0, 0);
+        IP4_ADDR(&netif->gw, 0, 0, 0, 0);
+        dhcp_start(netif);
+
+        /* State 3: Wait for DHCP to bind (or disconnect) */
+        while (g_sta_connected == true) {
             dhcp = netif_dhcp_data(netif);
             if (dhcp && (dhcp->state == DHCP_STATE_BOUND)) {
                 ESP_LOGI(TAG, "netif name: %c%c", netif->name[0], netif->name[1]);
                 ESP_LOGI(TAG, "IPv4 Address     : %s\r\n", ipaddr_ntoa(&netif->ip_addr));
                 ESP_LOGI(TAG, "IPv4 Subnet mask : %s\r\n", ipaddr_ntoa(&netif->netmask));
                 ESP_LOGI(TAG, "IPv4 Gateway     : %s\r\n\r\n", ipaddr_ntoa(&netif->gw));
+
+                /* State 4: DHCP bound, wait for STA disconnect */
+                while (g_sta_connected == true) {
+                    vTaskDelay(pdMS_TO_TICKS(500));
+                }
                 break;
             }
+            vTaskDelay(pdMS_TO_TICKS(200));
         }
-        vTaskDelay(pdMS_TO_TICKS(200));
+        /* Disconnected (either during DHCP or after bound), loop back to State 1 */
     }
-    vTaskDelete(NULL);
 }
 #endif
 

@@ -44,6 +44,7 @@
     rtos/index_zh
     rvbacktrace/index_zh
     segger_rtt/README_zh
+    segger_sysview/README_zh
     segment_led_key/README_zh
     smbus/index_zh
     spi_components/index_zh
@@ -59,4 +60,6 @@
     vglite/index_zh
     sent/index_zh
     eeprom/index_zh
+    spi_nor_flash/index_zh
+    mquickjs/README_zh
 

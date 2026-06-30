@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -557,6 +557,7 @@ typedef struct {
 /*
  * CS_EN (RW)
  *
+ * Enable the selection of slave units. Each bit controls a slave selection signal.
  */
 #define SPI_CTRL_CS_EN_MASK (0xF000000UL)
 #define SPI_CTRL_CS_EN_SHIFT (24U)
@@ -610,6 +611,7 @@ typedef struct {
  *
  * Transmit FIFO reset
  * Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.
+ * When this bit is set to 1, it is necessary to first poll this bit to ensure it is 0 before proceeding with the operation. Otherwise, subsequent operations may encounter abnormalities.
  */
 #define SPI_CTRL_TXFIFORST_MASK (0x4U)
 #define SPI_CTRL_TXFIFORST_SHIFT (2U)
@@ -621,6 +623,7 @@ typedef struct {
  *
  * Receive FIFO reset
  * Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.
+ * When this bit is set to 1, it is necessary to first poll this bit to ensure it is 0 before proceeding with the operation. Otherwise, subsequent operations may encounter abnormalities.
  */
 #define SPI_CTRL_RXFIFORST_MASK (0x2U)
 #define SPI_CTRL_RXFIFORST_SHIFT (1U)
@@ -632,6 +635,7 @@ typedef struct {
  *
  * SPI reset
  * Write 1 to reset. It is automatically cleared to 0 after the reset operation completes.
+ * When this bit is set to 1, it is necessary to first poll this bit to ensure it is 0 before proceeding with the operation. Otherwise, subsequent operations may encounter abnormalities.
  */
 #define SPI_CTRL_SPIRST_MASK (0x1U)
 #define SPI_CTRL_SPIRST_SHIFT (0U)

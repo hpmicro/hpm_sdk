@@ -72,7 +72,7 @@ volatile ee_s32 seed5_volatile = 0;
    time.h and windows.h definitions included.
 */
 CORETIMETYPE
-barebones_clock()
+barebones_clock(void)
 {
     return (CORETIMETYPE)HPM_MCHTMR->MTIME;
 }
@@ -163,6 +163,9 @@ ee_u32 default_num_contexts = 1;
 void
 portable_init(core_portable *p, int *argc, char *argv[])
 {
+    (void) argc;
+    (void) argv;
+
     board_init();
     timer_freq_in_hz = clock_get_frequency(TIMER_CLOCK_NAME);
     if (!timer_freq_in_hz)

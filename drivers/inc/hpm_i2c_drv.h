@@ -841,6 +841,17 @@ static inline bool i2c_is_addrhit(I2C_Type *ptr)
 }
 
 /**
+ * @brief check if general call
+ * @note as master: when the general call address is sent, the controller will set this bit. as slave: when the controller receives a general call address and returns ACK, this bit will be set.
+ * @param [in] ptr I2C base address
+ * @retval true if general call
+ */
+static inline bool i2c_is_gencall(I2C_Type *ptr)
+{
+    return ptr->STATUS & I2C_STATUS_GENCALL_MASK;
+}
+
+/**
  * @}
  */
 

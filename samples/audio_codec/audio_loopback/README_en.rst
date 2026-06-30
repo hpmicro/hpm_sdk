@@ -11,9 +11,9 @@ In this example, codec component records the sound and sents out encoded data by
 MCU send back the received data to codec component, then codec component decodes and plays the audio data.
 
 Project Configuration
----------------------
+-----------------------
 
-- In the file `CMakeLists.txt`, set a matched audio codec type according to the development board schematic，e.g. "set(CONFIG_CODEC "sgtl5000")"
+- The Audio Codec type is automatically matched with the hardware based on the feature settings in `boards/<board_name>/<board_name>.yaml` (feature: board_codec_xxxx) by default. To specify an audio codec type, set the following in `CMakeLists.txt`: set(CONFIG_CODEC_NAME "wm8960").
 
 Board Setting
 -------------

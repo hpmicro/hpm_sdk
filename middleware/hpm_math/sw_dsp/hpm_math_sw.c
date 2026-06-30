@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -375,4 +375,42 @@ uint32_t hpm_math_sw_reverse_bit32_msb_to_lsb(uint32_t msb)
     p1[0] = bit_reverse_tbl[p0[3]];
 
     return val;
+}
+
+/**
+ * @brief Fast trigonometric functions using lookup table with quadratic interpolation
+ *
+ */
+
+hpm_stat_t hpm_math_fast_trig_init(hpm_math_fast_trig_context_t *ctx, uint32_t table_size, float *sin_table_buffer)
+{
+    /* Validate inputs */
+    if (ctx == NULL || sin_table_buffer == NULL) {
+        return status_invalid_argument;
+    }
+
+    /* Validate table_size is power of 2 and within range */
+    if (table_size < 256) {
+        return status_invalid_argument;
+    }
+
+    /* Check if power of 2 */
+    if ((table_size & (table_size - 1)) != 0) {
+        return status_invalid_argument;
+    }
+
+    /* Initialize context */
+    ctx->table_size = table_size;
+    ctx->table_mask = table_size - 1;
+    ctx->scale = (float)table_size / HPM_MATH_2_PI;
+    ctx->sin_table = sin_table_buffer;
+    ctx->initialized = 1;
+
+    /* Generate sine lookup table */
+    for (uint32_t i = 0; i < table_size; i++) {
+        float angle = HPM_MATH_2_PI * (float)i / (float)table_size;
+        ctx->sin_table[i] = sinf(angle);
+    }
+
+    return status_success;
 }

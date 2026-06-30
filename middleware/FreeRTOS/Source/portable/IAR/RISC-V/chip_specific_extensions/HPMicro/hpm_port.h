@@ -16,7 +16,11 @@
 
 #if( configMTIME_BASE_ADDRESS == 0 ) || ( configMTIMECMP_BASE_ADDRESS == 0 )
 #if defined (portTIMER_SOURCE_GPTMR)
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 
 #if defined(CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE) && CONFIG_FREERTOS_TICKLESS_USE_STOP_MODE

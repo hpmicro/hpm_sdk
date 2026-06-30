@@ -10,3 +10,7 @@ add_subdirectory_ifndef(CONFIG_FATFS_CUSTOM_PORTABLE src/portable)
 if(DEFINED CONFIG_SDMMC)
 sdk_compile_definitions(-DSD_FATFS_ENABLE=1)
 endif()
+
+if(DEFINED CONFIG_SPI_NOR_FLASH)
+sdk_compile_definitions(-DSPI_NOR_FATFS_ENABLE=1)
+endif()

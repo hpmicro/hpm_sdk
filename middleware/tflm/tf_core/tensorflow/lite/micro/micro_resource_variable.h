@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,19 +46,23 @@ class MicroResourceVariables {
   TfLiteStatus Allocate(int id, TfLiteContext* context,
                         const TfLiteTensor* tensor);
 
-  // Copies input tensor contents to the resource buffer.
+  // Copies input_buffer contents to the resource buffer.
   // AllocateResourceVariable with a TFLite tensor must have been called first
   // in order to allocate the resource buffer.
-  TfLiteStatus Assign(int id, const TfLiteEvalTensor* tensor);
+  TfLiteStatus Assign(int id, size_t count_bytes, const void* input_buffer);
+
+  // Zeros out all resource buffers.
+  TfLiteStatus ResetAll();
 
  private:
   int FindId(const char* container, const char* shared_name);
 
   // Micro resource contains the mapping between resource container/name strings
-  // and resouce IDs. Each resource ID corresponds to a resource buffer pointer.
-  // The resouce ID is created during the VAR_HANDLE operator preparation stage.
-  // The resource buffer pointer is created during ASSIGN_VARIABLE preparation
-  // stage based on the size of the TFLiteTensor being assigned.
+  // and resource IDs. Each resource ID corresponds to a resource buffer
+  // pointer. The resource ID is created during the VAR_HANDLE operator
+  // preparation stage. The resource buffer pointer is created during
+  // ASSIGN_VARIABLE preparation stage based on the size of the TFLiteTensor
+  // being assigned.
   struct MicroResourceVariable {
     const char* container;
     const char* shared_name;
@@ -66,6 +70,8 @@ class MicroResourceVariables {
 
     // This is only for verifying read size.
     size_t bytes;
+    // Initialization default value
+    int8_t default_value;
   };
 
   MicroResourceVariables(MicroResourceVariable* variables,

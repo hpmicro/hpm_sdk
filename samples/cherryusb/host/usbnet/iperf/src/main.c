@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,7 +39,7 @@ int main(void)
     /* Initialize the LwIP stack */
     tcpip_init(NULL, NULL);
 
-    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE, NULL);
 
     if (usb_osal_thread_create("iperf_task", 2048, CONFIG_USBHOST_PSC_PRIO + 2, iperf_task, NULL) == NULL) {
         printf("iperf_task task creation failed!.\n");

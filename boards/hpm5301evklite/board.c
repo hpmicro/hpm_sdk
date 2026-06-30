@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 
 #include "board.h"
+#include "clock.h"
 #include "hpm_uart_drv.h"
 #include "hpm_sdk_version.h"
 #include "hpm_gptmr_drv.h"
@@ -76,6 +77,10 @@ __attribute__ ((section(".nor_cfg_option"), used)) const uint32_t option[4] = {0
 ATTR_PLACE_AT(".uf2_signature") __attribute__((used)) const uint32_t uf2_signature = BOARD_UF2_SIGNATURE;
 #endif
 
+#if defined(FLASH_DFU) && FLASH_DFU
+ATTR_PLACE_AT(".dfu_signature") __attribute__((used)) const uint32_t dfu_signature = BOARD_DFU_SIGNATURE;
+#endif
+
 void board_init_console(void)
 {
 #if !defined(CONFIG_NDEBUG_CONSOLE) || !CONFIG_NDEBUG_CONSOLE
@@ -88,7 +93,7 @@ void board_init_console(void)
      */
     init_uart_pins((UART_Type *) BOARD_CONSOLE_UART_BASE);
 
-    clock_add_to_group(BOARD_CONSOLE_UART_CLK_NAME, 0);
+    init_uart0_clock();
 
     cfg.type = BOARD_CONSOLE_TYPE;
     cfg.base = (uint32_t)BOARD_CONSOLE_UART_BASE;
@@ -165,7 +170,7 @@ void board_init_usb_dp_dm_pins(void)
         if (clock_check_in_group(clock_usb0, 0)) {
             usb_phy_disable_dp_dm_pulldown(HPM_USB0);
         } else {
-            clock_add_to_group(clock_usb0, 0);
+            init_usb0_clock();
             usb_phy_disable_dp_dm_pulldown(HPM_USB0);
             clock_remove_from_group(clock_usb0, 0);
         }
@@ -173,7 +178,7 @@ void board_init_usb_dp_dm_pins(void)
         uint8_t tmp;
         tmp = sysctl_resource_target_get_mode(HPM_SYSCTL, sysctl_resource_xtal);
         sysctl_resource_target_set_mode(HPM_SYSCTL, sysctl_resource_xtal, 0x03);    /* NOLINT */
-        clock_add_to_group(clock_usb0, 0);
+        init_usb0_clock();
         usb_phy_disable_dp_dm_pulldown(HPM_USB0);
         clock_remove_from_group(clock_usb0, 0);
         while (sysctl_resource_target_is_busy(HPM_SYSCTL, sysctl_resource_usb0)) {
@@ -199,36 +204,27 @@ void board_init_clock(void)
     pllctlv2_select_reference_clock(HPM_PLLCTLV2, pllctlv2_pll0, 0);
     pllctlv2_select_reference_clock(HPM_PLLCTLV2, pllctlv2_pll1, 0);
 
-    /* group0[0] */
-    clock_add_to_group(clock_cpu0, 0);
-    clock_add_to_group(clock_ahb, 0);
-    clock_add_to_group(clock_lmm0, 0);
-    clock_add_to_group(clock_mchtmr0, 0);
-    clock_add_to_group(clock_rom, 0);
-    clock_add_to_group(clock_mot0, 0); /* for trgm and synt peripheral */
-    clock_add_to_group(clock_gpio, 0);
-    clock_add_to_group(clock_hdma, 0);
-    clock_add_to_group(clock_xpi0, 0);
+    /* group0[0], clock_mot0 is for trgm and synt peripheral */
+    init_board_clock();
 
     /* Connect Group0 to CPU0 */
     clock_connect_group_to_cpu(0, 0);
 
+    /* Note: When using an external DCDC, don't set the internal DCDC voltage. The following call of pcfg_dcdc_set_voltage() function should be commented out. */
     /* Bump up DCDC voltage to 1175mv */
     pcfg_dcdc_set_voltage(HPM_PCFG, 1175);
 
     /* Configure CPU to 360MHz, AXI/AHB to 120MHz */
     sysctl_config_cpu0_domain_clock(HPM_SYSCTL, clock_source_pll0_clk0, 2, 3);
     /* Configure PLL0 Post Divider */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk0, pllctlv2_div_1p0);    /* PLL0CLK0: 720MHz */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk1, pllctlv2_div_1p2);    /* PLL0CLK1: 600MHz */
-    pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll0, pllctlv2_clk2, pllctlv2_div_1p8);    /* PLL0CLK2: 400MHz */
+    /* PLL0CLK0: 720MHz */
+    /* PLL0CLK1: 600MHz */
+    /* PLL0CLK2: 400MHz */
     /* Configure PLL0 Frequency to 720MHz */
-    pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, pllctlv2_pll0, 720000000);
+    /* Configure mchtmr to 24MHz */
+    init_board_clock_source();
 
     clock_update_core_clock();
-
-    /* Configure mchtmr to 24MHz */
-    clock_set_source_divider(clock_mchtmr0, clk_src_osc24m, 1);
 }
 
 void board_delay_us(uint32_t us)
@@ -260,7 +256,7 @@ void board_timer_create(uint32_t ms, board_timer_cb cb)
     timer_cb = cb;
     gptmr_channel_get_default_config(BOARD_CALLBACK_TIMER, &config);
 
-    clock_add_to_group(BOARD_CALLBACK_TIMER_CLK_NAME, 0);
+    init_gptmr1_clock();
     gptmr_freq = clock_get_frequency(BOARD_CALLBACK_TIMER_CLK_NAME);
 
     config.reload = gptmr_freq / 1000 * ms;
@@ -288,7 +284,7 @@ void board_init_usb(USB_Type *ptr)
 {
     if (ptr == HPM_USB0) {
         init_usb_pins(ptr);
-        clock_add_to_group(clock_usb0, 0);
+        init_usb0_clock();
 
         usb_hcd_set_power_ctrl_polarity(ptr, true);
         /* Wait USB_PWR pin control vbus power stable. Time depend on decoupling capacitor, you can decrease or increase this time */
@@ -325,7 +321,7 @@ void board_ungate_mchtmr_at_lp_mode(void)
 uint32_t board_init_spi_clock(SPI_Type *ptr)
 {
     if (ptr == HPM_SPI1) {
-        clock_add_to_group(clock_spi1, 0);
+        init_spi1_clock();
         return clock_get_frequency(clock_spi1);
     }
     return 0;
@@ -353,16 +349,13 @@ uint32_t board_init_adc_clock(void *ptr, bool clk_src_bus)
     uint32_t freq = 0;
 
     if (ptr == (void *)HPM_ADC0) {
-        clock_add_to_group(clock_adc0, 0);
         if (clk_src_bus) {
-            /* Configure the ADC clock from AHB (@200MHz by default)*/
-            clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
+            /* Configure the ADC clock from AHB (@120MHz by default) */
+            init_adc0_bus_clock();
         } else {
-            /* Configure the ADC clock from pll0_clk0 divided by 2 (@200MHz by default) */
-            clock_set_adc_source(clock_adc0, clk_adc_src_ana0);
-            clock_set_source_divider(clock_ana0, clk_src_pll0_clk2, 2U);
+            /* Configure the ADC clock from pll0_clk2 via ana divider (/2, @200MHz by default) */
+            init_adc0_analog_clock();
         }
-
         freq = clock_get_frequency(clock_adc0);
     }
 
@@ -377,7 +370,7 @@ void board_init_adc16_pins(void)
 void board_init_acmp_clock(ACMP_Type *ptr)
 {
     (void)ptr;
-    clock_add_to_group(BOARD_ACMP_CLK, BOARD_RUNNING_CORE & 0x1);
+    init_acmp0_clock();
 }
 
 void board_init_acmp_pins(void)
@@ -408,10 +401,10 @@ uint32_t board_init_uart_clock(UART_Type *ptr)
 {
     uint32_t freq = 0U;
     if (ptr == HPM_UART0) {
-        clock_add_to_group(clock_uart0, 0);
+        init_uart0_clock();
         freq = clock_get_frequency(clock_uart0);
     } else if (ptr == HPM_UART3) {
-        clock_add_to_group(clock_uart3, 0);
+        init_uart3_clock();
         freq = clock_get_frequency(clock_uart3);
     }
 
@@ -441,16 +434,16 @@ uint32_t board_init_i2c_clock(I2C_Type *ptr)
     uint32_t freq = 0;
 
     if (ptr == HPM_I2C0) {
-        clock_add_to_group(clock_i2c0, 0);
+        init_i2c0_clock();
         freq = clock_get_frequency(clock_i2c0);
     } else if (ptr == HPM_I2C1) {
-        clock_add_to_group(clock_i2c1, 0);
+        init_i2c1_clock();
         freq = clock_get_frequency(clock_i2c1);
     } else if (ptr == HPM_I2C2) {
-        clock_add_to_group(clock_i2c2, 0);
+        init_i2c2_clock();
         freq = clock_get_frequency(clock_i2c2);
     } else if (ptr == HPM_I2C3) {
-        clock_add_to_group(clock_i2c3, 0);
+        init_i2c3_clock();
         freq = clock_get_frequency(clock_i2c3);
     } else {
         ;
@@ -492,13 +485,13 @@ uint32_t board_init_gptmr_clock(GPTMR_Type *ptr)
 {
     uint32_t freq = 0U;
     if (ptr == HPM_GPTMR0) {
-        clock_add_to_group(clock_gptmr0, BOARD_RUNNING_CORE & 0x1);
+        init_gptmr0_clock();
         freq = clock_get_frequency(clock_gptmr0);
     } else if (ptr == HPM_GPTMR1) {
-        clock_add_to_group(clock_gptmr1, BOARD_RUNNING_CORE & 0x1);
+        init_gptmr1_clock();
         freq = clock_get_frequency(clock_gptmr1);
     } else if (ptr == HPM_PTMR) {
-        clock_add_to_group(clock_ptmr, BOARD_RUNNING_CORE & 0x1);
+        init_ptmr_clock();
         freq = clock_get_frequency(clock_ptmr);
     } else {
         /* Not supported */
@@ -596,4 +589,13 @@ void board_init_brownout_indicate_pin(void)
 {
     init_brownout_indicate_pin();
     gpio_set_pin_output_with_initial(BOARD_BROWNOUT_INDICATE_GPIO_CTRL, GPIO_GET_PORT_INDEX(BOARD_BROWNOUT_INDICATE_PIN), GPIO_GET_PIN_INDEX(BOARD_BROWNOUT_INDICATE_PIN), 0);
+}
+
+void init_sent_decode_pins(bool idle_high)
+{
+    if (idle_high == true) {
+        init_trgm_gptmr0_cap2_invert_pins();
+    } else {
+        init_gptmr0_channel1_pin_as_capture();
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -127,6 +127,9 @@ typedef struct {
     uint32_t adc_clk_div;
     bool wait_dis;
     bool sel_sync_ahb;
+    /**
+     * @deprecated Since HPM SDK v1.12.0. Ignored: @ref adc12_init sets ADC_CFG0 ADC_AHB_EN from @c conv_mode (enabled for sequence and preemption, disabled for oneshot and period).
+     */
     bool adc_ahb_en;
 } adc12_config_t;
 
@@ -136,6 +139,7 @@ typedef struct {
    uint8_t diff_sel;
    uint16_t thshdh;
    uint16_t thshdl;
+  /** If true, threshold/sample are applied for watchdog. When ADC12_SOC_WDOG_INT_EN_DEFERRED is set for the SoC, INT_EN is not set in adc12_init_channel. Call adc12_enable_wdog_interrupt() after in-window conversion(s). */
    bool wdog_int_en;
    uint8_t sample_cycle_shift;
    uint32_t sample_cycle;
@@ -148,7 +152,7 @@ typedef struct {
    uint16_t thshdl;
 } adc12_channel_threshold_t;
 
-/** @brief ADC12 DMA configuration struct. */
+/** @brief ADC12 DMA configuration struct (@c stop_pos and @c stop_en apply independently in @c adc12_init_seq_dma). */
 typedef struct {
     uint32_t *start_addr;
     uint32_t buff_len_in_4bytes;
@@ -246,7 +250,7 @@ hpm_stat_t adc12_deinit(ADC12_Type *ptr);
  * @brief Initialize an ADC12 instance.
  *
  * @param[in] ptr An ADC12 peripheral base address.
- * @param[in] config A pointer to the configuration struct of @ref adc12_config_t.
+ * @param[in] config A pointer to the configuration struct of @ref adc12_config_t. @ref adc12_init programs ADC_AHB_EN from @c conv_mode; the struct field @c adc_ahb_en is deprecated and ignored.
  * @return A result of initializing an ADC12 instance.
  * @retval status_success Initialize an ADC12 instance successfully. Please refer to @ref hpm_stat_t.
  * @retval status_invalid_argument Initialize an ADC12 instance unsuccessfully due to passing one or more invalid arguments. Please refer to @ref hpm_stat_t.
@@ -484,6 +488,24 @@ static inline void adc12_enable_interrupts(ADC12_Type *ptr, uint32_t mask)
 static inline void adc12_disable_interrupts(ADC12_Type *ptr, uint32_t mask)
 {
     ptr->INT_EN &= ~mask;
+}
+
+/**
+ * @brief Enable watchdog interrupt after a valid in-window conversion has completed (per User Manual/silicon).
+ *
+ * @param[in] ptr An ADC12 peripheral base address.
+ * @param[in] wdog_ch_mask Bit mask of physical channel indices (bits 0..15); each bit is INT_STS/INT_EN WDOG for that channel.
+ *
+ * @note Call only after the corresponding channel(s) have completed a conversion with the result
+ *       inside the programmed threshold window; otherwise RW1C clear of WDOG in INT_STS may not
+ *       clear the latched state. Typical use: one call per channel bit after priming conversions.
+ */
+static inline void adc12_enable_wdog_interrupt(ADC12_Type *ptr, uint32_t wdog_ch_mask)
+{
+    uint32_t m = wdog_ch_mask & ADC12_INT_STS_WDOG_MASK;
+
+    ptr->INT_STS = m;
+    ptr->INT_EN |= m;
 }
 
 /** @} */

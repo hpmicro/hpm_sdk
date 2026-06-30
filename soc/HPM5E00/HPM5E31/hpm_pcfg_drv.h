@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -480,6 +480,22 @@ void pcfg_dcdc_switch_to_dcm_mode(PCFG_Type *ptr);
  * @param[in] ptr base address
  */
 void pcfg_dcdc_switch_to_ccm_mode(PCFG_Type *ptr);
+
+/**
+ * @brief set dcdc voltage and switch to dcm mode
+ *
+ * @param[in] ptr base address
+ * @param[in] voltage target voltage in mV
+ */
+void pcfg_dcdc_set_voltage_dcm_mode(PCFG_Type *ptr, uint16_t voltage);
+
+/**
+ * @brief set dcdc voltage and switch to ccm mode
+ *
+ * @param[in] ptr base address
+ * @param[in] voltage target voltage in mV
+ */
+void pcfg_dcdc_set_voltage_ccm_mode(PCFG_Type *ptr, uint16_t voltage);
 
 /**
  * @brief config irc24m track

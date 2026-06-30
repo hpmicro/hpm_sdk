@@ -101,6 +101,14 @@ typedef enum {
     usb_vbus_wakeup_session_valid,
 } usb_vbus_wakeup_source_t;    /**< usb_vbus_wakeup_source_t */
 
+/**
+ * @brief USB utmi clk src
+ */
+typedef enum {
+    usb_utmi_clk_pll_25Mhz = 0,
+    usb_utmi_clk_osc_24Mhz
+} usb_utmi_clk_src_t;    /**< usb_utmi_clk_src_t */
+
 /*---------------------------------------------------------------------
  * Structure Declarations
  *---------------------------------------------------------------------
@@ -628,6 +636,19 @@ static inline void usb_phyctrl1_set_not_utmi_suspend(USB_Type *ptr)
     ptr->PHY_CTRL1 |= USB_PHY_CTRL1_UTMI_OTG_SUSPENDM_MASK;
 }
 
+#if defined(HPM_IP_FEATURE_USB_CLK_SELECT) && HPM_IP_FEATURE_USB_CLK_SELECT
+/**
+ * @brief Select utmi clock source
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @param[in] clk_src clock source, @ref usb_utmi_clk_src_t
+ */
+static inline void usb_phyctrl1_select_utmi_clk_src(USB_Type *ptr, usb_utmi_clk_src_t clk_src)
+{
+    ptr->PHY_CTRL1 = (ptr->PHY_CTRL1 & ~USB_PHY_CTRL1_UTMI_REFCLK_MODE_MASK) | USB_PHY_CTRL1_UTMI_REFCLK_MODE_SET(clk_src);
+}
+#endif
+
 /*---------------------------------------------------------------------
  * Device API
  *---------------------------------------------------------------------
@@ -808,6 +829,27 @@ static inline uint32_t usb_dcd_get_edpt_complete_status(USB_Type *ptr)
 static inline void usb_dcd_clear_edpt_complete_status(USB_Type *ptr, uint32_t mask)
 {
     ptr->ENDPTCOMPLETE = mask;
+}
+
+/**
+ * @brief Set setup tripwire
+ *
+ * @param[in] ptr A USB peripheral base address
+ * @param[in] set true - set tripwire, false - clear tripwire
+ */
+static inline void usb_dcd_set_sutw(USB_Type *ptr, bool set)
+{
+    ptr->USBCMD = (ptr->USBCMD & ~USB_USBCMD_SUTW_MASK) | USB_USBCMD_SUTW_SET(set);
+}
+
+/**
+ * @brief Get setup tripwire
+ *
+ * @param[in] ptr A USB peripheral base address
+ */
+static inline bool usb_dcd_get_sutw(USB_Type *ptr)
+{
+    return USB_USBCMD_SUTW_GET(ptr->USBCMD);
 }
 
 /*---------------------------------------------------------------------

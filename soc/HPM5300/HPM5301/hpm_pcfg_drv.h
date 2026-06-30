@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,6 +35,11 @@ typedef enum {
     pcfg_dcdc_lp_current_limit_250ma = 0,
     pcfg_dcdc_lp_current_limit_200ma = 1,
 } pcfg_dcdc_lp_current_limit_t;
+
+typedef enum {
+    pcfg_dcdc_oc_limit_2000ma = 0,
+    pcfg_dcdc_oc_limit_1300ma = 1,
+} pcfg_dcdc_oc_limit_t;
 
 /* @brief PCFG dcdc current hys */
 typedef enum {
@@ -203,7 +208,7 @@ static inline void pcfg_dcdc_disable_over_voltage_prot(PCFG_Type *ptr)
  *
  * @param[in] ptr base address
  */
-static inline void pcfg_dcdc_ensable_over_voltage_prot(PCFG_Type *ptr)
+static inline void pcfg_dcdc_enable_over_voltage_prot(PCFG_Type *ptr)
 {
     ptr->DCDC_PROT &= ~PCFG_DCDC_PROT_DISABLE_OVERVOLTAGE_MASK;
 }
@@ -217,6 +222,48 @@ static inline void pcfg_dcdc_ensable_over_voltage_prot(PCFG_Type *ptr)
 static inline bool pcfg_dcdc_is_over_voltage(PCFG_Type *ptr)
 {
     return PCFG_DCDC_PROT_OVERVOLT_FLAG_GET(ptr->DCDC_PROT) & PCFG_DCDC_PROT_OVERVOLT_FLAG_MASK;
+}
+
+/**
+ * @brief disable over current protection
+ *
+ * @param[in] ptr base address
+ */
+static inline void pcfg_dcdc_disable_over_current_prot(PCFG_Type *ptr)
+{
+    ptr->DCDC_PROT |= PCFG_DCDC_PROT_DISABLE_SHORT_MASK;
+}
+
+/**
+ * @brief enable over current protection
+ *
+ * @param[in] ptr base address
+ */
+static inline void pcfg_dcdc_enable_over_current_prot(PCFG_Type *ptr)
+{
+    ptr->DCDC_PROT &= ~PCFG_DCDC_PROT_DISABLE_SHORT_MASK;
+}
+
+/**
+ * @brief set over current limit
+ *
+ * @param[in] ptr base address
+ * @param[in] limit reference pcfg_dcdc_oc_limit_t
+ */
+static inline void pcfg_dcdc_set_over_current_limit(PCFG_Type *ptr, pcfg_dcdc_oc_limit_t limit)
+{
+    ptr->DCDC_PROT = (ptr->DCDC_PROT & ~PCFG_DCDC_PROT_SHORT_CURRENT_MASK) | PCFG_DCDC_PROT_SHORT_CURRENT_SET(limit);
+}
+
+/**
+ * @brief checkover over current flag
+ *
+ * @param[in] ptr base address
+ * @retval true if flag is set
+ */
+static inline bool pcfg_dcdc_is_over_current(PCFG_Type *ptr)
+{
+    return PCFG_DCDC_PROT_SHORT_FLAG_GET(ptr->DCDC_PROT);
 }
 
 /**
@@ -477,6 +524,22 @@ void pcfg_dcdc_switch_to_dcm_mode(PCFG_Type *ptr);
  * @param[in] ptr base address
  */
 void pcfg_dcdc_switch_to_ccm_mode(PCFG_Type *ptr);
+
+/**
+ * @brief set dcdc voltage and switch to dcm mode
+ *
+ * @param[in] ptr base address
+ * @param[in] voltage target voltage in mV
+ */
+void pcfg_dcdc_set_voltage_dcm_mode(PCFG_Type *ptr, uint16_t voltage);
+
+/**
+ * @brief set dcdc voltage and switch to ccm mode
+ *
+ * @param[in] ptr base address
+ * @param[in] voltage target voltage in mV
+ */
+void pcfg_dcdc_set_voltage_ccm_mode(PCFG_Type *ptr, uint16_t voltage);
 
 /**
  * @brief config irc24m track

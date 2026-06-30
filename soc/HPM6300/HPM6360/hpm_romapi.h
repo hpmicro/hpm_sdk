@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -273,6 +273,116 @@ static inline hpm_stat_t rom_enter_bootloader(void *ctx)
 /***********************************************************************************************************************
  *
  *
+ *      OTP Driver Wrapper
+ *
+ *
+ **********************************************************************************************************************/
+
+/**
+ * @brief Initialize OTP driver
+ */
+static inline void rom_otp_init(void)
+{
+    ROM_API_TABLE_ROOT->otp_driver_if->init();
+}
+
+/**
+ * @brief Deinitialize OTP driver
+ */
+static inline void rom_otp_deinit(void)
+{
+    ROM_API_TABLE_ROOT->otp_driver_if->deinit();
+}
+
+/**
+ * @brief Read the specified OTP word from shadow register
+ * @param [in] addr OTP word index
+ * @return OTP word value
+ */
+static inline uint32_t rom_otp_read_from_shadow(uint32_t addr)
+{
+    return ROM_API_TABLE_ROOT->otp_driver_if->read_from_shadow(addr);
+}
+
+/**
+ * @brief Read the specified OTP word from OTP IP bus
+ * @param [in] addr OTP word index
+ * @return OTP word value
+ */
+static inline uint32_t rom_otp_read_from_ip(uint32_t addr)
+{
+    return ROM_API_TABLE_ROOT->otp_driver_if->read_from_ip(addr);
+}
+
+/**
+ * @brief Program words to the specified OTP field
+ * @param [in] addr OTP word index
+ * @param [in] src Word buffer to program
+ * @param [in] num_of_words Number of words to program
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_otp_program(uint32_t addr, const uint32_t *src, uint32_t num_of_words)
+{
+    return ROM_API_TABLE_ROOT->otp_driver_if->program(addr, src, num_of_words);
+}
+
+/**
+ * @brief Reload an OTP region
+ * @param [in] region OTP region option
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_otp_reload(otp_region_t region)
+{
+    return ROM_API_TABLE_ROOT->otp_driver_if->reload(region);
+}
+
+/**
+ * @brief Change OTP software lock permission
+ * @param [in] addr OTP word index
+ * @param [in] lock_option OTP lock option
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_otp_lock_otp(uint32_t addr, otp_lock_option_t lock_option)
+{
+    return otp_lock_otp(addr, lock_option);
+}
+
+/**
+ * @brief Change OTP shadow register lock permission
+ * @param [in] addr OTP word index
+ * @param [in] lock_option OTP lock option
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_otp_lock_shadow(uint32_t addr, otp_lock_option_t lock_option)
+{
+    return ROM_API_TABLE_ROOT->otp_driver_if->lock_shadow(addr, lock_option);
+}
+
+/**
+ * @brief Set the configurable OTP region range
+ * @param [in] start Start OTP word index
+ * @param [in] num_of_words Number of words in the configurable region
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_otp_set_configurable_region(uint32_t start, uint32_t num_of_words)
+{
+    return ROM_API_TABLE_ROOT->otp_driver_if->set_configurable_region(start, num_of_words);
+}
+
+/**
+ * @brief Write data to OTP shadow register
+ * @param [in] addr OTP word index
+ * @param [in] data Data to write
+ * @return API execution status
+ */
+static inline hpm_stat_t rom_otp_write_shadow_register(uint32_t addr, uint32_t data)
+{
+    return ROM_API_TABLE_ROOT->otp_driver_if->write_shadow_register(addr, data);
+}
+
+/***********************************************************************************************************************
+ *
+ *
  *      XPI NOR Driver Wrapper
  *
  *
@@ -499,7 +609,35 @@ static inline hpm_stat_t rom_xpi_nor_read(XPI_Type *base,
                                           uint32_t start,
                                           uint32_t length)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->read(base, channel, nor_config, dst, start, length);
+    const uint32_t xpi_nor_read_max_length = 32U * 1024U;
+    uint32_t remaining = length;
+    uint32_t current_start = start;
+    uint8_t *dst_bytes = (uint8_t *) dst;
+    hpm_stat_t status = status_success;
+
+    while (remaining > 0U) {
+        uint32_t chunk_length = remaining;
+
+        if (chunk_length > xpi_nor_read_max_length) {
+            chunk_length = xpi_nor_read_max_length;
+        }
+
+        status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->read(base,
+                                                             channel,
+                                                             nor_config,
+                                                             (uint32_t *) dst_bytes,
+                                                             current_start,
+                                                             chunk_length);
+        if (status != status_success) {
+            break;
+        }
+
+        dst_bytes += chunk_length;
+        current_start += chunk_length;
+        remaining -= chunk_length;
+    }
+
+    return status;
 }
 
 /**

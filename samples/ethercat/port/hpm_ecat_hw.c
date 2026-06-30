@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,7 +11,11 @@
 #include "hpm_i2c_drv.h"
 #include "hpm_romapi.h"
 #include "hpm_ecat_hw.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_ppor_drv.h"
 #include "hpm_sysctl_drv.h"
 #include "esc.h"
@@ -214,7 +218,6 @@ void ecat_timer_ms_enable(void)
     gptmr_start_counter(ECAT_TIMER_GPTMR, ECAT_TIMER_GPTMR_CH);
 
     gptmr_enable_irq(ECAT_TIMER_GPTMR, GPTMR_CH_RLD_IRQ_MASK(ECAT_TIMER_GPTMR_CH));
-    intc_m_enable_irq_with_priority(ECAT_TIMER_GPTRM_IRQ, 2);
 }
 
 /* gptmr irq handler */
@@ -228,8 +231,8 @@ void ecat_time_ms_isr(void)
         ECAT_CheckTimer();
 #endif
 
-#if defined(EOE_SUPPORTED) && EOE_SUPPORTED
-        /* Lwip and SSC share one tick source */
+#if defined(EOE_SUPPORTED) && EOE_SUPPORTED && (!defined(__ENABLE_FREERTOS) || !__ENABLE_FREERTOS)
+        /* Lwip and SSC share one tick source (baremetal only) */
         sys_timer_callback(); /* lwip sys tick */
 #endif
     }
@@ -360,7 +363,9 @@ void ENABLE_ESC_INT(void)
     intc_m_enable_irq_with_priority(IRQn_ESC, 4);
     intc_m_enable_irq_with_priority(IRQn_ESC_RESET, 2);
 #if !defined(ECAT_SSC_TIMER_USE_RTOS_TICK) || !ECAT_SSC_TIMER_USE_RTOS_TICK
-    intc_m_enable_irq_with_priority(ECAT_TIMER_GPTRM_IRQ, 2);
+    /* If ECAT_TIMER_INT = 1, the priority of the 1ms tick interrupt needs to be >= the priority of SYNC0/SYNC1 interrupts */
+    /* to avoid function DC_CheckWatchdog() being interrupted by function Sync0_Isr()/Sync1_Isr() */
+    intc_m_enable_irq_with_priority(ECAT_TIMER_GPTRM_IRQ, 3);
 #endif /* ECAT_SSC_TIMER_USE_RTOS_TICK */
 }
 

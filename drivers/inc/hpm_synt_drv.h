@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,6 +8,7 @@
 #ifndef HPM_SYNT_DRV_H
 #define HPM_SYNT_DRV_H
 #include "hpm_common.h"
+#include "hpm_soc_feature.h"
 #include "hpm_synt_regs.h"
 
 #ifdef __cplusplus

@@ -719,12 +719,14 @@ Enhanced Transfer Interfaces
   - Master Block Read with Command Code
 
     - Call ``hpm_smbus_master_read_block_in_command`` API for block read with command code.
+      The first byte returned by the slave indicates the actual data length, making it suitable
+      for variable-length responses such as MFR_ID, MFR_MODEL, etc.
 
       - ``hpm_smbus_master_read_block_in_command`` API prototype:
 
         .. code-block:: c
 
-            hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t size);
+            hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t size, uint32_t *actual_len);
 
         - Parameters:
 
@@ -748,24 +750,30 @@ Enhanced Transfer Interfaces
                   - Buffer to store read data
                 * - size
                   - uint32_t
-                  - Data length in bytes
+                  - Capacity of the data buffer in bytes, must not exceed (I2C_SOC_TRANSFER_COUNT_MAX - 5)
+                * - actual_len
+                  - uint32_t*
+                  - Output parameter to receive the actual number of bytes read from slave, can be NULL if not needed
 
         - Return values:
 
           - ``status_success``: Operation successful
           - ``status_invalid_argument``: Invalid parameters
           - ``status_timeout``: Operation timeout
-          - ``status_fail``: General failure
+          - ``status_fail``: General failure (PEC check error)
 
-      - **Example**: Read 3 bytes with command 0x01 from slave 0x16:
+      - **Example**: Read data with command 0x01 from slave 0x16, actual length determined by slave:
 
         .. code-block:: c
 
             hpm_stat_t stat;
-            uint8_t data[3];
+            uint8_t data[32];
+            uint32_t actual_len = 0;
             /* Initialize I2C (omitted)... */
-            stat = hpm_smbus_master_read_block_in_command(TEST_SMBUS, 0x16, 0x01, data, 3);
+            stat = hpm_smbus_master_read_block_in_command(TEST_SMBUS, 0x16, 0x01, data, sizeof(data), &actual_len);
             if (stat != status_success) {
                 printf("hpm_smbus_master_read_block_in_command failed.\n");
+            } else {
+                printf("read %u bytes\n", actual_len);
             }
 

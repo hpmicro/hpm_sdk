@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,15 +10,20 @@
 #else
 #include "hpm_dma_drv.h"
 #endif
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #include "hpm_clock_drv.h"
 #include "hpm_dmamux_drv.h"
 #include "board.h"
+#include "hpm_gpio_drv.h"
 
 #define APP_DMA_SRC_WIDTH            DMA_TRANSFER_WIDTH_WORD
 #define APP_DMA_DST_WIDTH            DMA_TRANSFER_WIDTH_WORD
-#define APP_GPTMR_DMA                BOARD_APP_HDMA
-#define APP_GPTMR_DMA_IRQ            BOARD_APP_HDMA_IRQ
+#define APP_GPTMR_DMA                BOARD_APP_DMA0
+#define APP_GPTMR_DMA_IRQ            BOARD_APP_DMA0_IRQ
 #define APP_BOARD_GPTMR              BOARD_GPTMR
 #define APP_BOARD_GPTMR_CLOCK        BOARD_GPTMR_CLK_NAME
 #define APP_BOARD_GPTMR_CH           BOARD_GPTMR_CHANNEL
@@ -27,6 +32,10 @@
 #define APP_BOARD_GPTMR_DMAMUX_CH    DMA_SOC_CHN_TO_DMAMUX_CHN(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH)
 #define APP_BOARD_RELOAD_MS          (500U)
 #define APP_BOARD_CMP_MS             (100U)
+
+#ifndef APP_GPTMR_TARGET_FREQ
+#define APP_GPTMR_TARGET_FREQ        (100000UL) /* 100KHz */
+#endif
 
 typedef struct {
     uint8_t num;
@@ -104,32 +113,49 @@ static void gptmr_config(gptmr_dma_request_event_t event)
 {
     uint32_t gptmr_freq;
     gptmr_channel_config_t config;
-    uint32_t cmp;
+    uint32_t reload_ticks;
+    uint32_t cmp_ticks;
+
     gptmr_freq = board_init_gptmr_clock(APP_BOARD_GPTMR);
     gptmr_stop_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
     dma_transfer_config();
     gptmr_channel_get_default_config(APP_BOARD_GPTMR, &config);
     config.cmp_initial_polarity_high = false;
     config.dma_request_event = event;
-    config.reload = gptmr_freq / 1000 * APP_BOARD_RELOAD_MS;
-    cmp = APP_BOARD_CMP_MS;
-    if (cmp > APP_BOARD_RELOAD_MS) {
-        cmp = APP_BOARD_RELOAD_MS;    /* NOLINT */
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+    /* GPTMRV2 uses a prescaler to bring the timer clock down to a target frequency,
+     * preventing cmp and reload values from overflowing the 24-bit hardware registers.
+     * prescaler = source_clock / target, e.g. 100MHz / 100000 = 1000, yielding 100KHz timer clock.
+     */
+    config.prescaler = gptmr_freq / APP_GPTMR_TARGET_FREQ;
+    reload_ticks = ((uint64_t)APP_BOARD_RELOAD_MS * gptmr_freq) / ((uint64_t)config.prescaler * 1000);
+    cmp_ticks = ((uint64_t)APP_BOARD_CMP_MS * gptmr_freq) / ((uint64_t)config.prescaler * 1000);
+#else
+    reload_ticks = gptmr_freq / 1000 * APP_BOARD_RELOAD_MS;
+    cmp_ticks = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
+#endif
+    config.reload = reload_ticks;
+
+    if (cmp_ticks > reload_ticks) {
+        cmp_ticks = reload_ticks;    /* NOLINT */
     }
     if (event == gptmr_dma_request_on_cmp0) {
         config.enable_cmp_output = true;
-        config.cmp[0] = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
-        config.cmp[1] = config.reload;
+        config.cmp[0] = cmp_ticks;
+        config.cmp[1] = reload_ticks;
     } else if (event == gptmr_dma_request_on_cmp1) {
         config.enable_cmp_output = true;
-        config.cmp[0] = config.reload;
-        config.cmp[1] = gptmr_freq / 1000 * APP_BOARD_CMP_MS;
+        config.cmp[0] = reload_ticks;
+        config.cmp[1] = cmp_ticks;
     } else if (event == gptmr_dma_request_on_input_signal_toggle) {
         init_gptmr_pins(APP_BOARD_GPTMR);
         config.mode = gptmr_work_mode_capture_at_both_edge;
     }
     gptmr_channel_reset_count(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH);
-    gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false);
+    if (status_success != gptmr_channel_config(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, &config, false)) {
+        printf(" gptmr channel config failed\n");
+        return;
+    }
     dmamux_config(BOARD_APP_DMAMUX, APP_BOARD_GPTMR_DMAMUX_CH, APP_BOARD_GPTMR_DMA_SRC, true);
 
     dma_enable_channel(APP_GPTMR_DMA, APP_BOARD_GPTMR_DMA_CH);

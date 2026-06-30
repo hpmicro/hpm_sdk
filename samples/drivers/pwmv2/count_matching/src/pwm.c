@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -93,8 +93,16 @@ void pwm_match_hardware_config(void)
     pwmv2_channel_enable_output(PWM, PWM_OUTPUT_PIN3);
 
     pwmv2_clear_cmp_irq_status(PWM, 0xFFFFFF);
-    pwmv2_enable_cmp_irq(PWM, PWMV2_CMP_INDEX(16));
-    pwmv2_enable_cmp_irq(PWM, PWMV2_CMP_INDEX(18));
+    if (status_success != pwmv2_enable_cmp_irq(PWM, PWMV2_CMP_INDEX(16))) {
+        printf("failed to enable PWMv2 compare IRQ\n");
+        while (1) {
+        }
+    }
+    if (status_success != pwmv2_enable_cmp_irq(PWM, PWMV2_CMP_INDEX(18))) {
+        printf("failed to enable PWMv2 compare IRQ\n");
+        while (1) {
+        }
+    }
     intc_m_enable_irq_with_priority(BOARD_APP_PWM_IRQ, 1);
     pwmv2_reset_multi_counter_sync(PWM, (1 << pwm_counter_0 | 1 << pwm_counter_1 | 1 << pwm_counter_2));
     pwmv2_enable_multi_counter_sync(PWM, (1 << pwm_counter_0 | 1 << pwm_counter_1 | 1 << pwm_counter_2));

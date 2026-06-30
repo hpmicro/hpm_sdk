@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,7 +22,7 @@
 #define TEST_UART_DMA_SRC_RX BOARD_CONSOLE_UART_RX_DMA_REQ
 #define TEST_UART_DMA_SRC_TX BOARD_CONSOLE_UART_TX_DMA_REQ
 
-#define TEST_UART_DMA_CONTROLLER    BOARD_APP_HDMA
+#define TEST_UART_DMA_CONTROLLER    BOARD_APP_DMA0
 #define TEST_UART_DMAMUX_CONTROLLER BOARD_APP_DMAMUX
 #define TEST_UART_RX_DMA_CH         0
 #define TEST_UART_TX_DMA_CH         1
@@ -34,8 +34,8 @@
 /* dma buffer should be 4-byte aligned */
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(4) uint8_t uart_tx_buf[TEST_BUFFER_SIZE];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(4) uint8_t uart_rx_buf[TEST_BUFFER_SIZE];
-/* descriptor should be 8-byte aligned */
-ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors[2];
+/* descriptor should be DMA_LINKED_DESCRIPTOR_ALIGN aligned */
+ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(DMA_LINKED_DESCRIPTOR_ALIGN) dma_linked_descriptor_t descriptors[2];
 static uint32_t rx_front_index;
 static uint32_t rx_rear_index;
 

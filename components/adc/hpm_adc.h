@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,6 +19,7 @@
  * @brief ADC HAL driver APIs
  * @defgroup hpm_adc_interface HPM ADC driver APIs
  * @ingroup hpm_adc_interfaces
+ * @deprecated Use @ref hpm_adc_v2_interface in components/adc_v2/hpm_adc_v2.h instead.
  * @{
  */
 

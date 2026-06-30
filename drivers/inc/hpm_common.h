@@ -182,6 +182,7 @@ enum {
     status_group_touch,
     status_group_plb_qei_encoder,
     status_group_pmbus,
+    status_group_gptmr,
 };
 
 /* @brief Common status code definitions */

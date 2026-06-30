@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,13 +10,21 @@
 #include "hpm_uart_drv.h"
 #ifdef HPMSOC_HAS_HPMSDK_TRGM
 #include "hpm_trgm_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 #endif
 
 #define TEST_UART          BOARD_APP_UART_BASE
 #define TEST_UART_IRQ      BOARD_APP_UART_IRQ
 #define TEST_UART_CLK_NAME BOARD_APP_UART_CLK_NAME
 #define TEST_UART_TRIG     BOARD_APP_UART_TRIG
+
+#ifndef APP_GPTMR_TARGET_FREQ
+#define APP_GPTMR_TARGET_FREQ         (100000UL) /* 100KHz */
+#endif
 
 volatile bool receive_spec_count_data_complete;
 volatile bool timeout_before_receive_spec_count_data;
@@ -56,11 +64,25 @@ void uart_hardware_trig(void)
     clock_add_to_group(BOARD_UART_TRGM_GPTMR_CLK, (BOARD_RUNNING_CORE & 0x1));
     gptmr_channel_get_default_config(BOARD_UART_TRGM_GPTMR, &config);
     uint32_t freq = clock_get_frequency(BOARD_UART_TRGM_GPTMR_CLK);
-    config.reload = 2 * freq; /* 2s*/
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+    /* Target timer clock = 100KHz.
+     * prescaler = source_clock / target = gptmr_freq / 100000
+     * E.g. 100MHz / 1000 = 100KHz, each tick = 10us.
+     */
+    config.prescaler = freq / APP_GPTMR_TARGET_FREQ;
+    config.reload = (2U * freq) / config.prescaler; /* 2s */
+    config.cmp[0] = (1U * freq) / config.prescaler; /* 1s */
+    config.cmp[1] = config.reload;
+#else
+    config.reload = 2 * freq; /* 2s */
     config.cmp[0] = 1 * freq; /* 1s */
     config.cmp[1] = config.reload;
+#endif
     config.cmp_initial_polarity_high = false;
-    gptmr_channel_config(BOARD_UART_TRGM_GPTMR, BOARD_UART_TRGM_GPTMR_CH, &config, false);
+    if (gptmr_channel_config(BOARD_UART_TRGM_GPTMR, BOARD_UART_TRGM_GPTMR_CH, &config, false) != status_success) {
+        printf("config gptmr channel failed\n");
+        return;
+    }
     gptmr_start_counter(BOARD_UART_TRGM_GPTMR, BOARD_UART_TRGM_GPTMR_CH);
 
     trgm_output_t trgm_config = {0};

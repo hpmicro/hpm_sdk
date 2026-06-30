@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,9 +10,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdbool.h>
+#include "hpm_common.h"
 #include "common_cfg.h"
 #include "lwip/netif.h"
-#include "hpm_tsw_phy_common.h"
+#include "hpm_tsw_phy.h"
 
 #if defined(NO_SYS) && !NO_SYS
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS

@@ -32,12 +32,9 @@ Workflow
 7. Disable DMA transfer and I2S peripheral when playback is complete
 
 Project Configuration
-----------------------
+-----------------------
 
-- In ``CMakeLists.txt``, set the appropriate audio codec type according to your board schematic:
-
-  - WM8960: ``set(CONFIG_CODEC "wm8960")``
-  - SGTL5000: ``set(CONFIG_CODEC "sgtl5000")``
+- The Audio Codec type is automatically matched with the hardware based on the feature settings in `boards/<board_name>/<board_name>.yaml` (feature: board_codec_xxxx) by default. To specify an audio codec type, set the following in `CMakeLists.txt`: set(CONFIG_CODEC_NAME "wm8960").
 
 Hardware Settings
 -----------------

@@ -44,7 +44,7 @@
 */
 
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -70,7 +70,6 @@
 #endif
 #endif
 
-#define netifMTU                           (1500)
 #define netifINTERFACE_TASK_STACK_SIZE     (1024)
 
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
@@ -92,6 +91,17 @@
 xSemaphoreHandle s_xSemaphore = NULL;
 #endif
 
+typedef enum {
+    TSW_RX_NONE = 0,
+    TSW_RX_DROPPED,
+    TSW_RX_PKT
+} tsw_rx_status_t;
+
+typedef struct {
+    tsw_rx_status_t status;
+    struct pbuf *p;
+} tsw_rx_result_t;
+
 /**
 * In this function, the hardware should be initialized.
 * Called from ethernetif_init().
@@ -108,7 +118,7 @@ static void low_level_init(struct netif *netif)
     memcpy(netif->hwaddr, mac, ETH_HWADDR_LEN);
 
     /* Set netif maximum transfer unit */
-    netif->mtu = netifMTU;
+    netif->mtu = TSW_NETIF_MTU;
 
     /* Accept broadcast address and ARP traffic */
     netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
@@ -155,6 +165,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     struct pbuf *q;
     static uint32_t i = 0;
     uint32_t id;
+    uint32_t offset;
     uint32_t length = TSW_SOC_SWITCH_HEADER_LEN;
 
 #if defined(LWIP_PTP) && LWIP_PTP
@@ -169,10 +180,13 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     if (xSemaphoreTake(xTxSemaphore, netifGUARD_BLOCK_TIME)) {
 #endif
 
-    id = i++ % TSW_SOC_DMA_MAX_DESC_COUNT;
+    id = i++ % TSW_SEND_DESC_COUNT;
+    tsw_set_tx_hdr_route((tx_hdr_desc_t *)send_buff[id], TSW_CPU_SEND_TO_PORT(BOARD_TSW_PORT), 0, 0);
 
+    offset = TSW_SOC_ETH_PAYLOAD_OFFSET;
     for (q = p; q != NULL; q = q->next) {
-        memcpy(&send_buff[id][TSW_SOC_SWITCH_HEADER_LEN], q->payload, q->len);
+        memcpy(&send_buff[id][offset], q->payload, q->len);
+        offset += q->len;
         length += q->len;
     }
 
@@ -188,45 +202,78 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 }
 
 /**
-* Should allocate a pbuf and transfer the bytes of the incoming
-* packet from the interface into the pbuf.
+* Poll one RX descriptor; copy Ethernet payload into a pbuf when valid.
 *
 * @param netif the lwip network interface structure for this ethernetif
-* @return a pbuf filled with the received packet (including MAC header)
-*         NULL on memory error
+* @return rx result:
+*         - TSW_RX_NONE: no frame available (timeout)
+*         - TSW_RX_DROPPED: descriptor consumed, not passed to lwIP
+*         - TSW_RX_PKT: descriptor consumed, p holds packet for netif->input()
 */
-static struct pbuf *low_level_input(struct netif *netif)
+static tsw_rx_result_t low_level_input(struct netif *netif)
 {
-    (void) netif;
-
+    tsw_rx_result_t rx;
     struct pbuf *p = NULL, *q;
-
+    uint32_t offset;
+    uint16_t eth_len;
     hpm_stat_t stat;
     tsw_frame_t frame;
 
+    rx.status = TSW_RX_NONE;
+    rx.p = NULL;
+    (void) netif;
+
     stat = tsw_recv_frame(BOARD_TSW, &frame);
 
-    if (stat == status_success) {
-        if ((frame.length > TSW_SOC_SWITCH_HEADER_LEN)) {
-            /* Allocate a pbuf chain of pbufs from the Lwip buffer pool */
-            p = pbuf_alloc(PBUF_RAW, frame.length - TSW_SOC_SWITCH_HEADER_LEN, PBUF_POOL);
-
+    if (stat == status_success || stat == status_fail) {
+        rx.status = TSW_RX_DROPPED;
+        if (stat == status_success && frame.length > TSW_SOC_SWITCH_HEADER_LEN) {
+            eth_len = (uint16_t)TSW_FRAME_ETH_LEN(frame.length);
+            p = pbuf_alloc(PBUF_RAW, eth_len, PBUF_POOL);
             if (p != NULL) {
+                offset = TSW_SOC_ETH_PAYLOAD_OFFSET;
+                frame.buffer = recv_buff[frame.id];
                 for (q = p; q != NULL; q = q->next) {
-                    /* pass the buffer to pbuf */
-                    frame.buffer = recv_buff[frame.id];
-                    memcpy(q->payload, &frame.buffer[TSW_SOC_SWITCH_HEADER_LEN], q->len);
-                    tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
+                    memcpy(q->payload, &frame.buffer[offset], q->len);
+                    offset += q->len;
                 }
+                rx.status = TSW_RX_PKT;
+                rx.p = p;
             }
         }
-    } else if (stat == status_fail) {
+        /* Always commit once a descriptor was consumed (success or fail). */
         tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
-    } else {
-
     }
 
-    return p;
+    return rx;
+}
+
+/**
+ * @param netif lwIP network interface
+ * @param err_out optional; updated when netif->input() fails on TSW_RX_PKT
+ * @return true to drain the next frame, false to stop (none or input error)
+ */
+static bool ethernetif_input_frame(struct netif *netif, err_t *err_out)
+{
+    tsw_rx_result_t rx;
+    err_t err;
+
+    rx = low_level_input(netif);
+    if (rx.status == TSW_RX_NONE) {
+        return false;
+    }
+    if (rx.status == TSW_RX_PKT) {
+        err = netif->input(rx.p, netif);
+        if (err != ERR_OK) {
+            LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+            pbuf_free(rx.p);
+            if (err_out != NULL) {
+                *err_out = err;
+            }
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
@@ -247,18 +294,9 @@ void ethernetif_input(void *pvParameters)
 {
     struct netif *netif = (struct netif *)pvParameters;
 
-    struct pbuf *p;
-
     for ( ;; ) {
         if (xSemaphoreTake(s_xSemaphore, emacBLOCK_TIME_WAITING_FOR_INPUT) == pdTRUE) {
-GET_NEXT_FRAME:
-            p = low_level_input(netif);
-            if (p != NULL) {
-                if (ERR_OK != netif->input(p, netif)) {
-                    pbuf_free(p);
-                } else {
-                    goto GET_NEXT_FRAME;
-                }
+            while (ethernetif_input_frame(netif, NULL)) {
             }
         }
     }
@@ -267,28 +305,11 @@ GET_NEXT_FRAME:
 err_t ethernetif_input(struct netif *netif)
 {
     err_t err = ERR_OK;
-    struct pbuf *p = NULL;
 
 #if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
     if (rx_flag) {
 #endif
-        GET_NEXT_FRAME:
-        /* move received packet into a new pbuf */
-        p = low_level_input(netif);
-
-        /* no packet could be read, silently ignore this */
-        if (p == NULL) {
-            err = ERR_MEM;
-        } else {
-             /* entry point to the LwIP stack */
-            err = netif->input(p, netif);
-
-            if (err != ERR_OK) {
-                LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-                pbuf_free(p);
-            } else {
-                goto GET_NEXT_FRAME;
-            }
+        while (ethernetif_input_frame(netif, &err)) {
         }
 #if defined(ENABLE_TSW_RECEIVE_INTERRUPT) && ENABLE_TSW_RECEIVE_INTERRUPT
         rx_flag = false;

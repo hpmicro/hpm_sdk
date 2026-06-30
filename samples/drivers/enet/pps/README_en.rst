@@ -23,7 +23,7 @@ Running the example
       .. image:: doc/flexible.png
          :alt:
 
-  (2)  Control mode:
+  (2)  Fixed mode:
 
-       .. image:: doc/control.png
+       .. image:: doc/fixed.png
           :alt:

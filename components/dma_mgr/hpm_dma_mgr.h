@@ -9,20 +9,35 @@
 #define HPM_DMA_MGR_H
 
 #include "hpm_common.h"
+#include "hpm_soc.h"
 #include "hpm_dmamux_drv.h"
-#include "hpm_dmamux_src.h"
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
 #include "hpm_dmav2_drv.h"
 #else
 #include "hpm_dma_drv.h"
 #endif
-#include "hpm_soc_feature.h"
+
+#if defined(HPM_HDMA)
+#define DMA_MGR_DMA0      HPM_HDMA
+#define DMA_MGR_IRQn_DMA0 IRQn_HDMA
+#elif defined(HPM_HDMA0)
+#define DMA_MGR_DMA0      HPM_HDMA0
+#define DMA_MGR_IRQn_DMA0 IRQn_HDMA0
+#endif
+
+#if defined(HPM_XDMA)
+#define DMA_MGR_DMA1      HPM_XDMA
+#define DMA_MGR_IRQn_DMA1 IRQn_XDMA
+#elif defined(HPM_HDMA1)
+#define DMA_MGR_DMA1      HPM_HDMA1
+#define DMA_MGR_IRQn_DMA1 IRQn_HDMA1
+#endif
 
 #ifdef HPMSOC_HAS_HPMSDK_DMAV2
-#define DMA_MGR_HAS_INFINITE_LOOP        (1U)
-#define DMA_MGR_HAS_HALF_TC_INT          (1U)
-#define DMA_MGR_HAS_HANDSHAKE_OPT        (1U)
-#define DMA_MGR_HAS_BURST_OPT            (1U)
+#define DMA_MGR_HAS_INFINITE_LOOP (1U)
+#define DMA_MGR_HAS_HALF_TC_INT   (1U)
+#define DMA_MGR_HAS_HANDSHAKE_OPT (1U)
+#define DMA_MGR_HAS_BURST_OPT     (1U)
 #if defined(HPM_IP_FEATURE_DMAV2_BURST_IN_FIXED_TRANS) && (HPM_IP_FEATURE_DMAV2_BURST_IN_FIXED_TRANS == 1)
 #define DMA_MGR_HAS_BURST_IN_FIXED_TRANS HPM_IP_FEATURE_DMAV2_BURST_IN_FIXED_TRANS
 #else

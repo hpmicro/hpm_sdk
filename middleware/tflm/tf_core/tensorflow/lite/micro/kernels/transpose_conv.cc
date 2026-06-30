@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@ limitations under the License.
 
 #include "tensorflow/lite/kernels/internal/reference/transpose_conv.h"
 
+#include <cstddef>
+#include <cstdint>
+
 #include "tensorflow/lite/c/builtin_op_data.h"
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/kernels/internal/common.h"
@@ -24,22 +27,11 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/kernels/padding.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/kernels/transpose_conv.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
-
-// For the TfLite transpose_conv implementation, input tensor 0 corresponds to
-// the OutputShapeTensor. However, since TFLM does not support dynamic tensors,
-// the TFLM implementation ignores input tensor 0 and the only inputs we care
-// about are kFilterTensor, kInputTensor and kBiasTensor.
-constexpr int kFilterTensor = 1;
-constexpr int kInputTensor = 2;
-constexpr int kBiasTensor = 3;
-constexpr int kOutputTensor = 0;
-
-// Conv is quantized along dimension 0:
-// https://www.tensorflow.org/lite/performance/quantization_spec
-constexpr int kConvQuantizedDimension = 0;
 
 struct OpData {
   ConvParams params;
@@ -47,8 +39,17 @@ struct OpData {
   // A scratch buffer is required for quantized implementations.
   int scratch_buffer_index;
 
-  // TODO(b/192090531): Remove this once all 8x16 transpose conv models use
-  // 64-bit biases.
+#ifdef USE_TFLM_COMPRESSION
+
+  // scratch buffers for compressed tensors
+  int filter_scratch_index;
+  int bias_scratch_index;
+
+#endif  // USE_TFLM_COMPRESSION
+
+  // Index to the converted 64-bit bias buffer from 16-bit bias. This is
+  // required to handle 16x8 transpose convolutions where a 16-bit bias is
+  // provided, whereas the kernel expects 64-bit biases.
   int bias_converted_buffer_index;
 
   // Multiplier and shift arrays are required for the int8 implementation.
@@ -97,20 +98,20 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     MicroContext* micro_context = GetMicroContext(context);
 
     TfLiteTensor* input =
-        micro_context->AllocateTempInputTensor(node, kInputTensor);
+        micro_context->AllocateTempInputTensor(node, kTransposeConvInputTensor);
     TF_LITE_ENSURE(context, input != nullptr);
-    TfLiteTensor* filter =
-        micro_context->AllocateTempInputTensor(node, kFilterTensor);
+    TfLiteTensor* filter = micro_context->AllocateTempInputTensor(
+        node, kTransposeConvFilterTensor);
     TF_LITE_ENSURE(context, filter != nullptr);
     TfLiteTensor* bias =
-        micro_context->AllocateTempInputTensor(node, kBiasTensor);
-    TfLiteTensor* output =
-        micro_context->AllocateTempOutputTensor(node, kOutputTensor);
+        micro_context->AllocateTempInputTensor(node, kTransposeConvBiasTensor);
+    TfLiteTensor* output = micro_context->AllocateTempOutputTensor(
+        node, kTransposeConvOutputTensor);
     TF_LITE_ENSURE(context, output != nullptr);
-    int output_channels = filter->dims->data[kConvQuantizedDimension];
+    int output_channels = filter->dims->data[kTransposeConvQuantizedDimension];
 
     TF_LITE_ENSURE_STATUS(tflite::PopulateConvolutionQuantizationParams(
-        context, input, filter, bias, output, kTfLiteActNone,
+        context, input, filter, bias, output, params->activation,
         &data->params.output_multiplier, &data->params.output_shift,
         &data->params.quantized_activation_min,
         &data->params.quantized_activation_max,
@@ -122,7 +123,9 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     if (input->type == kTfLiteInt16) {
       TFLITE_DCHECK(filter->type == kTfLiteInt8);
       TFLITE_DCHECK(output->type == kTfLiteInt16);
-      if (bias->type == kTfLiteInt16) {
+      // Handle the case where the bias is 16 bits for 16x8 transpose
+      // convolution where the kernel actually expects 64-bit biases.
+      if (bias != nullptr && bias->type == kTfLiteInt16) {
         TFLITE_DCHECK(
             context->RequestScratchBufferInArena(
                 context, GetTensorShape(bias).FlatSize() * sizeof(std::int64_t),
@@ -133,17 +136,20 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node,
     micro_context->DeallocateTempTfLiteTensor(input);
     micro_context->DeallocateTempTfLiteTensor(filter);
     micro_context->DeallocateTempTfLiteTensor(output);
-    micro_context->DeallocateTempTfLiteTensor(bias);
+    if (bias != nullptr) {
+      micro_context->DeallocateTempTfLiteTensor(bias);
+    }
   }
   return kTfLiteOk;
 }
 
-void* Init(TfLiteContext* context, const char* buffer, size_t length) {
+void* TransposeConvInit(TfLiteContext* context, const char* buffer,
+                        size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
   return context->AllocatePersistentBuffer(context, sizeof(OpData));
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus TransposeConvPrepare(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->user_data != nullptr);
   TFLITE_DCHECK(node->builtin_data != nullptr);
 
@@ -154,14 +160,20 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   MicroContext* micro_context = GetMicroContext(context);
 
   TfLiteTensor* output =
-      micro_context->AllocateTempOutputTensor(node, kOutputTensor);
+      micro_context->AllocateTempOutputTensor(node, kTransposeConvOutputTensor);
   TF_LITE_ENSURE(context, output != nullptr);
   TfLiteTensor* input =
-      micro_context->AllocateTempInputTensor(node, kInputTensor);
+      micro_context->AllocateTempInputTensor(node, kTransposeConvInputTensor);
   TF_LITE_ENSURE(context, input != nullptr);
   TfLiteTensor* filter =
-      micro_context->AllocateTempInputTensor(node, kFilterTensor);
+      micro_context->AllocateTempInputTensor(node, kTransposeConvFilterTensor);
   TF_LITE_ENSURE(context, filter != nullptr);
+
+  TF_LITE_ENSURE_MSG(
+      context,
+      input->type == filter->type ||
+          (input->type == kTfLiteInt16 && filter->type == kTfLiteInt8),
+      "Hybrid models are not supported on TFLite Micro.");
 
   // Get height and width of the output.
   const int width = SizeOfDimension(output, 2);
@@ -170,7 +182,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   const int filter_height = SizeOfDimension(filter, 1);
 
   // Dynamically allocate per-channel quantization parameters.
-  const int num_channels = filter->dims->data[kConvQuantizedDimension];
+  const int num_channels = filter->dims->data[kTransposeConvQuantizedDimension];
   data->per_channel_output_multiplier =
       static_cast<int32_t*>(context->AllocatePersistentBuffer(
           context, num_channels * sizeof(int32_t)));
@@ -207,10 +219,10 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     TF_LITE_ENSURE(context, affine_quantization->scale);
     TF_LITE_ENSURE(context, affine_quantization->zero_point);
 
-    TF_LITE_ENSURE(context,
-                   affine_quantization->scale->size == 1 ||
-                       affine_quantization->scale->size ==
-                           filter->dims->data[kConvQuantizedDimension]);
+    TF_LITE_ENSURE(
+        context, affine_quantization->scale->size == 1 ||
+                     affine_quantization->scale->size ==
+                         filter->dims->data[kTransposeConvQuantizedDimension]);
     TF_LITE_ENSURE_EQ(context, affine_quantization->scale->size,
                       affine_quantization->zero_point->size);
   }
@@ -228,43 +240,76 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   data->params.stride_width = params->stride_width;
   data->params.stride_height = params->stride_height;
 
+#ifdef USE_TFLM_COMPRESSION
+
+  // Compression scratch buffers.
+  // These will only be allocated if the tensor is compressed.
+  data->filter_scratch_index =
+      micro_context->AllocateDecompressionScratchBuffer(
+          node, kTransposeConvFilterTensor);
+  data->bias_scratch_index = micro_context->AllocateDecompressionScratchBuffer(
+      node, kTransposeConvBiasTensor);
+
+#endif  // USE_TFLM_COMPRESSION
+
   micro_context->DeallocateTempTfLiteTensor(output);
   micro_context->DeallocateTempTfLiteTensor(input);
   micro_context->DeallocateTempTfLiteTensor(filter);
   return kTfLiteOk;
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus TransposeConvEval(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* input =
-      tflite::micro::GetEvalInput(context, node, kInputTensor);
+      tflite::micro::GetEvalInput(context, node, kTransposeConvInputTensor);
   const TfLiteEvalTensor* filter =
-      tflite::micro::GetEvalInput(context, node, kFilterTensor);
+      tflite::micro::GetEvalInput(context, node, kTransposeConvFilterTensor);
   const TfLiteEvalTensor* bias =
       (NumInputs(node) == 4)
-          ? tflite::micro::GetEvalInput(context, node, kBiasTensor)
+          ? tflite::micro::GetEvalInput(context, node, kTransposeConvBiasTensor)
           : nullptr;
   TfLiteEvalTensor* output =
-      tflite::micro::GetEvalOutput(context, node, kOutputTensor);
+      tflite::micro::GetEvalOutput(context, node, kTransposeConvOutputTensor);
+
+#ifdef USE_TFLM_COMPRESSION
+
+  MicroContext* micro_context = GetMicroContext(context);
+
+  const CompressionTensorData* filter_comp_td =
+      micro_context->GetTensorCompressionData(node, kTransposeConvFilterTensor);
+  const CompressionTensorData* bias_comp_td =
+      micro_context->GetTensorCompressionData(node, kTransposeConvBiasTensor);
+
+#endif  // USE_TFLM_COMPRESSION
 
   TFLITE_DCHECK(node->user_data != nullptr);
   const OpData& data = *(static_cast<const OpData*>(node->user_data));
 
   TF_LITE_ENSURE_EQ(context, input->type, output->type);
-  TF_LITE_ENSURE_MSG(
-      context,
-      input->type == filter->type ||
-          (input->type == kTfLiteInt16 && filter->type == kTfLiteInt8),
-      "Hybrid models are not supported on TFLite Micro.");
 
   switch (input->type) {  // Already know in/out types are same.
     case kTfLiteFloat32: {
+      const auto& params =
+          *(reinterpret_cast<TfLiteConvParams*>(node->builtin_data));
+      ConvParams op_params = data.params;
+      CalculateActivationRange(params.activation,
+                               &op_params.float_activation_min,
+                               &op_params.float_activation_max);
+
       reference_ops::TransposeConv(
-          data.params, tflite::micro::GetTensorShape(input),
+          op_params, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<float>(input),
           tflite::micro::GetTensorShape(filter),
+#ifdef USE_TFLM_COMPRESSION
+          tflite::micro::GetTensorData<float>(
+              micro_context, filter, filter_comp_td, data.filter_scratch_index),
+          tflite::micro::GetTensorShape(bias),
+          tflite::micro::GetOptionalTensorData<float>(
+              micro_context, bias, bias_comp_td, data.bias_scratch_index),
+#else   // USE_TFLM_COMPRESSION
           tflite::micro::GetTensorData<float>(filter),
           tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetTensorData<float>(bias),
+          tflite::micro::GetOptionalTensorData<float>(bias),
+#endif  // USE_TFLM_COMPRESSION
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<float>(output),
           tflite::micro::GetTensorShape(nullptr), nullptr);
@@ -278,33 +323,52 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
           data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
           tflite::micro::GetTensorData<int8_t>(input),
           tflite::micro::GetTensorShape(filter),
+#ifdef USE_TFLM_COMPRESSION
+          tflite::micro::GetTensorData<int8_t>(
+              micro_context, filter, filter_comp_td, data.filter_scratch_index),
+          tflite::micro::GetTensorShape(bias),
+          tflite::micro::GetOptionalTensorData<int32_t>(
+              micro_context, bias, bias_comp_td, data.bias_scratch_index),
+#else   // USE_TFLM_COMPRESSION
           tflite::micro::GetTensorData<int8_t>(filter),
           tflite::micro::GetTensorShape(bias),
-          tflite::micro::GetTensorData<int32_t>(bias),
+          tflite::micro::GetOptionalTensorData<int32_t>(bias),
+#endif  // USE_TFLM_COMPRESSION
           tflite::micro::GetTensorShape(output),
           tflite::micro::GetTensorData<int8_t>(output),
           tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
       break;
     }
     case kTfLiteInt16: {
-      std::int64_t* scratch_buffer = static_cast<int64_t*>(
+      auto* scratch_buffer = static_cast<int64_t*>(
           context->GetScratchBuffer(context, data.scratch_buffer_index));
-      // TODO(b/192090531): Remove this once all 8x16 transpose conv models use
-      // 64-bit biases.
-      if (bias->type == kTfLiteInt16) {
-        std::int64_t* bias_converted_buffer =
+      if (bias != nullptr && bias->type == kTfLiteInt16) {
+        auto* bias_converted_buffer =
             static_cast<int64_t*>(context->GetScratchBuffer(
                 context, data.bias_converted_buffer_index));
+        const int16_t* const bias_int16_data =
+#ifdef USE_TFLM_COMPRESSION
+            tflite::micro::GetTensorData<int16_t>(
+                micro_context, bias, bias_comp_td, data.bias_scratch_index);
+#else   // USE_TFLM_COMPRESSION
+            static_cast<int16_t*>(bias->data.data);
+#endif  // USE_TFLM_COMPRESSION
         for (int i = 0; i < tflite::micro::GetTensorShape(bias).FlatSize();
              i++) {
-          bias_converted_buffer[i] = bias->data.i16[i];
+          bias_converted_buffer[i] = bias_int16_data[i];
         }
         reference_integer_ops::TransposeConv(
             data.params, data.per_channel_output_multiplier,
             data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
             tflite::micro::GetTensorData<int16_t>(input),
             tflite::micro::GetTensorShape(filter),
+#ifdef USE_TFLM_COMPRESSION
+            tflite::micro::GetTensorData<int8_t>(micro_context, filter,
+                                                 filter_comp_td,
+                                                 data.filter_scratch_index),
+#else   // USE_TFLM_COMPRESSION
             tflite::micro::GetTensorData<int8_t>(filter),
+#endif  // USE_TFLM_COMPRESSION
             tflite::micro::GetTensorShape(bias), bias_converted_buffer,
             tflite::micro::GetTensorShape(output),
             tflite::micro::GetTensorData<int16_t>(output),
@@ -315,9 +379,18 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
             data.per_channel_output_shift, tflite::micro::GetTensorShape(input),
             tflite::micro::GetTensorData<int16_t>(input),
             tflite::micro::GetTensorShape(filter),
+#ifdef USE_TFLM_COMPRESSION
+            tflite::micro::GetTensorData<int8_t>(micro_context, filter,
+                                                 filter_comp_td,
+                                                 data.filter_scratch_index),
+            tflite::micro::GetTensorShape(bias),
+            tflite::micro::GetOptionalTensorData<int64_t>(
+                micro_context, bias, bias_comp_td, data.bias_scratch_index),
+#else   // USE_TFLM_COMPRESSION
             tflite::micro::GetTensorData<int8_t>(filter),
             tflite::micro::GetTensorShape(bias),
-            tflite::micro::GetTensorData<std::int64_t>(bias),
+            tflite::micro::GetOptionalTensorData<int64_t>(bias),
+#endif  // USE_TFLM_COMPRESSION
             tflite::micro::GetTensorShape(output),
             tflite::micro::GetTensorData<int16_t>(output),
             tflite::micro::GetTensorShape(nullptr), nullptr, scratch_buffer);
@@ -325,8 +398,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       break;
     }
     default:
-      TF_LITE_KERNEL_LOG(context, "Type %s (%d) not supported.",
-                         TfLiteTypeGetName(input->type), input->type);
+      MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
+                  input->type);
       return kTfLiteError;
   }
   return kTfLiteOk;
@@ -334,15 +407,9 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace
 
-TfLiteRegistration Register_TRANSPOSE_CONV() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_TRANSPOSE_CONV() {
+  return tflite::micro::RegisterOp(TransposeConvInit, TransposeConvPrepare,
+                                   TransposeConvEval);
 }
 
 }  // namespace tflite

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -58,17 +58,21 @@ hpm_stat_t tsw_ep_set_mdio_config(TSW_Type *ptr, uint8_t port, uint8_t clk_div)
 
 hpm_stat_t tsw_ep_mdio_read(TSW_Type *ptr, uint8_t port, uint32_t phy_addr, uint32_t reg_addr, uint16_t *data)
 {
+    uint32_t retry_cnt = TSW_MDIO_BUSY_RETRY_CNT;
+
     if (data == NULL) {
         return status_invalid_argument;
     }
 
-    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(MAC_MDIO_CTRL_OP_RD)
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(TSW_MAC_MDIO_OP_RD)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_PHYAD_SET(phy_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_REGAD_SET(reg_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_INIT_SET(1);
 
     do {
-
+        if (--retry_cnt == 0U) {
+            return status_timeout;
+        }
     } while (TSW_TSNPORT_MAC_MAC_MDIO_CTRL_READY_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL) == 0);
 
      *data = TSW_TSNPORT_MAC_MAC_MDIO_RD_DATA_RD_DATA_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_RD_DATA);
@@ -78,14 +82,18 @@ hpm_stat_t tsw_ep_mdio_read(TSW_Type *ptr, uint8_t port, uint32_t phy_addr, uint
 
 hpm_stat_t tsw_ep_mdio_write(TSW_Type *ptr, uint8_t port, uint32_t phy_addr, uint32_t reg_addr, uint16_t data)
 {
+    uint32_t retry_cnt = TSW_MDIO_BUSY_RETRY_CNT;
+
     ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_WR_DATA = data;
-    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(MAC_MDIO_CTRL_OP_WR)
+    ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL = TSW_TSNPORT_MAC_MAC_MDIO_CTRL_OP_SET(TSW_MAC_MDIO_OP_WR)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_PHYAD_SET(phy_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_REGAD_SET(reg_addr)
                                                         | TSW_TSNPORT_MAC_MAC_MDIO_CTRL_INIT_SET(1);
 
     do {
-
+        if (--retry_cnt == 0U) {
+            return status_timeout;
+        }
     } while (TSW_TSNPORT_MAC_MAC_MDIO_CTRL_READY_GET(ptr->TSNPORT[port].MAC[tsw_mac_type_emac].MAC_MDIO_CTRL) == 0);
 
     return status_success;
@@ -194,6 +202,20 @@ hpm_stat_t tsw_ep_set_xmac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii, tsw_m
          | TSW_TSNPORT_MAC_MAC_MAC_CTRL_PHYSEL_SET(1)
          | TSW_TSNPORT_MAC_MAC_MAC_CTRL_GMIIMODE_SET(gmii);
 
+    ptr->TSNPORT[port].MAC[mac_type].MAC_MAC_CTRL = temp;
+
+    return status_success;
+}
+
+hpm_stat_t tsw_ep_set_jumbo_frame(TSW_Type *ptr, uint8_t port, tsw_mac_type_t mac_type, bool enable)
+{
+    uint32_t temp = ptr->TSNPORT[port].MAC[mac_type].MAC_MAC_CTRL;
+
+    if (enable) {
+        temp |= TSW_TSNPORT_MAC_MAC_MAC_CTRL_JUMBO_MASK;
+    } else {
+        temp &= ~TSW_TSNPORT_MAC_MAC_MAC_CTRL_JUMBO_MASK;
+    }
     ptr->TSNPORT[port].MAC[mac_type].MAC_MAC_CTRL = temp;
 
     return status_success;
@@ -399,7 +421,6 @@ void tsw_set_lookup_table(TSW_Type *ptr, uint16_t entry_num, uint8_t dest_port, 
         /* set forward to destination port, use PCP field, UTAG 1 and trigger the interface for sending the data */
         ptr->APB2AXIS_ALMEM_REQDATA_0 = TSW_APB2AXIS_ALMEM_REQDATA_0_UTAG_SET(1) |
                                         TSW_APB2AXIS_ALMEM_REQDATA_0_QSEL_SET(0) |
-                                        TSW_APB2AXIS_ALMEM_REQDATA_0_DROP_SET(0) |
                                         TSW_APB2AXIS_ALMEM_REQDATA_0_QUEUE_SET(0) |
                                         TSW_APB2AXIS_ALMEM_REQDATA_0_DEST_SET(dest_port);
     }
@@ -428,7 +449,6 @@ void tsw_get_default_frame_action_config(TSW_Type *ptr, tsw_frame_action_config_
 
     config->dest = tsw_dst_port_null;
     config->queue = 0;
-    config->drop = 0;
     config->qsel = 0;
     config->utag = 0;
 }
@@ -452,9 +472,6 @@ hpm_stat_t tsw_set_frame_action(TSW_Type *ptr, tsw_frame_action_config_t *config
         ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_QSEL_MASK;
         ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_QSEL_SET(config->qsel);
 
-        ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_DROP_MASK;
-        ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_DROP_SET(config->drop);
-
         ptr->LU_MAIN_INTF_ACTION &= ~TSW_LU_MAIN_INTF_ACTION_QUEUE_MASK;
         ptr->LU_MAIN_INTF_ACTION |= TSW_LU_MAIN_INTF_ACTION_QUEUE_SET(config->queue);
 
@@ -467,9 +484,6 @@ hpm_stat_t tsw_set_frame_action(TSW_Type *ptr, tsw_frame_action_config_t *config
         ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_QSEL_MASK;
         ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_QSEL_SET(config->qsel);
 
-        ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_DROP_MASK;
-        ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_DROP_SET(config->drop);
-
         ptr->LU_MAIN_BC_ACTION &= ~TSW_LU_MAIN_BC_ACTION_QUEUE_MASK;
         ptr->LU_MAIN_BC_ACTION |= TSW_LU_MAIN_BC_ACTION_QUEUE_SET(config->queue);
 
@@ -481,9 +495,6 @@ hpm_stat_t tsw_set_frame_action(TSW_Type *ptr, tsw_frame_action_config_t *config
 
         ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_QSEL_MASK;
         ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_QSEL_SET(config->qsel);
-
-        ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_DROP_MASK;
-        ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_DROP_SET(config->drop);
 
         ptr->LU_MAIN_NN_ACTION &= ~TSW_LU_MAIN_NN_ACTION_QUEUE_MASK;
         ptr->LU_MAIN_NN_ACTION |= TSW_LU_MAIN_NN_ACTION_QUEUE_SET(config->queue);

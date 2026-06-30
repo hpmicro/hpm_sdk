@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,7 +22,7 @@
 #include "hpm_debug_console.h"
 #endif
 #if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
-#include "hpm_enet_phy.h"
+#include "hpm_enet_phy_port.h"
 #endif
 #if defined(CONFIG_EEPROM_DEVICE_I2C)
 #include "eeprom_device.h"
@@ -30,6 +30,7 @@
 
 #define BOARD_NAME          "hpm6750evk2"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
+#define BOARD_DFU_SIGNATURE (0x48504D21UL)
 
 #define SEC_CORE_IMG_START ILM_LOCAL_BASE
 
@@ -189,10 +190,10 @@
 #define BOARD_ACMP_MINUS_INPUT ACMP_INPUT_ANALOG_6 /* align with used pin */
 
 /* dma section */
-#define BOARD_APP_XDMA      HPM_XDMA
-#define BOARD_APP_HDMA      HPM_HDMA
-#define BOARD_APP_XDMA_IRQ  IRQn_XDMA
-#define BOARD_APP_HDMA_IRQ  IRQn_HDMA
+#define BOARD_APP_DMA1      HPM_XDMA
+#define BOARD_APP_DMA0      HPM_HDMA
+#define BOARD_APP_DMA1_IRQ  IRQn_XDMA
+#define BOARD_APP_DMA0_IRQ  IRQn_HDMA
 #define BOARD_APP_DMAMUX    HPM_DMAMUX
 #define TEST_DMA_CONTROLLER HPM_XDMA
 #define TEST_DMA_IRQ        IRQn_XDMA
@@ -223,6 +224,7 @@
 #define BOARD_B_GPIO_INDEX GPIO_DI_GPIOB
 #define BOARD_B_GPIO_PIN   13
 
+#define BOARD_LED_GPIO_NAME "PB12"
 #define BOARD_LED_GPIO_CTRL HPM_GPIO0
 
 #define BOARD_LED_GPIO_INDEX GPIO_DI_GPIOB
@@ -309,6 +311,10 @@
 /* DAO section */
 #define BOARD_DAO_I2S_DMA_REQ         (HPM_DMA_SRC_I2S1_TX)
 
+/* audio codec section */
+/* wm8960 i2c address */
+#define BOARD_AUDIO_CODEC_I2C_ADDR (0x1AU)
+
 /* enet section */
 #define BOARD_ENET_COUNT         (2U)
 #define BOARD_ENET_PPS           HPM_ENET0
@@ -319,7 +325,7 @@
 #define BOARD_ENET_AUXI_SNAPSHOT_IDX       enet_ptp_auxi_snapshot_trigger_1
 #define BOARD_ENET_AUXI_SNAPSHOT_PTP_CLOCK clock_ptp0
 
-#define BOARD_ENET_RGMII_PHY_ITF        enet_inf_rgmii
+#define BOARD_ENET_RGMII_PHY_ITF        HPM_ENET_PHY_ITF_RGMII
 #define BOARD_ENET_RGMII_RST_GPIO       HPM_GPIO0
 #define BOARD_ENET_RGMII_RST_GPIO_INDEX GPIO_DO_GPIOF
 #define BOARD_ENET_RGMII_RST_GPIO_PIN   (0U)
@@ -329,7 +335,7 @@
 #define BOARD_ENET_RGMII_PTP_CLOCK      (clock_ptp0)
 #define BOARD_ENET_RGMII_PPS0_PINOUT    (1)
 
-#define BOARD_ENET_RMII_PHY_ITF        enet_inf_rmii
+#define BOARD_ENET_RMII_PHY_ITF        HPM_ENET_PHY_ITF_RMII
 #define BOARD_ENET_RMII_RST_GPIO       HPM_GPIO0
 #define BOARD_ENET_RMII_RST_GPIO_INDEX GPIO_DO_GPIOE
 #define BOARD_ENET_RMII_RST_GPIO_PIN   (26U)
@@ -487,6 +493,7 @@
 #define BOARD_BLDC_QEI_TRGM_QEI_B_SRC            HPM_TRGM2_INPUT_SRC_TRGM2_P10
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE              clock_mot2
+#define BOARD_BLDC_MOTOR_CLOCK_SOURCE            clock_mot2
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV   (4000U)
 
 /*HFI define*/
@@ -520,11 +527,12 @@
 #define BOARD_BLDC_HFI_PLL_KI (1.0f)
 
 /*adc*/
-#define BOARD_BLDC_ADC_MODULE    ADCX_MODULE_ADC12
 #define BOARD_BLDC_ADC_U_BASE    HPM_ADC0
+#define BOARD_BLDC_ADC_RES_BITS              (12U)
+#define BOARD_BLDC_ADC_CLOCK_DIV             (3U)
+#define BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE  (15U)
 #define BOARD_BLDC_ADC_V_BASE    HPM_ADC1
 #define BOARD_BLDC_ADC_W_BASE    HPM_ADC2
-#define BOARD_BLDC_ADC_TRIG_FLAG adc12_event_trig_complete
 
 #define BOARD_BLDC_ADC_CH_U                   (7U)
 #define BOARD_BLDC_ADC_CH_V                   (10U)
@@ -666,6 +674,14 @@
 #define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
 #define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PE30
 
+/* sent decode pin */
+
+#define BOARD_SENT_IDLE_HIGH_GPTMR                   HPM_GPTMR4
+#define BOARD_SENT_IDLE_HIGH_GPTMR_IRQ               IRQn_GPTMR4
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CHANNEL           2
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CLK_NAME          clock_gptmr4
+#define BOARD_SENT_IDLE_HIGH_GPTMR_DMA_SRC           HPM_DMA_SRC_GPTMR2_2
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -748,11 +764,15 @@ hpm_stat_t board_init_enet_ptp_clock(ENET_Type *ptr);
 hpm_stat_t board_enable_enet_irq(ENET_Type *ptr);
 hpm_stat_t board_disable_enet_irq(ENET_Type *ptr);
 
+#if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
+hpm_stat_t board_init_enet_phy(ENET_Type *ptr);
+void board_get_enet_phy_status(uint8_t idx, void *status);
+#endif
+
 #if defined(ENET_MULTIPLE_PORT) && ENET_MULTIPLE_PORT
 hpm_stat_t board_init_multiple_enet_pins(void);
 hpm_stat_t board_init_multiple_enet_clock(void);
 hpm_stat_t board_reset_multiple_enet_phy(void);
-hpm_stat_t board_init_enet_phy(ENET_Type *ptr);
 ENET_Type *board_get_enet_base(uint8_t idx);
 uint8_t board_get_enet_phy_itf(uint8_t idx);
 void board_get_enet_phy_status(uint8_t idx, void *status);
@@ -825,8 +845,9 @@ void init_sdxc_cd_pin(SDXC_Type  *ptr, bool as_gpio);
 void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8);
 void init_sdxc_pwr_pin(SDXC_Type *ptr, bool as_gpio);
 void init_gptmr_channel_pin(GPTMR_Type *ptr, uint32_t channel, bool as_output);
-
 void board_init_brownout_indicate_pin(void);
+void init_sent_decode_pins(bool idle_high);
+
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

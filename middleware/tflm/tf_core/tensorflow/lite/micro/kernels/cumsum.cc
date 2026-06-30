@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/types.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -103,11 +104,11 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
   return kTfLiteOk;
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus CumSumPrepare(TfLiteContext* context, TfLiteNode* node) {
   return CalculateOpData(context, node);
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus CumSumEval(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* input =
       tflite::micro::GetEvalInput(context, node, kInputTensor);
   const TfLiteEvalTensor* axis_tensor =
@@ -123,7 +124,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   if (axis < 0) axis += input_shape.DimensionsCount();
 
   if (axis < 0 || axis >= input_shape.DimensionsCount()) {
-    TF_LITE_KERNEL_LOG(context, "CUMSUM Invalid axis: %d", axis);
+    MicroPrintf("CUMSUM Invalid axis: %d", axis);
     return kTfLiteError;
   }
 
@@ -156,9 +157,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     } break;
 
     default: {
-      TF_LITE_KERNEL_LOG(context,
-                         "CUMSUM only supports FLOAT32 and INT8, got %s.",
-                         TfLiteTypeGetName(output->type));
+      MicroPrintf("CUMSUM only supports FLOAT32 and INT8, got %s.",
+                  TfLiteTypeGetName(output->type));
       return kTfLiteError;
     }
   }
@@ -168,15 +168,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace
 
-TfLiteRegistration Register_CUMSUM() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_CUMSUM() {
+  return tflite::micro::RegisterOp(nullptr, CumSumPrepare, CumSumEval);
 }
 
 }  // namespace tflite

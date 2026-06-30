@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,20 +18,25 @@ uint32_t glocaltime;
 /*---------------------------------------------------------------------*
  * Initialization
  *---------------------------------------------------------------------*/
-static void enet_ptp_init(void)
+/** @brief Initialize PTP timer and PPS output */
+static void ptp_init(void)
 {
-    enet_ptp_config_t config;
-    enet_ptp_ts_update_t timestamp;
+    enet_ptp_config_t cfg = {0};
+    enet_ptp_ts_update_t timestamp = {0};
 
-    /* initialize ptp timer */
-    enet_get_default_ptp_config(BOARD_ENET_PPS, clock_get_frequency(BOARD_ENET_PPS_PTP_CLOCK), &config);
-    config.update_method = enet_ptp_time_fine_update;
-    enet_init_ptp(ENET, &config);
-
-    /* set the initial timestamp */
+    /* Get default PTP config based on ENET PTP clock frequency */
+    enet_get_default_ptp_config(BOARD_ENET_PPS, clock_get_frequency(BOARD_ENET_PPS_PTP_CLOCK), &cfg);
+    /* Set update method and initial timestamp */
+    cfg.update_method = enet_ptp_time_fine_update;
     timestamp.sec = 1651074120UL;
     timestamp.nsec = 0;
-    enet_set_ptp_timestamp(ENET, &timestamp);
+    /* Configure PPS output and set ptp_timestamp in config */
+    cfg.mode = enet_pps_fixed_output;
+    cfg.param.control_freq = enet_pps_ctrl_pps;
+    cfg.pps_enable_output = true;
+    cfg.ptp_timestamp = &timestamp;
+    /* Initialize PTP timer and set initial time */
+    enet_init_ptp(ENET, &cfg);
 }
 
 static void local_timer_callback(void)
@@ -56,6 +61,10 @@ int main(void)
     /* Initialize PTP clock */
     board_init_enet_ptp_clock(ENET);
 
+    #if defined(ENET_PPS_PINOUT) && ENET_PPS_PINOUT
+    board_init_enet_pps_pins(BOARD_ENET_PPS);
+    #endif
+
     #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
     printf("This is an ethernet demo: PTP V2 Master (Interrupt Usage)\n");
     #else
@@ -67,11 +76,7 @@ int main(void)
     /* Initialize GPIOs, clock, MAC(DMA) and PHY */
     if (enet_init(ENET) == 0) {
         /* Initialize PTP */
-        enet_ptp_init();
-
-        #if defined(ENET_PPS_PINOUT) && ENET_PPS_PINOUT
-        enet_set_pps0_control_output(BOARD_ENET_PPS, enet_pps_ctrl_pps);
-        #endif
+        ptp_init();
 
         /* Initialize lwIP stack */
         lwip_init();

@@ -3,6 +3,8 @@ excluded_targets:
   - flash_sdram_xip_release # exclude the flash_sdram_xip_release target
   - flash_sdram_uf2
   - flash_sdram_uf2_release
+  - flash_sdram_dfu
+  - flash_sdram_dfu_release
 
 dependency:
   - femc

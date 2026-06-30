@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2025 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,23 +32,6 @@ namespace tflite {
 
 const int kActivationsInputTensor = 0;
 const int kActivationsOutputTensor = 0;
-
-void ReluQuantized(const ReluOpData& data, const RuntimeShape& input_shape,
-                   const RuntimeShape& output_shape, const int8_t* input_data,
-                   int8_t* output_data) {
-  const int flat_size = MatchingFlatSize(input_shape, output_shape);
-  for (int i = 0; i < flat_size; ++i) {
-    const int32_t val = static_cast<int32_t>(input_data[i]);
-    int32_t clamped =
-        data.params.output_offset +
-        MultiplyByQuantizedMultiplier(val - data.params.input_offset,
-                                      data.params.output_multiplier,
-                                      data.params.output_shift);
-    clamped = std::max(data.params.quantized_activation_min, clamped);
-    clamped = std::min(data.params.quantized_activation_max, clamped);
-    output_data[i] = static_cast<int8_t>(clamped);
-  }
-}
 
 template <typename T>
 void CalculateReluOpData(const TfLiteTensor* input, TfLiteTensor* output,
@@ -102,17 +85,6 @@ void Relu6Float(const RuntimeShape& input_shape, const float* input_data,
   }
 }
 
-void Relu6Quantized(int8_t lower, int8_t upper, const RuntimeShape& input_shape,
-                    const int8_t* input_data, const RuntimeShape& output_shape,
-                    int8_t* output_data) {
-  const int flat_size = MatchingFlatSize(input_shape, output_shape);
-  for (int i = 0; i < flat_size; ++i) {
-    const int8_t val = input_data[i];
-    const int8_t clamped = val > upper ? upper : val < lower ? lower : val;
-    output_data[i] = clamped;
-  }
-}
-
 TfLiteStatus ReluPrepare(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->user_data != nullptr);
   ReluOpData* data = static_cast<ReluOpData*>(node->user_data);
@@ -127,6 +99,10 @@ TfLiteStatus ReluPrepare(TfLiteContext* context, TfLiteNode* node) {
 
   if (input->type == kTfLiteInt8) {
     CalculateReluOpData<int8_t>(input, output, data);
+  } else if (input->type == kTfLiteInt16) {
+    TF_LITE_ENSURE_EQ(context, input->params.zero_point, 0);
+    TF_LITE_ENSURE_EQ(context, output->params.zero_point, 0);
+    CalculateReluOpData<int16_t>(input, output, data);
   }
 
   micro_context->DeallocateTempTfLiteTensor(input);
@@ -137,6 +113,7 @@ TfLiteStatus ReluPrepare(TfLiteContext* context, TfLiteNode* node) {
 
 TfLiteStatus Relu6Prepare(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->user_data != nullptr);
+
   Relu6OpData* data = static_cast<Relu6OpData*>(node->user_data);
 
   MicroContext* micro_context = GetMicroContext(context);
@@ -145,9 +122,15 @@ TfLiteStatus Relu6Prepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE(context, input != nullptr);
 
   if (input->type == kTfLiteInt8) {
-    data->six_int8 = FloatToQuantizedType<int8_t>(6.0f, input->params.scale,
-                                                  input->params.zero_point);
-    data->zero_int8 = input->params.zero_point;
+    data->zero = input->params.zero_point;
+    data->six = FloatToQuantizedType<int8_t>(6.0f, input->params.scale,
+                                             input->params.zero_point);
+    TF_LITE_ENSURE(context, data->six >= INT8_MIN && data->six <= INT8_MAX);
+  } else if (input->type == kTfLiteInt16) {
+    data->zero = input->params.zero_point;
+    data->six = FloatToQuantizedType<int16_t>(6.0f, input->params.scale,
+                                              input->params.zero_point);
+    TF_LITE_ENSURE(context, data->six >= INT16_MIN && data->six <= INT16_MAX);
   }
 
   micro_context->DeallocateTempTfLiteTensor(input);

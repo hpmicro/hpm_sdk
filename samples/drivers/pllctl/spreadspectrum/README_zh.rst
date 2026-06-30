@@ -47,7 +47,7 @@ PLLCTL频谱扩展
 
    PLLCTL spread spectrum example
 
-   PLL0CLK0 @ 80000000Mhz ss has been enabled (downspread) with range 0.5% @ 30000Hz, which can be observed on "P2[16]" pin by the oscilloscope
+   PLL0CLK0 @ 80000000Hz ss has been enabled (downspread) with range 0.5% @ 30000Hz, which can be observed on "P2[16]" pin by the oscilloscope
 
    PLLCTL example finished
 

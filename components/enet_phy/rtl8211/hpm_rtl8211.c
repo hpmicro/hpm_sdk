@@ -21,8 +21,10 @@ static bool rtl8211_check_id(ENET_Type *ptr, uint32_t phy_addr)
 {
     uint16_t id1, id2;
 
-    id1 = enet_read_phy(ptr, phy_addr, RTL8211_PHYID1);
-    id2 = enet_read_phy(ptr, phy_addr, RTL8211_PHYID2);
+    if (enet_read_phy(ptr, phy_addr, RTL8211_PHYID1, &id1) != status_success ||
+        enet_read_phy(ptr, phy_addr, RTL8211_PHYID2, &id2) != status_success) {
+        return false;
+    }
 
     if (RTL8211_PHYID1_OUI_MSB_GET(id1) == RTL8211_ID1 && RTL8211_PHYID2_OUI_LSB_GET(id2) == RTL8211_ID2) {
         return true;
@@ -45,7 +47,9 @@ bool rtl8211_reset(ENET_Type *ptr, uint32_t phy_addr)
 
     /* wait until the reset is completed */
     do {
-        data = enet_read_phy(ptr, phy_addr, RTL8211_BMCR);
+        if (enet_read_phy(ptr, phy_addr, RTL8211_BMCR, &data) != status_success) {
+            return false;
+        }
     } while (RTL8211_BMCR_RESET_GET(data) && --retry_cnt);
 
     return retry_cnt > 0 ? true : false;
@@ -93,12 +97,35 @@ bool rtl8211_basic_mode_init(ENET_Type *ptr, uint32_t phy_addr, rtl8211_config_t
 }
 
 
-void rtl8211_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status)
+hpm_stat_t rtl8211_get_phy_status(ENET_Type *ptr, uint32_t phy_addr, enet_phy_status_t *status)
 {
     uint16_t data;
+    hpm_stat_t stat;
 
-    data = enet_read_phy(ptr, phy_addr, RTL8211_PHYSR);
+    if (status == NULL) {
+        return status_invalid_argument;
+    }
+
+    status->enet_phy_speed_valid = 0U;
+
+    stat = enet_read_phy(ptr, phy_addr, RTL8211_PHYSR, &data);
+    if (stat != status_success) {
+        status->enet_phy_link = enet_phy_link_unknown;
+        return stat;
+    }
     status->enet_phy_link = RTL8211_PHYSR_LINK_REAL_TIME_GET(data);
+
+    if (status->enet_phy_link == 0U) {
+        return status_success;
+    }
+
+    if (RTL8211_PHYSR_SPEED_AND_DUPLEX_RESOLVED_GET(data) == 0U) {
+        return status_success;
+    }
+
     status->enet_phy_speed = RTL8211_PHYSR_SPEED_GET(data) == 0 ? enet_phy_port_speed_10mbps : RTL8211_PHYSR_SPEED_GET(data) == 1 ? enet_phy_port_speed_100mbps : enet_phy_port_speed_1000mbps;
     status->enet_phy_duplex = RTL8211_PHYSR_DUPLEX_GET(data);
+    status->enet_phy_speed_valid = 1U;
+
+    return status_success;
 }

@@ -6,17 +6,29 @@
  */
 #include <string.h>
 #include "tcp_echo.h"
+#include "lwip/pbuf.h"
 #include "lwip/tcp.h"
 
 static err_t tcpecho_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
+    struct pbuf *q;
+    err_t write_err;
+
     (void)arg;
 
     if (p != NULL) {
         tcp_recved(tpcb, p->tot_len);
-        tcp_write(tpcb, p->payload, p->tot_len, 1);
-        memset(p->payload, 0, p->tot_len);
+        /* Echo each pbuf segment when RX used a chain (eth_len > PBUF_POOL_BUFSIZE). */
+        for (q = p; q != NULL; q = q->next) {
+            write_err = tcp_write(tpcb, q->payload, q->len, TCP_WRITE_FLAG_COPY);
+            if (write_err != ERR_OK) {
+                pbuf_free(p);
+                return write_err;
+            }
+            memset(q->payload, 0, q->len);
+        }
         pbuf_free(p);
+        return tcp_output(tpcb);
     } else if (err == ERR_OK) {
         return tcp_close(tpcb);
     }

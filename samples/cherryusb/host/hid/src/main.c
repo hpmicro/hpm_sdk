@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -26,7 +26,7 @@ int main(void)
     intc_set_irq_priority(CONFIG_HPM_USBH_IRQn, 1);
 
     printf("Start usb host task...\r\n");
-    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE, NULL);
     usbh_class_test();
     vTaskStartScheduler();
     for (;;) {

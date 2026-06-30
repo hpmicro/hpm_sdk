@@ -143,7 +143,7 @@ void ewdg_service_test(void)
     /* Enable EWDG Timeout Reset */
     config.int_rst_config.enable_timeout_reset = true;
     /* Set EWDG Count clock source to OSC32 */
-    config.ctrl_config.cnt_clk_sel = ewdg_cnt_clk_src_ext_osc_clk;
+    config.ctrl_config.cnt_clk_sel = ewdg_cnt_src_clk_32k;
 
     /* Set the EWDG reset timeout to 101ms */
     config.cnt_src_freq = ewdg_src_clk_freq;
@@ -155,7 +155,7 @@ void ewdg_service_test(void)
         printf(" EWDG initialization failed, error_code=%d\n", status);
     }
 
-    board_delay_ms(100UL);
+    board_delay_ms(90UL);
     /* Service EWDG */
     ewdg_refresh(HPM_EWDG0);
 
@@ -178,7 +178,7 @@ void ewdg_service_test(void)
     /* Enable EWDG Timeout Reset */
     config.int_rst_config.enable_timeout_reset = true;
     /* Set EWDG Count clock source to OSC32 */
-    config.ctrl_config.cnt_clk_sel = ewdg_cnt_clk_src_ext_osc_clk;
+    config.ctrl_config.cnt_clk_sel = ewdg_cnt_src_clk_32k;
 
     /* Set the EWDG reset timeout to 101ms */
     config.cnt_src_freq = ewdg_src_clk_freq;
@@ -210,7 +210,7 @@ void ewdg_service_test(void)
         printf(" EWDG initialization failed, error_code=%d\n", status);
     }
 
-    board_delay_ms(100UL);
+    board_delay_ms(90UL);
     /* Service EWDG */
     ewdg_refresh(HPM_EWDG0);
 
@@ -237,7 +237,7 @@ void ewdg_service_test(void)
     config.ctrl_config.refresh_unlock_method = ewdg_refresh_unlock_method_fixed_key;
     config.ctrl_config.keep_running_in_debug_mode = false;
     /* Set EWDG Count clock source to OSC32 */
-    config.ctrl_config.cnt_clk_sel = ewdg_cnt_clk_src_ext_osc_clk;
+    config.ctrl_config.cnt_clk_sel = ewdg_cnt_src_clk_32k;
 
     /* Set the EWDG reset timeout to 101ms */
     config.cnt_src_freq = ewdg_src_clk_freq;
@@ -275,7 +275,7 @@ void ewdg_reset_test(void)
     config.int_rst_config.enable_timeout_reset = true;
     config.ctrl_config.use_lowlevel_timeout = false;
     uint32_t ewdg_src_clk_freq = EWDG_CNT_CLK_FREQ;
-    config.ctrl_config.cnt_clk_sel = ewdg_cnt_clk_src_ext_osc_clk;
+    config.ctrl_config.cnt_clk_sel = ewdg_cnt_src_clk_32k;
 
     /* Set the EWDG reset timeout to 1 second */
     config.cnt_src_freq = ewdg_src_clk_freq;
@@ -303,7 +303,7 @@ void ewdg_window_test(void)
     config.int_rst_config.enable_refresh_unlock_fail_reset = true;
     config.ctrl_config.use_lowlevel_timeout = false;
     /* Set EWDG Count clock source to OSC32 */
-    config.ctrl_config.cnt_clk_sel = ewdg_cnt_clk_src_ext_osc_clk;
+    config.ctrl_config.cnt_clk_sel = ewdg_cnt_src_clk_32k;
 
     /** The EWDG window works in the following manner:
      *  - start = window_lower_limit
@@ -331,7 +331,7 @@ void ewdg_window_test(void)
 
     uint32_t service_cnt = 0;
     while (service_cnt++ < 10) {
-        board_delay_ms(100UL);
+        board_delay_ms(90UL);
         /* Service EWDG */
         ewdg_refresh(HPM_EWDG0);
     }
@@ -356,7 +356,7 @@ void ewdg_interrupt_test(void)
     /* Enable EWDG Timeout Reset */
     config.int_rst_config.enable_timeout_reset = true;
     /* Set EWDG Count clock source to OSC32 */
-    config.ctrl_config.cnt_clk_sel = ewdg_cnt_clk_src_ext_osc_clk;
+    config.ctrl_config.cnt_clk_sel = ewdg_cnt_src_clk_32k;
 
     /* Set the EWDG timeout interrupt interval to 100ms
      * Set the EWDG timeout reset interval to 101ms

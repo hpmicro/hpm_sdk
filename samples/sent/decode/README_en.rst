@@ -20,6 +20,12 @@ Board Setting
 -  Connect external SENT signal to GPTMR capture pin.The SENT signal can
    be generated using the sent/encode example.
 
+Tip
+---
+
+- By default, the idle polarity for SENT decoding is low level. To change it to high level, you can redefine ``SENT_IDLE_HIGH`` to ``1`` or add ``sdk_compile_definitions(-DSENT_IDLE_HIGH=1)`` in the project's CMakeLists.txt.
+- Only SOCs that support the TRGM peripheral can decode SENT signals with high-level idle polarity.
+
 Running the example
 -------------------
 - Run decode first, and then run encode.

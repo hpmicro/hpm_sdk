@@ -20,9 +20,11 @@ hpm_stat_t console_init(console_config_t *cfg)
 {
     hpm_stat_t stat = status_fail;
 
+#if !defined(CONFIG_CONSOLE_NO_SETVBUF) || !CONFIG_CONSOLE_NO_SETVBUF
     /* disable buffer in standard library */
     setvbuf(stdin, NULL, _IONBF, 0);
     setvbuf(stdout, NULL, _IONBF, 0);
+#endif
 
     if (cfg->type == CONSOLE_TYPE_UART) {
         uart_config_t config = {0};

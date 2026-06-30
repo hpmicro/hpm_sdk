@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,166 +12,179 @@
 #include "eeprom_emulation.h"
 #include "hpm_crc32.h"
 
-#define E2P_OFFSET(TYPE, MEMBER) ((uint32_t)(&(((TYPE *)0)->MEMBER)))
-#define E2P_SWAP(a, b)\
-do {\
-    uint32_t tmp = (a);\
-    (a) = (b);\
-    (b) = tmp;\
-} while (0)
-
-static e2p_t e2p_dummy;
-static e2p_t *e2p_raw, *e2p_valid_ctx;
-static e2p_block e2p_info_table[E2P_MAX_VAR_CNT];
+static e2p_t e2p_backup;
+static e2p_t *e2p_primary;
+static e2p_t *e2p_active;
+static e2p_block_t e2p_info_table[E2P_MAX_VAR_CNT];
+static uint8_t e2p_flush_buf[E2P_FLUSH_BUF_SIZE];
 
 E2P_ATTR
 static void e2p_print_info(e2p_t *e2p)
 {
-    uint32_t info_count;
-    uint32_t valid_count = E2P_MAX_VAR_CNT;
+    uint32_t end_addr = e2p->config.start_addr
+                        + e2p->config.sector_cnt * e2p->config.erase_size;
+    uint32_t info_count = (end_addr - e2p->p_info - sizeof(e2p_header_t))
+                          / sizeof(e2p_block_t) - 1;
+    uint32_t valid_count = 0;
 
-    info_count = (e2p->config.start_addr + e2p->config.sector_cnt * e2p->config.erase_size - e2p->p_info - sizeof(e2p_header)) / sizeof(e2p_block) - 1;
-    for (int i = 0; i < E2P_MAX_VAR_CNT; i++) {
-        if (e2p_info_table[i].block_id == E2P_EARSED_ID) {
+    for (uint32_t i = 0; i < E2P_MAX_VAR_CNT; i++) {
+        if (e2p_info_table[i].block_id == E2P_ERASED_ID) {
             valid_count = i;
             break;
         }
     }
 
-    e2p_info("------------ flash->eeprom init ok -----------");
-    e2p_info("start address: 0x%08x", e2p->config.start_addr);
-    e2p_info("sector count: %u", e2p->config.sector_cnt);
-    e2p_info("flash earse granularity: %u", e2p->config.erase_size);
-    e2p_info("version: 0x%x", e2p->config.version);
-    e2p_info("end address: 0x%08x", e2p->config.start_addr + e2p->config.sector_cnt * e2p->config.erase_size);
-    e2p_info("data write addr = 0x%08x, info write addr = 0x%08x, remain flash size = 0x%x", \
-            e2p->p_data, e2p->p_info, e2p->remain_size);
-    e2p_info("valid count percent info count( %u / %u )", valid_count, info_count);
-    e2p_info("----------------------------------------------\n");
+    e2p_info("------------ e2p init ok -----------");
+    e2p_info("start address : 0x%08x", e2p->config.start_addr);
+    e2p_info("sector count  : %u", e2p->config.sector_cnt);
+    e2p_info("erase size    : %u", e2p->config.erase_size);
+    e2p_info("version       : 0x%x", e2p->config.version);
+    e2p_info("end address   : 0x%08x", end_addr);
+    e2p_info("data_ptr=0x%08x  info_ptr=0x%08x  remain=0x%x",
+             e2p->p_data, e2p->p_info, e2p->remain_size);
+    e2p_info("entries valid / total : %u / %u", valid_count, info_count);
+    e2p_info("------------------------------------");
 
-/* E2P_DEBUG_LEVEL higher than E2P_DEBUG_LEVEL_INFO, avoid warning */
     (void)info_count;
     (void)valid_count;
 }
 
 E2P_ATTR
-static hpm_stat_t e2p_table_update(e2p_block *block)
+static hpm_stat_t e2p_table_update(e2p_block_t *block)
 {
-    uint32_t i = 0;
+    uint32_t i;
 
-    if (block->valid_state == e2p_invalid)
-        return E2P_STATUS_OK;
-
-    for ( ; i < E2P_MAX_VAR_CNT; i++) {
-        if (e2p_info_table[i].block_id == E2P_EARSED_ID)
+    for (i = 0; i < E2P_MAX_VAR_CNT; i++) {
+        if (e2p_info_table[i].block_id == E2P_ERASED_ID) {
             break;
+        }
         if (e2p_info_table[i].block_id == block->block_id) {
-            e2p_trace("block_id[0x%08x] multiple write, flush api solve repeat\n", block->block_id);
-            break;
+            memcpy(&e2p_info_table[i], block, sizeof(e2p_block_t));
+            return E2P_STATUS_OK;
         }
     }
 
-    if (i == E2P_MAX_VAR_CNT)
-        return E2P_ERROR_MUL_VAR;
+    if (block->valid_state != e2p_block_valid) {
+        return E2P_STATUS_OK;
+    }
 
-    memcpy(&e2p_info_table[i], block, sizeof(e2p_block));
+    if (i >= E2P_MAX_VAR_CNT) {
+        e2p_err("info table overflow, max=%u", E2P_MAX_VAR_CNT);
+        return E2P_ERROR_OVERFLOW;
+    }
+
+    memcpy(&e2p_info_table[i], block, sizeof(e2p_block_t));
     return E2P_STATUS_OK;
 }
 
 E2P_ATTR
-static void e2p_format(e2p_t *e2p)
+static hpm_stat_t e2p_format(e2p_t *e2p)
 {
     e2p_config_t *cfg = &e2p->config;
 
-    E2P_CRITICAL_ENTER();
-    cfg->flash_erase(cfg->start_addr, cfg->sector_cnt * cfg->erase_size);
-    E2P_CRITICAL_EXIT();
+    uint32_t level = E2P_CRITICAL_ENTER();
+    hpm_stat_t ret = cfg->flash_erase(cfg->start_addr,
+                                      cfg->sector_cnt * cfg->erase_size);
+    E2P_CRITICAL_EXIT(level);
+    return ret;
 }
 
 E2P_ATTR
-static void e2p_config_info(e2p_t *e2p)
+static hpm_stat_t e2p_write_header(e2p_t *e2p)
 {
-    e2p_header header;
+    e2p_header_t header;
     e2p_config_t *cfg = &e2p->config;
-    uint32_t end_addr = cfg->start_addr + cfg->sector_cnt * cfg->erase_size;
+    uint32_t addr = cfg->start_addr
+                    + cfg->sector_cnt * cfg->erase_size
+                    - sizeof(e2p_header_t);
 
-    memset(&header, E2P_EARSED_VAR, sizeof(e2p_header));
+    memset(&header, E2P_ERASED_BYTE, sizeof(e2p_header_t));
     header.version = cfg->version;
     header.magic = E2P_MAGIC_ID;
-    E2P_CRITICAL_ENTER();
-    cfg->flash_write((uint8_t *)&header, end_addr - sizeof(e2p_header), sizeof(e2p_header));
-    E2P_CRITICAL_EXIT();
+
+    uint32_t level = E2P_CRITICAL_ENTER();
+    hpm_stat_t ret = cfg->flash_write((const uint8_t *)&header,
+                                      addr, sizeof(e2p_header_t));
+    E2P_CRITICAL_EXIT(level);
+    return ret;
 }
 
 E2P_ATTR
-static uint32_t e2p_data_crc_calc(uint16_t length, uint8_t *data)
+static uint32_t e2p_data_crc_calc(uint16_t length, const uint8_t *data)
 {
     return crc32(data, (uint32_t)length);
 }
 
 E2P_ATTR
-static hpm_stat_t e2p_retrieve_info(uint32_t block_id, e2p_block *block)
+static hpm_stat_t e2p_retrieve_info(uint32_t block_id, e2p_block_t *block)
 {
-    int i = 0;
-
-    if (block_id == E2P_EARSED_ID)
+    if (block_id == E2P_ERASED_ID) {
         return E2P_ERROR_BAD_ID;
+    }
 
-    for ( ; i < E2P_MAX_VAR_CNT; i++) {
+    for (uint32_t i = 0; i < E2P_MAX_VAR_CNT; i++) {
         if (e2p_info_table[i].block_id == block_id) {
-            e2p_trace("find read block, pos at table[%u]\n", i);
-            memcpy(block, &e2p_info_table[i], sizeof(e2p_block));
-            break;
+            if (e2p_info_table[i].valid_state != e2p_block_valid) {
+                return E2P_ERROR_NOT_FOUND;
+            }
+            memcpy(block, &e2p_info_table[i], sizeof(e2p_block_t));
+            return E2P_STATUS_OK;
         }
     }
 
-    return (i == E2P_MAX_VAR_CNT ? E2P_ERROR_BAD_ID : E2P_STATUS_OK);
+    return E2P_ERROR_NOT_FOUND;
 }
 
 E2P_ATTR
-static hpm_stat_t e2p_write_private(e2p_t *e2p, uint32_t block_id, uint16_t length, uint8_t *data)
+static hpm_stat_t e2p_write_internal(e2p_t *e2p, uint32_t block_id,
+                                     uint16_t length, const uint8_t *data)
 {
-    int ret = 0;
-    e2p_block block;
+    e2p_block_t block;
     e2p_config_t *cfg = &e2p->config;
+    hpm_stat_t ret;
 
-    if (e2p->remain_size < length + sizeof(e2p_block)) {
-        e2p_trace("no enough flash\n");
+    if (e2p->remain_size < length + sizeof(e2p_block_t)) {
+        e2p_trace("insufficient space: need=%u remain=%u",
+                  (uint32_t)(length + sizeof(e2p_block_t)),
+                  e2p->remain_size);
         return E2P_ERROR_NO_MEM;
     }
 
     block.block_id = block_id;
     block.data_addr = e2p->p_data;
     block.length = length;
-    block.valid_state = e2p_valid;
+    block.valid_state = e2p_block_valid;
     block.crc = e2p_data_crc_calc(length, data);
 
-    E2P_CRITICAL_ENTER();
+    uint32_t level = E2P_CRITICAL_ENTER();
     ret = cfg->flash_write(data, e2p->p_data, length);
-    E2P_CRITICAL_EXIT();
+    E2P_CRITICAL_EXIT(level);
     if (E2P_STATUS_OK != ret) {
-        e2p_trace("flash write data error\n");
+        e2p_err("flash write data failed at 0x%08x", e2p->p_data);
         return E2P_ERROR;
     }
     e2p->p_data += length;
     e2p->remain_size -= length;
 
-    E2P_CRITICAL_ENTER();
-    ret = cfg->flash_write((uint8_t *)&block, e2p->p_info, sizeof(e2p_block));
-    E2P_CRITICAL_EXIT();
+    level = E2P_CRITICAL_ENTER();
+    ret = cfg->flash_write((const uint8_t *)&block,
+                           e2p->p_info, sizeof(e2p_block_t));
+    E2P_CRITICAL_EXIT(level);
     if (E2P_STATUS_OK != ret) {
-        e2p_trace("flash write info error\n");
+        e2p_err("flash write info failed at 0x%08x", e2p->p_info);
         return E2P_ERROR;
     }
-    e2p->p_info -= sizeof(e2p_block);
-    e2p->remain_size -= sizeof(e2p_block);
+    e2p->p_info -= sizeof(e2p_block_t);
+    e2p->remain_size -= sizeof(e2p_block_t);
 
     ret = e2p_table_update(&block);
-    if (E2P_STATUS_OK != ret)
+    if (E2P_STATUS_OK != ret) {
         return ret;
+    }
 
-    e2p_trace("block_id[0x%08x] success write, data addr=0x%08x, remain size=0x%08x crc=0x%08x\n", \
-            block.block_id, block.data_addr, e2p->remain_size, block.crc);
+    e2p_trace("written id=0x%08x addr=0x%08x remain=0x%x crc=0x%08x",
+              block.block_id, block.data_addr,
+              e2p->remain_size, block.crc);
     return E2P_STATUS_OK;
 }
 
@@ -179,330 +192,438 @@ E2P_ATTR
 static int e2p_info_table_sort(void)
 {
     int count = 0;
-    e2p_block block;
 
-    do {
-        if (e2p_info_table[count].block_id == E2P_EARSED_ID) {
+    while (count < E2P_MAX_VAR_CNT) {
+        if (e2p_info_table[count].block_id == E2P_ERASED_ID) {
             break;
         }
         count++;
-    } while (count < E2P_MAX_VAR_CNT);
+    }
 
-    if (count == 0)
+    if (count <= 1) {
         return count;
+    }
 
-    for (int i = 0; i < count; i++) {
-        memcpy(&block, &e2p_info_table[i], sizeof(e2p_block));
+    for (int i = 0; i < count - 1; i++) {
+        int min_idx = i;
         for (int j = i + 1; j < count; j++) {
-            if (e2p_info_table[j].data_addr < block.data_addr) {
-                E2P_SWAP(e2p_info_table[j].block_id, block.block_id);
-                E2P_SWAP(e2p_info_table[j].data_addr, block.data_addr);
-                E2P_SWAP(e2p_info_table[j].length, block.length);
-                E2P_SWAP(e2p_info_table[j].valid_state, block.valid_state);
-                E2P_SWAP(e2p_info_table[j].crc, block.crc);
+            if (e2p_info_table[j].data_addr
+                < e2p_info_table[min_idx].data_addr) {
+                min_idx = j;
             }
         }
-        memcpy(&e2p_info_table[i], &block, sizeof(e2p_block));
+        if (min_idx != i) {
+            e2p_block_t tmp;
+            memcpy(&tmp, &e2p_info_table[i], sizeof(e2p_block_t));
+            memcpy(&e2p_info_table[i],
+                   &e2p_info_table[min_idx], sizeof(e2p_block_t));
+            memcpy(&e2p_info_table[min_idx], &tmp, sizeof(e2p_block_t));
+        }
     }
 
     return count;
 }
 
 E2P_ATTR
-static void e2p_dummy_config(e2p_t *e2p)
+static void e2p_init_area_ptrs(e2p_t *e2p)
 {
-    e2p_config_t *cfg = &e2p->config;
-    e2p_t *dummy = &e2p_dummy;
-    uint32_t cnt_bisect, addr_bisect, addr_end;
+    uint32_t end_addr = e2p->config.start_addr
+                        + e2p->config.sector_cnt * e2p->config.erase_size;
 
-    if (dummy->config.sector_cnt == 0) {
-        cnt_bisect = cfg->sector_cnt / 2;
-        addr_end = cfg->start_addr + cfg->sector_cnt * cfg->erase_size;
-    } else {
-        cnt_bisect = cfg->sector_cnt;
-        addr_end = cfg->start_addr + cfg->sector_cnt * cfg->erase_size * 2;
-    }
-
-    addr_bisect = cfg->start_addr + cnt_bisect * cfg->erase_size;
-    memset(e2p_info_table, E2P_EARSED_VAR, sizeof(e2p_info_table));
-    e2p->p_data = cfg->start_addr;
-    e2p->p_info = addr_bisect - sizeof(e2p_block) - sizeof(e2p_header);
+    e2p->p_data = e2p->config.start_addr;
+    e2p->p_info = end_addr - sizeof(e2p_block_t) - sizeof(e2p_header_t);
     e2p->remain_size = e2p->p_info - e2p->p_data;
-    e2p->config.sector_cnt = cnt_bisect;
-    e2p_raw = e2p;
-    memcpy(dummy, e2p, sizeof(e2p_t));
-    dummy->p_data = addr_bisect;
-    dummy->p_info = addr_end - sizeof(e2p_block) - sizeof(e2p_header);
-    dummy->remain_size = dummy->p_info - dummy->p_data;
-    dummy->config.start_addr = addr_bisect;
 }
 
 E2P_ATTR
-static void e2p_check_version(e2p_t *e2p)
+static void e2p_setup_areas(e2p_t *e2p)
+{
+    e2p_t *backup = &e2p_backup;
+    uint32_t half_cnt;
+    uint32_t half_addr;
+
+    half_cnt = e2p->config.sector_cnt / 2;
+    half_addr = e2p->config.start_addr + half_cnt * e2p->config.erase_size;
+
+    memset(e2p_info_table, E2P_ERASED_BYTE, sizeof(e2p_info_table));
+
+    e2p->config.sector_cnt = half_cnt;
+    e2p_init_area_ptrs(e2p);
+    e2p_primary = e2p;
+
+    memcpy(backup, e2p, sizeof(e2p_t));
+    backup->config.start_addr = half_addr;
+    e2p_init_area_ptrs(backup);
+}
+
+E2P_ATTR
+static void e2p_check_version(e2p_t *e2p, bool update_invalid)
 {
     e2p_config_t *cfg = &e2p->config;
-    e2p_header header;
-    uint32_t addr_header = cfg->start_addr + cfg->sector_cnt * cfg->erase_size - sizeof(e2p_header);
-    cfg->flash_read((uint8_t *)&header, addr_header, sizeof(e2p_header));
-    e2p_trace("read data, version=%x, magic=%x, state=%x\n", header.version, header.magic, header.state);
+    e2p_header_t header;
+    uint32_t addr = cfg->start_addr
+                    + cfg->sector_cnt * cfg->erase_size
+                    - sizeof(e2p_header_t);
+
+    cfg->flash_read((uint8_t *)&header, addr, sizeof(e2p_header_t));
+    e2p_trace("header: ver=0x%x magic=0x%x state=0x%x",
+              header.version, header.magic, header.state);
+
     if (header.version != cfg->version || header.magic != E2P_MAGIC_ID) {
-        e2p_info("check version failed, begin earse sector, it will take some time\n");
-        e2p_format(e2p);
-        e2p_config_info(e2p);
+        e2p_info("version mismatch, erasing area at 0x%08x",
+                 cfg->start_addr);
+        if (update_invalid) {
+            e2p_format(e2p);
+            e2p_write_header(e2p);
+        }
     }
 }
 
 E2P_ATTR
-static e2p_t *e2p_get_valid_context(e2p_t *e2p, uint8_t *flush)
+static hpm_stat_t e2p_write_state(e2p_t *e2p, uint32_t state)
+{
+    e2p_config_t *cfg = &e2p->config;
+    uint32_t addr = cfg->start_addr
+                    + cfg->sector_cnt * cfg->erase_size
+                    - sizeof(uint32_t);
+
+    uint32_t level = E2P_CRITICAL_ENTER();
+    hpm_stat_t ret = cfg->flash_write((const uint8_t *)&state,
+                                      addr, sizeof(uint32_t));
+    E2P_CRITICAL_EXIT(level);
+    return ret;
+}
+
+E2P_ATTR
+static e2p_t *e2p_recover_context(e2p_t *e2p, uint8_t *need_flush)
 {
     e2p_t *valid = e2p;
-    e2p_t *invalid = &e2p_dummy;
+    e2p_t *other = &e2p_backup;
     e2p_config_t *cfg = &e2p->config;
-    e2p_header header, dummy_header;
-    uint32_t other_state = e2p_state_invalid;
-    uint32_t raw_addr_header = cfg->start_addr + cfg->sector_cnt * cfg->erase_size - sizeof(e2p_header);
-    uint32_t dummy_addr_header = invalid->config.start_addr + invalid->config.sector_cnt * invalid->config.erase_size - sizeof(e2p_header);
+    e2p_header_t hdr_a, hdr_b;
+    uint32_t addr_a, addr_b;
 
-    cfg->flash_read((uint8_t *)&header, raw_addr_header, sizeof(e2p_header));
-    cfg->flash_read((uint8_t *)&dummy_header, dummy_addr_header, sizeof(e2p_header));
+    addr_a = cfg->start_addr
+             + cfg->sector_cnt * cfg->erase_size
+             - sizeof(e2p_header_t);
+    addr_b = other->config.start_addr
+             + other->config.sector_cnt * other->config.erase_size
+             - sizeof(e2p_header_t);
 
-    if ((header.state != e2p_state_valid) && (dummy_header.state != e2p_state_valid)) {
-        if ((header.state == e2p_state_finish) && (dummy_header.state == e2p_state_invalid)) {
+    cfg->flash_read((uint8_t *)&hdr_a, addr_a, sizeof(e2p_header_t));
+    cfg->flash_read((uint8_t *)&hdr_b, addr_b, sizeof(e2p_header_t));
+
+    /*
+     * Mask to 4 bits: erased flash (0xFFFFFFFF & 0x0F = 15 = invalid).
+     * This avoids the raw 0xFFFFFFFF != 15 comparison bug.
+     */
+    uint32_t state_a = hdr_a.state & 0x0F;
+    uint32_t state_b = hdr_b.state & 0x0F;
+
+    /* Case 1: neither area marked valid — first boot or both recovered */
+    if (state_a != e2p_state_valid && state_b != e2p_state_valid) {
+        if (state_a == e2p_state_finish && state_b == e2p_state_invalid) {
             valid = e2p;
-        } else if ((header.state == e2p_state_invalid) && (dummy_header.state == e2p_state_finish)) {
-            valid = invalid;
-        } else if (((header.state & 0x0f) == e2p_state_invalid) && ((dummy_header.state & 0x0f) == e2p_state_invalid)) {
+        } else if (state_a == e2p_state_invalid && state_b == e2p_state_finish) {
+            valid = other;
+        } else {
             valid = e2p;
         }
-
-        header.state = e2p_state_valid;
-        E2P_CRITICAL_ENTER();
-        cfg->flash_write((uint8_t *)&header, valid->p_info + sizeof(e2p_block), sizeof(e2p_header));
-        E2P_CRITICAL_EXIT();
+        e2p_write_state(valid, e2p_state_valid);
         return valid;
     }
 
-    if (header.state == e2p_state_valid) {
+    /* Case 2: exactly one area is valid — check the other for recovery */
+    uint32_t other_state;
+    if (state_a == e2p_state_valid) {
         valid = e2p;
-        other_state = dummy_header.state;
-    } else if (dummy_header.state == e2p_state_valid) {
-        valid = invalid;
-        invalid = e2p;
-        other_state = header.state;
+        other = &e2p_backup;
+        other_state = state_b;
+    } else {
+        valid = &e2p_backup;
+        other = e2p;
+        other_state = state_a;
     }
-    /* power-off between new data write over and earse old data */
+
     if (other_state == e2p_state_finish) {
+        /* Power-off after data copied but before old area erased */
         e2p_format(valid);
-        e2p_config_info(valid);
-        valid = invalid;
-        header.state = e2p_state_valid;
-        E2P_CRITICAL_ENTER();
-        cfg->flash_write((uint8_t *)&header, valid->p_info + sizeof(e2p_block), sizeof(e2p_header));
-        E2P_CRITICAL_EXIT();
-    /* power off between start flush and write new data, reflush */
-    } else if (other_state == e2p_state_start) {
-        *flush = 1;
-    /* power off in writing process, clean buffer, reflush */
-    } else if (other_state == e2p_state_write) {
-        e2p_format(invalid);
-        e2p_config_info(invalid);
-        *flush = 1;
+        e2p_write_header(valid);
+        valid = other;
+        e2p_write_state(valid, e2p_state_valid);
+    } else if (other_state == e2p_state_start
+               || other_state == e2p_state_write) {
+        /* Power-off during flush — clean the incomplete area, re-flush */
+        e2p_format(other);
+        e2p_write_header(other);
+        *need_flush = 1;
     }
 
     return valid;
 }
 
+/* ------------------------------------------------------------------ */
+/*  public API                                                          */
+/* ------------------------------------------------------------------ */
+
 E2P_ATTR
 hpm_stat_t e2p_config(e2p_t *e2p)
 {
     if (e2p->config.erase_size == 0 || e2p->config.sector_cnt == 0) {
-        e2p_err("config error erase_size = %u, sector_cnt = %u\n", e2p->config.erase_size, e2p->config.sector_cnt);
+        e2p_err("invalid config: erase_size=%u sector_cnt=%u",
+                e2p->config.erase_size, e2p->config.sector_cnt);
         return E2P_ERROR_INIT_ERR;
     }
 
-    if (e2p->config.flash_read == NULL || e2p->config.flash_write == NULL || e2p->config.flash_erase == NULL) {
-        e2p_err("Not register operate function read = %p, write = %p, erase = %p", \
-                      e2p->config.flash_read, e2p->config.flash_write, e2p->config.flash_erase);
+    if (e2p->config.flash_read == NULL
+        || e2p->config.flash_write == NULL
+        || e2p->config.flash_erase == NULL) {
+        e2p_err("flash ops not registered");
         return E2P_ERROR_INIT_ERR;
     }
 
-    if ((e2p->config.sector_cnt % 2) == 1) {
-        e2p_err("Sector count must be even, %u sector now, maybe %u sector?", \
-                    e2p->config.sector_cnt, e2p->config.sector_cnt + 1);
+    if ((e2p->config.sector_cnt % 2) != 0) {
+        e2p_err("sector_cnt must be even: %u (try %u)",
+                e2p->config.sector_cnt, e2p->config.sector_cnt + 1);
         return E2P_ERROR_INIT_ERR;
     }
 
-    e2p_block block;
-    e2p_t *dummy = &e2p_dummy;
-    e2p_config_t *cfg = &e2p->config;
+    e2p_block_t block;
+    e2p_config_t *cfg;
+    hpm_stat_t ret = E2P_STATUS_OK;
     uint8_t need_flush = 0;
 
-    e2p_dummy_config(e2p);
-    e2p_check_version(e2p);
-    e2p_check_version(dummy);
-    e2p_valid_ctx = e2p_get_valid_context(e2p, &need_flush);
+    e2p_setup_areas(e2p);
+    e2p_check_version(e2p, true);
+    e2p_check_version(&e2p_backup, true);
 
-    if (e2p_valid_ctx == NULL)
+    e2p_active = e2p_recover_context(e2p, &need_flush);
+    if (e2p_active == NULL) {
         return E2P_ERROR_INIT_ERR;
+    }
 
+    cfg = &e2p_active->config;
+
+    /* Rebuild in-memory index from flash */
     while (1) {
-        block.data_addr = e2p_valid_ctx->p_info;
-        block.length = sizeof(e2p_block);
-        cfg->flash_read((uint8_t *)&block, block.data_addr, block.length);
-        if (block.block_id == E2P_EARSED_ID)
+        cfg->flash_read((uint8_t *)&block,
+                        e2p_active->p_info, sizeof(e2p_block_t));
+        if (block.block_id == E2P_ERASED_ID) {
             break;
+        }
 
-        int ret = e2p_table_update(&block);
-        if (E2P_STATUS_OK != ret)
+        ret = e2p_table_update(&block);
+        if (E2P_STATUS_OK != ret) {
             return ret;
+        }
 
-        e2p_valid_ctx->p_data += block.length;
-        e2p_valid_ctx->p_info -= sizeof(e2p_block);
-        e2p_valid_ctx->remain_size -= (block.length + sizeof(e2p_block));
+        uint32_t used = (uint32_t)block.length + sizeof(e2p_block_t);
+        if (used > e2p_active->remain_size) {
+            e2p_warn("area overflow detected during init");
+            need_flush = 1;
+            break;
+        }
 
-        if (e2p_valid_ctx->remain_size < 2 * sizeof(e2p_block)) {
-            e2p_info("remain flash is not enough\n");
-            return E2P_ERROR_NO_MEM;
+        e2p_active->p_data += block.length;
+        e2p_active->p_info -= sizeof(e2p_block_t);
+        e2p_active->remain_size -= used;
+    }
+
+    if (need_flush) {
+        ret = e2p_flush(E2P_FLUSH_FORCE);
+        if (E2P_STATUS_OK != ret) {
+            return ret;
         }
     }
 
-    if (need_flush)
-        e2p_flush(E2P_FLUSH_BEGIN);
-
-    e2p_print_info(e2p_valid_ctx);
+    e2p_print_info(e2p_active);
     return E2P_STATUS_OK;
 }
 
 E2P_ATTR
 hpm_stat_t e2p_flush(uint8_t flag)
 {
-    if (e2p_valid_ctx->config.erase_size < e2p_valid_ctx->remain_size && flag == E2P_FLUSH_TRY)
+    if (flag == E2P_FLUSH_TRY
+        && e2p_active->config.erase_size < e2p_active->remain_size) {
         return E2P_STATUS_OK;
+    }
 
-    e2p_t *new;
-    e2p_t *e2p = e2p_valid_ctx;
+    e2p_t *target;
+    e2p_t *old = e2p_active;
+    hpm_stat_t ret;
 
-    /* switch to new instance */
-    new = (e2p == e2p_raw) ? &e2p_dummy : e2p_raw;
-    e2p_config_t *cfg = &new->config;
-    uint32_t state = e2p_state_start;
-    uint32_t addr_state = cfg->start_addr + cfg->sector_cnt * cfg->erase_size - sizeof(uint32_t);
-    /* indicate start switch */
-    E2P_CRITICAL_ENTER();
-    cfg->flash_write((uint8_t *)&state, addr_state, sizeof(uint32_t));
-    E2P_CRITICAL_EXIT();
+    target = (old == e2p_primary) ? &e2p_backup : e2p_primary;
+
+    /* Phase 1: mark target as "flush starting" */
+    e2p_write_state(target, e2p_state_start);
 
     int valid_num = e2p_info_table_sort();
-    uint8_t read_buf[cfg->erase_size];
-    int count = 0;
-    uint32_t read_len = 0;
+    e2p_init_area_ptrs(target);
 
-    e2p->p_data = e2p->config.start_addr;
-    e2p->p_info = e2p->config.start_addr + e2p->config.sector_cnt * e2p->config.erase_size - sizeof(e2p_block) - sizeof(e2p_header);
-    e2p->remain_size = e2p->p_info - e2p->p_data;
-    /* indicate begin write to new */
-    state = e2p_state_write;
-    E2P_CRITICAL_ENTER();
-    cfg->flash_write((uint8_t *)&state, addr_state, sizeof(uint32_t));
-    E2P_CRITICAL_EXIT();
+    /* Phase 2: mark target as "writing data" */
+    e2p_write_state(target, e2p_state_write);
 
-    for (int i = 0; i < valid_num;) {
-        while (1) {
-            if (e2p_info_table[i].block_id == E2P_EARSED_ID || i >= valid_num)
-                break;
-            if (cfg->erase_size - read_len < e2p_info_table[i].length)
-                break;
-            cfg->flash_read(read_buf + read_len, e2p_info_table[i].data_addr, e2p_info_table[i].length);
-            read_len += e2p_info_table[i].length;
-            i++;
+    /* Transfer valid entries one by one via static buffer */
+    for (int i = 0; i < valid_num; i++) {
+        if (e2p_info_table[i].block_id == E2P_ERASED_ID) {
+            break;
         }
-        e2p_trace("---- transfer data to buffer: len=%u\n", read_len);
-        uint8_t *pdata = read_buf;
-
-        while (count < i) {
-            if (e2p_info_table[count].block_id == E2P_EARSED_ID)
-                break;
-
-            e2p_write_private(new, e2p_info_table[count].block_id, e2p_info_table[count].length, pdata);
-            pdata += e2p_info_table[count].length;
-            count++;
+        if (e2p_info_table[i].valid_state != e2p_block_valid) {
+            continue;
         }
-        e2p_trace("-----write data back: len=%u\n", pdata - read_buf);
-        read_len = 0;
+
+        uint16_t len = e2p_info_table[i].length;
+        if (len > E2P_FLUSH_BUF_SIZE) {
+            e2p_err("entry %u bytes exceeds flush buffer %u",
+                    len, E2P_FLUSH_BUF_SIZE);
+            return E2P_ERROR;
+        }
+
+        old->config.flash_read(e2p_flush_buf,
+                               e2p_info_table[i].data_addr, len);
+        ret = e2p_write_internal(target,
+                                 e2p_info_table[i].block_id,
+                                 len, e2p_flush_buf);
+        if (ret != E2P_STATUS_OK) {
+            e2p_err("flush write failed for id 0x%08x",
+                    e2p_info_table[i].block_id);
+            return ret;
+        }
     }
-    /* indicate write finish, begin erase old */
-    state = e2p_state_finish;
-    E2P_CRITICAL_ENTER();
-    cfg->flash_write((uint8_t *)&state, addr_state, sizeof(uint32_t));
-    E2P_CRITICAL_EXIT();
 
-    e2p_format(e2p);
-    e2p_config_info(e2p);
-    /* indicate all work done, use new area */
-    state = e2p_state_valid;
-    E2P_CRITICAL_ENTER();
-    cfg->flash_write((uint8_t *)&state, addr_state, sizeof(uint32_t));
-    E2P_CRITICAL_EXIT();
-    e2p_valid_ctx = new;
+    /* Compact table: remove invalid / deleted entries */
+    int wr = 0;
+    for (int rd = 0; rd < E2P_MAX_VAR_CNT; rd++) {
+        if (e2p_info_table[rd].block_id == E2P_ERASED_ID) {
+            break;
+        }
+        if (e2p_info_table[rd].valid_state == e2p_block_valid) {
+            if (wr != rd) {
+                memcpy(&e2p_info_table[wr],
+                       &e2p_info_table[rd], sizeof(e2p_block_t));
+            }
+            wr++;
+        }
+    }
+    memset(&e2p_info_table[wr], E2P_ERASED_BYTE,
+           (E2P_MAX_VAR_CNT - wr) * sizeof(e2p_block_t));
+
+    /* Phase 3: data transfer complete */
+    e2p_write_state(target, e2p_state_finish);
+
+    /* Phase 4: erase old area */
+    e2p_format(old);
+    e2p_write_header(old);
+
+    /* Phase 5: target is now the active area */
+    e2p_write_state(target, e2p_state_valid);
+    e2p_active = target;
 
     return E2P_STATUS_OK;
 }
 
 E2P_ATTR
-hpm_stat_t e2p_write(uint32_t block_id, uint16_t length, uint8_t *data)
+hpm_stat_t e2p_write(uint32_t block_id, uint16_t length,
+                     const uint8_t *data)
 {
-    if (e2p_valid_ctx->remain_size < length + sizeof(e2p_block)) {
-        e2p_flush(E2P_FLUSH_BEGIN);
-        if (e2p_valid_ctx->remain_size < length + sizeof(e2p_block)) {
-            e2p_trace("no enough flash write\n");
+    if (e2p_active->remain_size < length + sizeof(e2p_block_t)) {
+        hpm_stat_t ret = e2p_flush(E2P_FLUSH_FORCE);
+        if (ret != E2P_STATUS_OK) {
+            return ret;
+        }
+        if (e2p_active->remain_size < length + sizeof(e2p_block_t)) {
+            e2p_err("no space after flush: need=%u remain=%u",
+                    (uint32_t)(length + sizeof(e2p_block_t)),
+                    e2p_active->remain_size);
             return E2P_ERROR_NO_MEM;
         }
     }
 
-    return e2p_write_private(e2p_valid_ctx, block_id, length, data);
+    return e2p_write_internal(e2p_active, block_id, length, data);
 }
 
 E2P_ATTR
 hpm_stat_t e2p_read(uint32_t block_id, uint16_t length, uint8_t *data)
 {
-    e2p_block block;
-    int ret = 0;
+    e2p_block_t block;
+    hpm_stat_t ret;
 
     ret = e2p_retrieve_info(block_id, &block);
-    if (ret != E2P_STATUS_OK)
+    if (ret != E2P_STATUS_OK) {
         return ret;
+    }
 
-    uint8_t tmp[block.length];
-    e2p_valid_ctx->config.flash_read(tmp, block.data_addr, block.length);
-
-    if (block.crc != e2p_data_crc_calc(block.length, tmp)) {
-        e2p_trace("crc check error, data addr = 0x%08x, crc = 0x%08x", block.data_addr, block.crc);
+    if (block.length > E2P_FLUSH_BUF_SIZE) {
+        e2p_err("stored length %u exceeds buffer %u",
+                block.length, E2P_FLUSH_BUF_SIZE);
         return E2P_ERROR;
     }
-    
-    length > block.length ? (length=block.length) : length;
-    memmove(data, tmp, length);
+
+    e2p_active->config.flash_read(e2p_flush_buf,
+                                  block.data_addr, block.length);
+
+    if (block.crc != e2p_data_crc_calc(block.length, e2p_flush_buf)) {
+        e2p_err("crc mismatch at 0x%08x expected=0x%08x",
+                block.data_addr, block.crc);
+        return E2P_ERROR_CRC;
+    }
+
+    uint16_t copy_len = (length < block.length) ? length : block.length;
+    memcpy(data, e2p_flush_buf, copy_len);
     return E2P_STATUS_OK;
+}
+
+E2P_ATTR
+hpm_stat_t e2p_delete(uint32_t block_id)
+{
+    for (uint32_t i = 0; i < E2P_MAX_VAR_CNT; i++) {
+        if (e2p_info_table[i].block_id == block_id) {
+            if (e2p_info_table[i].valid_state != e2p_block_valid) {
+                return E2P_ERROR_NOT_FOUND;
+            }
+            e2p_info_table[i].valid_state = e2p_block_invalid;
+            e2p_trace("deleted id=0x%08x", block_id);
+            return E2P_STATUS_OK;
+        }
+    }
+    return E2P_ERROR_NOT_FOUND;
 }
 
 E2P_ATTR
 void e2p_clear(void)
 {
-    e2p_config_t *cfg = &e2p_raw->config;
+    e2p_config_t *cfg = &e2p_primary->config;
 
-    E2P_CRITICAL_ENTER();
-    cfg->flash_erase(cfg->start_addr, cfg->sector_cnt * cfg->erase_size * 2);
-    E2P_CRITICAL_EXIT();
+    uint32_t level = E2P_CRITICAL_ENTER();
+    cfg->flash_erase(cfg->start_addr,
+                     cfg->sector_cnt * cfg->erase_size * 2);
+    E2P_CRITICAL_EXIT(level);
+    memset(e2p_info_table, E2P_ERASED_BYTE, sizeof(e2p_info_table));
 }
 
 E2P_ATTR
 uint32_t e2p_generate_id(const char *name)
 {
-    return (name[0] << 24) | (name[1] << 16) | (name[2] << 8) | (name[3]);
+    uint32_t id = 0;
+
+    if (name == NULL || strlen(name) == 0) {
+        e2p_info("name is NULL or empty");
+        return 0;
+    }
+
+    if (strlen(name) > 4) {
+        e2p_info("length exceeds 4, risk of duplicate names: %s", name);
+        return 0;
+    }
+
+    for (int i = 0; i < 4 && name[i] != '\0'; i++) {
+        id |= ((uint32_t)(uint8_t)name[i]) << ((3 - i) * 8);
+    }
+    return id;
 }
 
 E2P_ATTR
 void e2p_show_info(void)
 {
-    e2p_print_info(e2p_valid_ctx);
+    e2p_print_info(e2p_active);
 }

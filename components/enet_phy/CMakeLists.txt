@@ -1,9 +1,13 @@
-# Copyright (c) 2022-2025 HPMicro
+# Copyright (c) 2022-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_compile_definitions(-DCONFIG_ENET_PHY=1)
 
 sdk_inc(.)
+sdk_src(hpm_enet_phy_port.c)
+sdk_src(hpm_enet_phy_adaptive.c)
+sdk_src(hpm_enet_phy_adaptive_util.c)
+sdk_src(hpm_enet_phy_adaptive_glue.c)
 
 if($ENV{CONFIG_ENET_PHY_RTL8211})
     add_subdirectory(rtl8211)

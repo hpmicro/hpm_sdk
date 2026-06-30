@@ -25,7 +25,8 @@ limitations under the License.
 namespace tflite {
 namespace {
 
-void* Init(TfLiteContext* context, const char* buffer, size_t length) {
+void* InitQuantizeReference(TfLiteContext* context, const char* buffer,
+                            size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
   return context->AllocatePersistentBuffer(context,
                                            sizeof(OpDataQuantizeReference));
@@ -33,15 +34,9 @@ void* Init(TfLiteContext* context, const char* buffer, size_t length) {
 
 }  // namespace
 
-TfLiteRegistration Register_QUANTIZE() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/PrepareQuantizeReference,
-          /*invoke=*/EvalQuantizeReference,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_QUANTIZE() {
+  return tflite::micro::RegisterOp(
+      InitQuantizeReference, PrepareQuantizeReference, EvalQuantizeReference);
 }
 
 }  // namespace tflite

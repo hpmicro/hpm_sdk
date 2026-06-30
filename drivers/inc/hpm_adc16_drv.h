@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,10 +39,23 @@
 #define ADC16_IS_SEQ_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_SEQ_MAX_LEN))
 
 /** @brief Define ADC16 validity check for the DMA buffer length in the sequence mode */
-#define ADC16_IS_SEQ_DMA_BUFF_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES))
+#define ADC16_IS_SEQ_DMA_BUFF_LEN_IN_4BYTES_INVALID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES))
+
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+/**
+ * @brief Validity for sequence DMA when @c DMA_SEQ16BIT: @a LEN is always a count in 16b (2-byte) halfword units. @c ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES
+ *        names the 32b-word SoC cap; compare @a LEN to @c (that value / 2).
+ */
+#define ADC16_IS_SEQ_DMA_BUFF_LEN_IN_2BYTES_INVALID(LEN) ((LEN) == 0U || (LEN) > (uint32_t)ADC_SOC_SEQ_MAX_DMA_BUFF_LEN_IN_4BYTES / 2U)
+#endif
 
 /** @brief Define ADC16 validity check for the DMA buffer length in the preemption mode */
 #define ADC16_IS_PMT_DMA_BUFF_LEN_INVLAID(LEN)  ((LEN == 0) || (LEN > ADC_SOC_PMT_MAX_DMA_BUFF_LEN_IN_4BYTES))
+
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+/** @brief Validity check for SAMPLE_CFG.ADC_LOOP exponent n (2^n loops); max n is per-SOC (ADC16_SOC_ADC_LOOP_MAX_EXP). */
+#define ADC16_IS_ADC_LOOP_INVALID(EXP) ((EXP) > ADC16_SOC_ADC_LOOP_MAX_EXP)
+#endif
 
 /** @brief Define ADC16 resolutions. */
 typedef enum {
@@ -111,12 +124,27 @@ typedef enum {
 
     /** This mask indicates that DMA FIFO is full currently. */
     adc16_event_dma_fifo_full       = ADC16_INT_STS_DMA_FIFO_FULL_MASK
+#if defined(HPM_IP_FEATURE_ADC16_SEQ_STOP_POS_INT) && HPM_IP_FEATURE_ADC16_SEQ_STOP_POS_INT
+    ,
+    /** INT_STS STOP_POS only; @c HPM_IP_FEATURE_ADC16_SEQ_STOP_POS_INT gates this IRQ bit not SEQ_DMA_CFG STOP_EN. */
+    adc16_event_seq_stop_pos        = ADC16_INT_STS_STOP_POS_MASK
+#endif
 } adc16_irq_event_t;
 
 #if defined(HPM_IP_FEATURE_ADC16_HAS_DIFF_MODE) && HPM_IP_FEATURE_ADC16_HAS_DIFF_MODE
-/** @brief Define ADC16 position modes. */
+/**
+ * @brief ADC16 differential result code format (CONV_CFG0 POS_MODE).
+ * @note Applies only when differential mode is enabled. This is not ADC input
+ *       single-ended vs differential wiring; it selects how the master-minus-slave
+ *       result is encoded on the 16-bit bus. @c full_resolution=1 ignores POS_MODE on HW;
+ *       only @c full_resolution=0 applies @c position_mode. Combine both fields accordingly.
+ * @note Enum names @c differential / @c single_ended are misleading; planned rename
+ *       to @c signed / @c offset — see @c .cursor/plans/adc16_diff_pos_mode_rename.plan.md.
+ */
 typedef enum {
+    /** POS_MODE=0: signed -32768..+32767; output 0 when master and slave ADC results are equal (zero differential). */
     adc16_diff_pos_mode_differential = 0,
+    /** POS_MODE=1: offset binary 0..65535; output 32768 when master and slave ADC results are equal (zero differential). */
     adc16_diff_pos_mode_single_ended
 } adc16_diff_pos_mode_t;
 #endif
@@ -128,8 +156,20 @@ typedef struct {
     uint32_t adc_clk_div;
     bool port3_realtime;
     bool wait_dis;
+#if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     bool sel_sync_ahb;
+#endif
+    /**
+     * @deprecated Since HPM SDK v1.12.0. Ignored: @ref adc16_init sets ADC_CFG0 ADC_AHB_EN from @c conv_mode (enabled for sequence and preemption, disabled for oneshot and period).
+     */
     bool adc_ahb_en;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+    /**
+     * If true, sequence-mode DMA writes one 16-bit conversion result per sample (no packed cycle bit/sequence num /channel flags).
+     * See User Manual DMA_SEQ16BIT.
+     */
+    bool dma_seq16bit;
+#endif
 } adc16_config_t;
 
 /** @brief ADC16 channel configuration struct. */
@@ -137,9 +177,17 @@ typedef struct {
    uint8_t ch;
    uint16_t thshdh;
    uint16_t thshdl;
+  /** If true, threshold/sample are applied for watchdog. When ADC16_SOC_WDOG_INT_EN_DEFERRED is set for the SoC, INT_EN is not set in adc16_init_channel. Call adc16_enable_wdog_interrupt() after in-window conversion(s). */
    bool wdog_int_en;
    uint8_t sample_cycle_shift;
    uint32_t sample_cycle;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+   /**
+    * Oversampling loop exponent n: repeat count is 2^n (0 = once). Max n is ADC16_SOC_ADC_LOOP_MAX_EXP; see SAMPLE_CFG.ADC_LOOP;
+    * conversion time scales as (convert_clock_number + sample_clock_number) * 2^n.
+    */
+   uint8_t adc_loop_exp;
+#endif
 } adc16_channel_config_t;
 
 /** @brief ADC16 channel configuration struct. */
@@ -149,11 +197,29 @@ typedef struct {
    uint16_t thshdl;
 } adc16_channel_threshold_t;
 
-/** @brief ADC16 DMA configuration struct. */
+/**
+ * @brief ADC16 sequence-mode DMA: base address in @c start_addr and length in the union.
+ *        Whichever form applies is determined by @c DMA_SEQ16BIT in @c ADC_CFG0 when the feature exists:
+ *        use @c buff_len_in_4bytes for 32b packed output, or @c buff_len_in_2bytes for 16b-only output. In
+ *        both cases the value is the same meaning as the IP’s @c (BUF_LEN+1) in that data width: count of
+ *        32b buffer slots, or count of 16b halfwords, respectively. See @ref adc16_init_seq_dma.
+ */
 typedef struct {
     uint32_t *start_addr;
-    uint32_t buff_len_in_4bytes;
+    union {
+        /** 32b packed path (@c DMA_SEQ16BIT=0): @c (BUF_LEN+1) in whole 32b words. Each word is one @ref adc16_seq_dma_data_t (one sample). */
+        uint32_t buff_len_in_4bytes;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+        /**
+         * 16b path (@c DMA_SEQ16BIT=1): @c (BUF_LEN+1) in 16b halfwords.
+         * Each sample is a raw 16b value only, not an @ref adc16_seq_dma_data_t (no channel number, sequence number, or cycle bit packed in one 32b word).
+         */
+        uint32_t buff_len_in_2bytes;
+#endif
+    };
+    /** DMA write index threshold in @c SEQ_DMA_CFG / @c SEQ_HIGH_CFG (applied regardless of @c stop_en). */
     uint32_t stop_pos;
+    /** @c SEQ_DMA_CFG STOP_EN only: stop DMA when write pointer reaches @c stop_pos. */
     bool stop_en;
 } adc16_dma_config_t;
 
@@ -232,7 +298,9 @@ typedef struct {
 #if defined(HPM_IP_FEATURE_ADC16_HAS_DIFF_MODE) && HPM_IP_FEATURE_ADC16_HAS_DIFF_MODE
 /** @brief ADC16 differential configuration struct. */
 typedef struct {
+    /** CONV_CFG0 FULL_RESOLUTION: clamp algebraic diff < 0 to 0 when set; HW ignores POS_MODE when set. */
     uint8_t full_resolution;
+    /** CONV_CFG0 POS_MODE: @ref adc16_diff_pos_mode_t result code format; effective only when @c full_resolution is 0. */
     uint8_t position_mode;
     bool    master;
 } adc16_diff_config_t;
@@ -285,7 +353,7 @@ hpm_stat_t adc16_deinit(ADC16_Type *ptr);
  * @brief Initialize an ADC16 instance.
  *
  * @param[in] ptr An ADC16 peripheral base address.
- * @param[in] config A pointer to the configuration struct of @ref adc16_config_t.
+ * @param[in] config A pointer to the configuration struct of @ref adc16_config_t. @ref adc16_init programs ADC_AHB_EN from @c conv_mode; the struct field @c adc_ahb_en is deprecated and ignored.
  * @return A result of initializing an ADC16 instance.
  * @retval status_success Initialize an ADC16 instance successfully. Please refer to @ref hpm_stat_t.
  * @retval status_invalid_argument Initialize an ADC16 instance unsuccessfully due to passing one or more invalid arguments. Please refer to @ref hpm_stat_t.
@@ -302,6 +370,28 @@ hpm_stat_t adc16_init(ADC16_Type *ptr, adc16_config_t *config);
  * @retval status_invalid_argument Initialize an ADC16 channel unsuccessfully due to passing one or more invalid arguments. Please refer to @ref hpm_stat_t.
  */
 hpm_stat_t adc16_init_channel(ADC16_Type *ptr, adc16_channel_config_t *config);
+
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+/**
+ * @brief Set per-channel ADC loop exponent for oversampling (SAMPLE_CFG.ADC_LOOP).
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ * @param[in] ch An ADC16 channel number.
+ * @param[in] adc_loop_exponent exponent n for 2^n repeat loops; 0 = single pass; n must be <= ADC16_SOC_ADC_LOOP_MAX_EXP.
+ * @return status_success or status_invalid_argument if channel or exponent is out of range.
+ */
+hpm_stat_t adc16_set_channel_adc_loop(ADC16_Type *ptr, uint8_t ch, uint8_t adc_loop_exponent);
+#endif
+
+/**
+ * @brief Read per-channel ADC loop exponent (SAMPLE_CFG.ADC_LOOP) when IP supports ADC_LOOP.
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ * @param[in] ch An ADC16 channel number.
+ * @param[out] adc_loop_exponent n where repeat count is 2^n; set to 0 when IP has no ADC_LOOP.
+ * @return status_success or status_invalid_argument.
+ */
+hpm_stat_t adc16_get_channel_adc_loop(ADC16_Type *ptr, uint8_t ch, uint8_t *adc_loop_exponent);
 
 /**
  * @brief Get thresholds of an ADC16 channel
@@ -473,15 +563,55 @@ static inline void adc16_init_pmt_dma(ADC16_Type *ptr, uint32_t addr)
 }
 
 /**
- * @brief Configure the start address of DMA write operation for the sequence mode.
+ * @brief Configure sequence-mode DMA (start address and @c BUF_LEN / high length if present).
+ *        Use @c buff_len_in_2bytes when @c DMA_SEQ16BIT is set, else @c buff_len_in_4bytes (same union storage, @ref adc16_dma_config_t).
+ *        Clears the buffer first: @c buff_len_in_2bytes*2 bytes in the 16b path, @c buff_len_in_4bytes*4 bytes in the 32b packed path.
  *
  * @param[in] ptr An ADC16 peripheral base address.
  * @param[in] config A pointer to configuration struct of @ref adc16_dma_config_t.
  * @return An implementation result of DMA initializing for the sequence mode
- * @retval status_success ADC16 initialize in sequence mode successfully. Please refert to @ref hpm_stat_t.
- * @retval status_invalid_argument ADC16 initialize in sequence mode unsuccessfully due to passing invalid arguments. Please refert to @ref hpm_stat_t.
+ * @retval status_success ADC16 initialize in sequence mode successfully. Please refer to @ref hpm_stat_t.
+ * @retval status_invalid_argument ADC16 initialize in sequence mode unsuccessfully due to passing invalid arguments. Please refer to @ref hpm_stat_t.
  */
 hpm_stat_t adc16_init_seq_dma(ADC16_Type *ptr, adc16_dma_config_t *config);
+
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+/**
+ * @brief Enable 16-bit DMA data width in sequence mode (DMA_SEQ16BIT in ADC_CFG0).
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ */
+static inline void adc16_enable_seq_dma_16bit(ADC16_Type *ptr)
+{
+    ptr->ADC_CFG0 |= ADC16_ADC_CFG0_DMA_SEQ16BIT_MASK;
+}
+
+/**
+ * @brief Disable 16-bit DMA data width in sequence mode (use default width).
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ */
+static inline void adc16_disable_seq_dma_16bit(ADC16_Type *ptr)
+{
+    ptr->ADC_CFG0 &= ~ADC16_ADC_CFG0_DMA_SEQ16BIT_MASK;
+}
+#endif
+
+/**
+ * @brief Return whether 16-bit sequence-mode DMA is enabled (DMA_SEQ16BIT in ADC_CFG0).
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ * @retval true if DMA_SEQ16BIT is set on IPs that support it; always false otherwise.
+ */
+static inline bool adc16_is_seq_dma_16bit_enabled(ADC16_Type *ptr)
+{
+#if defined(HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT) && HPM_IP_FEATURE_ADC16_HAS_DMA_SEQ16BIT
+    return ADC16_ADC_CFG0_DMA_SEQ16BIT_GET(ptr->ADC_CFG0) != 0U;
+#else
+    (void) ptr;
+    return false;
+#endif
+}
 
 /** @} */
 
@@ -617,6 +747,24 @@ static inline void adc16_enable_interrupts(ADC16_Type *ptr, uint32_t mask)
 static inline void adc16_disable_interrupts(ADC16_Type *ptr, uint32_t mask)
 {
     ptr->INT_EN &= ~mask;
+}
+
+/**
+ * @brief Enable watchdog interrupt after a valid in-window conversion has completed (per User Manual/silicon).
+ *
+ * @param[in] ptr An ADC16 peripheral base address.
+ * @param[in] wdog_ch_mask Bit mask of physical channel indices (bits 0..15); each bit is INT_STS/INT_EN WDOG for that channel.
+ *
+ * @note Call only after the corresponding channel(s) have completed a conversion with the result
+ *       inside the programmed threshold window; otherwise RW1C clear of WDOG in INT_STS may not
+ *       clear the latched state. Typical use: one call per channel bit after priming conversions.
+ */
+static inline void adc16_enable_wdog_interrupt(ADC16_Type *ptr, uint32_t wdog_ch_mask)
+{
+    uint32_t m = wdog_ch_mask & ADC16_INT_STS_WDOG_MASK;
+
+    ptr->INT_STS = m;
+    ptr->INT_EN |= m;
 }
 
 /** @} */

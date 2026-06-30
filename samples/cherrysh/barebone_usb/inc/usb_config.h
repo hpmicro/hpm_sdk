@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2022, sakumisu
- * Copyright (c) 2022-2025, HPMicro
+ * Copyright (c) 2022-2026, HPMicro
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -45,7 +45,6 @@
 #define USBD_VID           0x34B7 /* HPMicro VID */
 #define USBD_PID           0xFFFF
 #define USBD_MAX_POWER     200
-#define USBD_LANGID_STRING 1033
 
 /* attribute data into no cache ram */
 #define USB_NOCACHE_RAM_SECTION __attribute__((section(".noncacheable.non_init")))
@@ -75,9 +74,6 @@
 
 /* Enable test mode */
 #define CONFIG_USBDEV_TEST_MODE
-
-/* enable advance desc register api */
-/* #define CONFIG_USBDEV_ADVANCE_DESC */
 
 /* move ep0 setup handler from isr to thread */
 /* #define CONFIG_USBDEV_EP0_THREAD */
@@ -175,7 +171,7 @@
 #define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 2
 #define CONFIG_USBHOST_MAX_ENDPOINTS        8
 
-#define CONFIG_USBHOST_MAX_CDC_ACM_CLASS 4
+#define CONFIG_USBHOST_MAX_SERIAL_CLASS  4
 #define CONFIG_USBHOST_MAX_HID_CLASS     4
 #define CONFIG_USBHOST_MAX_MSC_CLASS     2
 #define CONFIG_USBHOST_MAX_AUDIO_CLASS   1
@@ -204,6 +200,10 @@
 
 #ifndef CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT
 #define CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT 500
+#endif
+
+#ifndef CONFIG_USBHOST_SERIAL_RX_SIZE
+#define CONFIG_USBHOST_SERIAL_RX_SIZE 2048
 #endif
 
 #ifndef CONFIG_USBHOST_MSC_TIMEOUT
@@ -265,6 +265,9 @@
 #define CONFIG_USBHOST_BLUETOOTH_RX_SIZE 2048
 #endif
 
+#define CONFIG_USBHOST_PLATFORM_CDC_ECM
+#define CONFIG_USBHOST_PLATFORM_CDC_RNDIS
+
 /* ================ USB Device Port Configuration ================*/
 #define CONFIG_USBDEV_MAX_BUS USB_SOC_MAX_COUNT
 
@@ -283,6 +286,14 @@
 #endif
 #ifndef CONFIG_HPM_USBH_IRQn
 #define CONFIG_HPM_USBH_IRQn IRQn_USB0
+#endif
+
+/* ================ USB Otg Port Configuration ==================*/
+#ifndef CONFIG_HPM_USBOTG_BASE
+#define CONFIG_HPM_USBOTG_BASE HPM_USB0_BASE
+#endif
+#ifndef CONFIG_HPM_USBOTG_IRQn
+#define CONFIG_HPM_USBOTG_IRQn IRQn_USB0
 #endif
 
 /* ================ EHCI Configuration ================ */

@@ -14,7 +14,11 @@
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
 #include "hpm_mtgv2_drv.h"
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#include "hpm_gptmrv2_drv.h"
+#else
 #include "hpm_gptmr_drv.h"
+#endif
 
 #ifndef APP_QEIV2_BASE
 #define APP_QEIV2_BASE BOARD_BLDC_QEIV2_BASE

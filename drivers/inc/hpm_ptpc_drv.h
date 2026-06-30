@@ -14,7 +14,7 @@
 /**
  * @brief PTPC driver
  * @defgroup ptpc_interface PTPC driver APIs
- * @ingroup timer_interfaces Timers
+ * @ingroup timer_interfaces
  * @{
  */
 

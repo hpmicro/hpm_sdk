@@ -63,7 +63,7 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
 
 - UART引脚 可用于modbus rtu工程
 
-  UART2用于一些使用UART的功能测试，例如USB_CDC_ACM_UART等。
+  UART2用于一些使用UART的功能测试，例如MICROROS_UART, USB_CDC_ACM_UART等。
 
 .. list-table::
    :header-rows: 1
@@ -134,7 +134,7 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
      - 备注
    * - GPTMR0.CAPT_0
      - P1[3]
-     -
+     - SENT解码输入引脚（空闲高低电平共用同一引脚）
    * - GPTMR0.COMP_0
      - P1[5]
      - SPI模拟I2S的BLCK
@@ -193,7 +193,7 @@ HPM5300EVK提供了一系列HPM5300系列微控制器特色外设的接口，包
    * - CAN_H
      - J9[3]
 
-- PLB Pusle输出引脚
+- PLB Pulse输出引脚
 
 .. list-table::
    :header-rows: 1

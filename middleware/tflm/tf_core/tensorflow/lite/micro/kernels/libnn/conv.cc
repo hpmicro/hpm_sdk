@@ -1,6 +1,6 @@
 /* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
    Copyright 2022 Andes Technology Corporation. All rights reserved.
-   Copyright (c) 2022 HPMicro
+   Copyright (c) 2022-2026 HPMicro
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/quantization_util.h"
 #include "tensorflow/lite/kernels/internal/reference/conv.h"
 #include "tensorflow/lite/kernels/internal/reference/integer_ops/conv.h"
-#include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
-#include "tensorflow/lite/kernels/padding.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -54,22 +53,25 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
       *(static_cast<const TfLiteConvParams*>(node->builtin_data));
   OpData* data = static_cast<OpData*>(node->user_data);
 
-  const TfLiteTensor* input = GetInput(context, node, kConvInputTensor);
+  MicroContext* micro_context = GetMicroContext(context);
+
+  TfLiteTensor* input =
+      micro_context->AllocateTempInputTensor(node, kConvInputTensor);
   TF_LITE_ENSURE(context, input != nullptr);
-  const TfLiteTensor* filter = GetInput(context, node, kConvWeightsTensor);
+  TfLiteTensor* filter =
+      micro_context->AllocateTempInputTensor(node, kConvWeightsTensor);
   TF_LITE_ENSURE(context, filter != nullptr);
-  const TfLiteTensor* output = GetOutput(context, node, kConvOutputTensor);
+  TfLiteTensor* output =
+      micro_context->AllocateTempOutputTensor(node, kConvOutputTensor);
   TF_LITE_ENSURE(context, output != nullptr);
 
-  RuntimeShape input_shape = GetTensorShape(input);
-  RuntimeShape output_shape = GetTensorShape(output);
-
-  int input_width = input->dims->data[2];
-  int input_height = input->dims->data[1];
-  int filter_width = filter->dims->data[2];
-  int filter_height = filter->dims->data[1];
-  int output_width = output->dims->data[2];
-  int output_height = output->dims->data[1];
+  const int input_width = input->dims->data[2];
+  const int input_height = input->dims->data[1];
+  const int input_depth = input->dims->data[3];
+  const int filter_width = filter->dims->data[2];
+  const int filter_height = filter->dims->data[1];
+  const int output_width = output->dims->data[2];
+  const int output_height = output->dims->data[1];
 
   if (input->type == kTfLiteInt8) {
     const int num_channels = filter->dims->data[kConvQuantizedDimension];
@@ -89,22 +91,22 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   if (input->type == kTfLiteInt8) {
      if ((data->reference_op_data.padding.width == 0) &&
          (data->reference_op_data.padding.height == 0) &&
-         (input_shape.Dims(3) % 4 == 0) &&
+         (input_depth % 4 == 0) &&
          (params.stride_width == 1) &&
          (params.stride_height == 1) &&
          (filter_width == 1) &&
          (filter_height == 1)) {
-        buf_size =hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(input_shape.Dims(3));
+        buf_size =hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any_get_buffer_size(input_depth);
      }
      else if ((output_height == 1) &&
              (input_height == 1) &&
              (filter_height == 1) &&
              (output_width % 4 == 0) &&
-             (MatchingDim(input_shape, 0, output_shape, 0) == 1)) {
-        buf_size =hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(input_shape.Dims(3), filter_width, filter_height);
+             (input->dims->data[0] == 1)) {
+        buf_size =hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(input_depth, filter_width, filter_height);
      }
      else {
-        buf_size =hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(input_shape.Dims(3), filter_width, filter_height);
+        buf_size =hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any_get_buffer_size(input_depth, filter_width, filter_height);
      }
      if (buf_size > 0) {
        TF_LITE_ENSURE_STATUS(context->RequestScratchBufferInArena(
@@ -114,8 +116,12 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
      }
   }
 
+  micro_context->DeallocateTempTfLiteTensor(input);
+  micro_context->DeallocateTempTfLiteTensor(filter);
+  micro_context->DeallocateTempTfLiteTensor(output);
+
   return kTfLiteOk;
-}  // namespace conv
+}
 
 TfLiteStatus EvalQuantizedPerChannel(
     TfLiteContext* context, TfLiteNode* node, const TfLiteConvParams& params,
@@ -175,88 +181,65 @@ TfLiteStatus EvalQuantizedPerChannel(
       const int output_ch = MatchingDim(filter_shape, 0, output_shape, 3);
 
       if ((data.reference_op_data.padding.width == 0) &&
-         (data.reference_op_data.padding.height == 0) &&
-         (input_shape.Dims(3) % 4 == 0) &&
-         (params.stride_width == 1) &&
-         (params.stride_height == 1) &&
-         (filter_width == 1) &&
-         (filter_height == 1)) {
-hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
-	         tflite::micro::GetTensorData<int8_t>(input),
-                 input_width,
-                 input_height,
-                 input_ch,
-                 input_batches,
-                 tflite::micro::GetTensorData<int8_t>(filter),
-                 output_ch,
-                 op_params.padding_values.width,
-                 op_params.padding_values.height,
-                 params.stride_width,
-                 params.stride_height,
-                 tflite::micro::GetTensorData<int32_t>(bias),
-                 tflite::micro::GetTensorData<int8_t>(output),
-                 data.reference_op_data.per_channel_output_shift,
-                 data.reference_op_data.per_channel_output_multiplier,
-                 op_params.output_offset,
-                 op_params.input_offset,
-                 op_params.quantized_activation_min,
-                 op_params.quantized_activation_max,
-                 output_width,
-                 output_height,
-                 buffer_a);
-      }
-      else if ((output_height == 1) &&
-             (input_height == 1) &&
-             (filter_height == 1) &&
-             (output_width % 4 == 0) &&
-             (MatchingDim(input_shape, 0, output_shape, 0) == 1)) {
-hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
-		     tflite::micro::GetTensorData<int8_t>(input),
-                     input_width,
-                     input_ch,
-                     input_batches,
-                     tflite::micro::GetTensorData<int8_t>(filter),
-                     output_ch,
-                     filter_width,
-                     op_params.padding_values.width,
-                     params.stride_width,
-                     tflite::micro::GetTensorData<int32_t>(bias),
-                     tflite::micro::GetTensorData<int8_t>(output),
-                     data.reference_op_data.per_channel_output_shift,
-                     data.reference_op_data.per_channel_output_multiplier,
-                     op_params.output_offset,
-                     op_params.input_offset,
-                     op_params.quantized_activation_min,
-                     op_params.quantized_activation_max,
-                     output_width,
-                     buffer_a);
-      }
-      else {
-hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(
-	      tflite::micro::GetTensorData<int8_t>(input),
-              input_width,
-              input_height,
-              input_ch,
-              input_batches,
+          (data.reference_op_data.padding.height == 0) &&
+          (input_shape.Dims(3) % 4 == 0) &&
+          (params.stride_width == 1) &&
+          (params.stride_height == 1) &&
+          (filter_width == 1) &&
+          (filter_height == 1)) {
+          hpm_nn_conv_1x1_HWC_s8_s8_s8_asym_bias_fast_any(
+              tflite::micro::GetTensorData<int8_t>(input),
+              input_width, input_height, input_ch, input_batches,
               tflite::micro::GetTensorData<int8_t>(filter),
               output_ch,
-              filter_width,
-              filter_height,
               op_params.padding_values.width,
               op_params.padding_values.height,
-              params.stride_width,
-              params.stride_height,
+              params.stride_width, params.stride_height,
               tflite::micro::GetTensorData<int32_t>(bias),
               tflite::micro::GetTensorData<int8_t>(output),
               data.reference_op_data.per_channel_output_shift,
               data.reference_op_data.per_channel_output_multiplier,
-              op_params.output_offset,
-              op_params.input_offset,
+              op_params.output_offset, op_params.input_offset,
               op_params.quantized_activation_min,
               op_params.quantized_activation_max,
-              output_width,
-              output_height,
-              buffer_a);
+              output_width, output_height, buffer_a);
+      } else if ((output_height == 1) &&
+                 (input_height == 1) &&
+                 (filter_height == 1) &&
+                 (output_width % 4 == 0) &&
+                 (MatchingDim(input_shape, 0, output_shape, 0) == 1)) {
+          hpm_nn_conv_1xn_HWC_s8_s8_s8_asym_bias_any(
+              tflite::micro::GetTensorData<int8_t>(input),
+              input_width, input_ch, input_batches,
+              tflite::micro::GetTensorData<int8_t>(filter),
+              output_ch, filter_width,
+              op_params.padding_values.width,
+              params.stride_width,
+              tflite::micro::GetTensorData<int32_t>(bias),
+              tflite::micro::GetTensorData<int8_t>(output),
+              data.reference_op_data.per_channel_output_shift,
+              data.reference_op_data.per_channel_output_multiplier,
+              op_params.output_offset, op_params.input_offset,
+              op_params.quantized_activation_min,
+              op_params.quantized_activation_max,
+              output_width, buffer_a);
+      } else {
+          hpm_nn_conv_HWC_s8_s8_s8_asym_bias_any(
+              tflite::micro::GetTensorData<int8_t>(input),
+              input_width, input_height, input_ch, input_batches,
+              tflite::micro::GetTensorData<int8_t>(filter),
+              output_ch, filter_width, filter_height,
+              op_params.padding_values.width,
+              op_params.padding_values.height,
+              params.stride_width, params.stride_height,
+              tflite::micro::GetTensorData<int32_t>(bias),
+              tflite::micro::GetTensorData<int8_t>(output),
+              data.reference_op_data.per_channel_output_shift,
+              data.reference_op_data.per_channel_output_multiplier,
+              op_params.output_offset, op_params.input_offset,
+              op_params.quantized_activation_min,
+              op_params.quantized_activation_max,
+              output_width, output_height, buffer_a);
       }
   }
 
@@ -322,8 +305,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       break;
     }
     default:
-      TF_LITE_KERNEL_LOG(context, "Type %s (%d) not supported.",
-                         TfLiteTypeGetName(input->type), input->type);
+      MicroPrintf("Type %s (%d) not supported.",
+                  TfLiteTypeGetName(input->type), input->type);
       return kTfLiteError;
   }
   return kTfLiteOk;
@@ -331,15 +314,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace
 
-TfLiteRegistration Register_CONV_2D() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_CONV_2D() {
+  return tflite::micro::RegisterOp(Init, Prepare, Eval);
 }
 
 }  // namespace tflite

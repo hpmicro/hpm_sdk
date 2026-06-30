@@ -9,8 +9,12 @@ to help users evaluate HPMicro products and build up their application efficient
 
 
 See the [hpmicro.com](https://www.hpmicro.com) site for more
-information about HPMicro 
+information about HPMicro
 
 ## Licensing
 
 HPM SDK is permissively licensed using the BSD 3-clause license.
+
+## SDK API Reference
+
+See **Topics** for the complete SDK API reference organized by peripheral category.

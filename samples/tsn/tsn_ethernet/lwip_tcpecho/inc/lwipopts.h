@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,12 +20,28 @@
 #define LWIP_RAW                1
 #define LWIP_IPV4               1
 #define LWIP_TIMERS             1
-#define LWIP_NETIF_TX_SINGLE_PBUF 1
 /**
  * NO_SYS==1: Provides VERY minimal functionality. Otherwise,
  * use lwIP facilities.
  */
 #define NO_SYS                  1
+
+/* Netif IP MTU (extended/jumbo: set via CMake). ethernetif.c uses TSW_NETIF_MTU via lwip/opt.h. */
+#if defined(TSW_LWIP_EXTENDED_MTU_ENABLE) && TSW_LWIP_EXTENDED_MTU_ENABLE
+#ifndef TSW_NETIF_MTU
+#define TSW_NETIF_MTU                   1800
+#endif
+#else
+#ifndef TSW_NETIF_MTU
+#define TSW_NETIF_MTU                   1500
+#endif
+#endif
+
+#if TSW_NETIF_MTU > 1500
+#define LWIP_NETIF_TX_SINGLE_PBUF       0
+#else
+#define LWIP_NETIF_TX_SINGLE_PBUF       1
+#endif
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
@@ -35,12 +51,12 @@
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE               (48*1024)
+#define MEM_SIZE                        (48 * 1024)
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
    should be set high. */
-#define MEMP_NUM_PBUF          50
+#define MEMP_NUM_PBUF                   50
 /* MEMP_NUM_UDP_PCB: the number of UDP protocol control blocks. One
    per active UDP "connection". */
 #define MEMP_NUM_UDP_PCB        6
@@ -49,18 +65,18 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCP_PCB        10
 /* MEMP_NUM_TCP_PCB_LISTEN: the number of listening TCP
    connections. */
-#define MEMP_NUM_TCP_PCB_LISTEN 5
+#define MEMP_NUM_TCP_PCB_LISTEN 1
 /* MEMP_NUM_TCP_SEG: the number of simultaneously queued TCP
-   segments. */
-#define MEMP_NUM_TCP_SEG        40
-/* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
+   segments. Expanded after TCP_SND_QUEUELEN below. */
+#define MEMP_NUM_TCP_SEG        TCP_SND_QUEUELEN
+/* MEMP_NUM_SYS_TIMEOUT: the number of simultaneously active
    timeouts. */
 #define MEMP_NUM_SYS_TIMEOUT    10
 
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
-#define PBUF_POOL_SIZE          20
+#define PBUF_POOL_SIZE                  20
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE       1600
@@ -74,19 +90,14 @@ a lot of data that needs to be copied, this should be set high. */
    order. Define to 0 if your device is low on memory. */
 #define TCP_QUEUE_OOSEQ         0
 
-/* TCP Maximum segment size. */
-#define TCP_MSS                 (1500 - 40)	  /* TCP_MSS = (Ethernet MTU - IP header size - TCP header size) */
+#define TCP_MSS                         (TSW_NETIF_MTU - 40)
 
-/* TCP sender buffer space (bytes). */
-#define TCP_SND_BUF             (20*TCP_MSS)
+/* TCP_SND_BUF / TCP_WND: largest MSS-multiple within PBUF pool (lwIP sanity). */
+#define TCP_SND_BUF                     ((PBUF_POOL_SIZE * (PBUF_POOL_BUFSIZE - 54) / TCP_MSS) * TCP_MSS)
+#define TCP_WND                         TCP_SND_BUF
 
-/*  TCP_SND_QUEUELEN: TCP sender buffer space (pbufs). This must be at least
-  as much as (2 * TCP_SND_BUF/TCP_MSS) for things to work. */
-
-#define TCP_SND_QUEUELEN        (2* TCP_SND_BUF/TCP_MSS)
-
-/* TCP receive window. */
-#define TCP_WND                 (20*TCP_MSS)
+/* TCP_SND_QUEUELEN must be at least 2 * TCP_SND_BUF / TCP_MSS */
+#define TCP_SND_QUEUELEN                (2 * TCP_SND_BUF / TCP_MSS)
 
 
 /* ---------- ICMP options ---------- */

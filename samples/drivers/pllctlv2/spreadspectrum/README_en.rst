@@ -41,6 +41,6 @@ When the project runs correctly, the serial port terminal will output the follow
 .. code-block:: console
 
    PLLCTLV2 spread spectrum example
-   PLL2CLK0 @ 80000000Mhz spread spectrum has been enabled with range 0.5% @ 30000Hz, which can be observed on "J20[7]" pin by the oscilloscope
+   PLL2CLK0 @ 80000000Hz spread spectrum has been enabled with range 0.5% @ 30000Hz, which can be observed on "J20[7]" pin by the oscilloscope
 
    PLLCTLV2 spread spectrum example finished

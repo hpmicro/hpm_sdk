@@ -16,8 +16,20 @@ Console information printing
 
 By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UART0.RXD (J3.38) externally through the USB to serial port tool.
 
-.. list-table:: Boot Switch
-   :widths: 20 80
+Boot Switch
+-----------
+
+- The KEY&BOOT button controls the boot switch
+
+  - By default, the board boots from flash
+  - To enter ISP boot mode, follow these steps:
+
+    1. Press reset
+    2. Press key
+    3. Release reset
+    4. Release key
+
+.. list-table::
    :header-rows: 1
 
    * - KEY
@@ -32,8 +44,7 @@ By default, UART0 is used for console printing. Connect UART0.TXD (J3.36) and UA
 Button
 ------
 
-.. list-table:: Button
-   :widths: 20 80
+.. list-table::
    :header-rows: 1
 
    * - Name
@@ -48,12 +59,11 @@ Button
 Pin Description
 ---------------
 
-- **UART Pin**: modbus_rtu sample
+- UART Pin: modbus_rtu sample
   - The UART0 used for debugger console or some functional testing using UART
-  - The UART3 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
+  - The UART3 is used for some functional testing using UART, such as USB_CDC_ACM_UART, MODBUS_RTU etc.
 
-.. list-table:: UART Pin
-   :widths: 20 20 60
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -75,10 +85,9 @@ Pin Description
      - J3[24]
      - generate uart break signal
 
-- **SPI Pin**:
+- SPI Pin:
 
-.. list-table:: SPI Pin
-   :widths: 50 50
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -92,10 +101,9 @@ Pin Description
    * - SPI1.MOSI
      - J3[19]
 
-- **I2C Pin**:
+- I2C Pin:
 
-.. list-table:: I2C Pin
-   :widths: 50 50
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -105,10 +113,9 @@ Pin Description
    * - I2C3.SDA
      - J3[27]
 
-- **ACMP Pin**:
+- ACMP Pin:
 
-.. list-table:: ACMP Pin
-   :widths: 50 50
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -118,10 +125,9 @@ Pin Description
    * - ACMP.COMP_1
      - J3[3]
 
-- **ADC16 Pin**:
+- ADC16 Pin:
 
-.. list-table:: ADC16 Pin
-   :widths: 50 50
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -131,15 +137,14 @@ Pin Description
    * - ADC1.INA1
      - J3[3]
 
-- **TinyUF2 Pin**:
+- TinyUF2 Pin:
 
   .. note::
 
      - PA9 connect GND, and press reset, board enter DFU mode, then PA9 connect 3.3V, drag app to U disk, will download app and enter app directly if successfully;
      - PA9 connect 3.3V, and press reset, board enter bootloader mode, if flash has the valid app, will directly enter app;
 
-.. list-table:: TinyUF2 Pin
-   :widths: 50 50
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -147,10 +152,9 @@ Pin Description
    * - TinyUF2 Button
      - J3[32]
 
-- **GPTMR Pin**:
+- GPTMR Pin:
 
-.. list-table:: GPTMR Pin
-   :widths: 20 20 60
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -158,7 +162,7 @@ Pin Description
      - Remark
    * - GPTMR0.CAPT_1
      - J3[3]
-     -
+     - SENT decode input pin (idle low level)
    * - GPTMR0.COMP_1
      - J3[5]
      -
@@ -170,12 +174,14 @@ Pin Description
      - LRCK of i2s emulation
    * - GPTMR1.COMP_1
      - J3[7]
-     - MLCK of i2s emulation
+     - MCLK of i2s emulation
+   * - GPTMR0.CAPT_2
+     - J3[11]
+     - SENT decode input pin (idle high level)
 
-- **CS Pin of i2s emulation**
+- CS Pin of i2s emulation
 
-.. list-table:: CS Pin of i2s emulation
-   :widths: 20 20 60
+.. list-table::
    :header-rows: 1
 
    * - Function
@@ -187,13 +193,13 @@ Pin Description
 
 - CLOCK REF Pin
 
-  .. list-table::
-     :header-rows: 1
+.. list-table::
+   :header-rows: 1
 
-     * - Function
-       - Position
-     * - PA09
-       - J3[32]
+   * - Function
+     - Position
+   * - PA09
+     - J3[32]
 
 - ESP-HOSTED Pin
 
@@ -222,4 +228,3 @@ Pin Description
      - Position
    * - PB13
      - J3[28]
-

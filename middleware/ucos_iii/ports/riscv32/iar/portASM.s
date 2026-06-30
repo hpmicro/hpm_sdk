@@ -7,6 +7,9 @@
 
 #include "ucos_risc_v_chip_specific_extensions.h"
 #include "context.h"
+#ifdef CONFIG_SEGGER_SYSVIEW
+#include <os_trace_events_s.h>
+#endif
 #ifndef portasmHANDLE_INTERRUPT
     #error portasmHANDLE_INTERRUPT must be defined to the function to be called to handle external/peripheral interrupts.
 #endif
@@ -34,6 +37,12 @@
     EXTERN  CPU_TS_Setup
     EXTERN  Software_IRQHandler
     EXTERN  ucos_exception_handler
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+    EXTERN OS_TRACE_ISR_SETID_ASM
+    EXTERN OS_TRACE_ISR_ENTER_ASM
+    EXTERN OS_TRACE_ISR_EXIT_ASM
+    EXTERN OS_TRACE_TASK_SWITCHED_IN_ASM
+#endif
 ;********************************************************************************************************
 ;                                               EQUATES
 ;********************************************************************************************************
@@ -129,7 +138,11 @@ software_isr:
 _skip2:
         addi t0, t0, 1
         csrw mscratch, t0
-
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+        la a0, OSTCBHighRdyPtr
+        lw a0, 0(a0)
+        call OS_TRACE_TASK_SWITCHED_IN_ASM
+#endif
         call Software_IRQHandler
 
 #if( portasmHAS_MTIME != 0 )
@@ -179,6 +192,11 @@ test_if_mtimer:                        /* If there is a CLINT then the mtimer is
 _skip1:
         addi t0, t0, 1
         csrw mscratch, t0
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+        li a0, 4007
+        call OS_TRACE_ISR_SETID_ASM
+        call OS_TRACE_ISR_ENTER_ASM
+#endif
         call OSIntEnter
         call OSTimeTick
         call OSIntExit

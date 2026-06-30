@@ -365,24 +365,25 @@ Read Operation
 
     - **Key features**:
 
-        - Supports three read modes:
+        - Supports four read modes:
 
-            - Byte read: Single byte status registers
-            - Word read: 16-bit measurements (voltage/current)
-            - Block read: Large data chunks (logs etc.)
+            - Byte read: single byte status registers, always returns 1 byte
+            - Word read: 16-bit measurements (voltage/current), always returns 2 bytes
+            - Block read (fixed length): uses predefined length from PMBus command table
+            - Block read (variable length, data_length == 0xFFFFFFFF): actual length is
+              determined by the first byte returned from slave. Suitable for manufacturer-specific
+              strings with varying lengths, such as ``PMBUS_CODE_MFR_ID``, ``PMBUS_CODE_MFR_MODEL``,
+              ``PMBUS_CODE_MFR_REVISION``, ``PMBUS_CODE_MFR_LOCATION``
 
-        - Length handling:
+        - Dual semantics of ``len`` parameter:
 
-            - Byte/word: Fixed 1/2 byte returns
-            - Block read:
-
-                - 0xFFFFFFFF: Dynamic length mode (uses caller's len parameter)
-                - Other values: Use predefined length
+            - Input:  capacity of the data buffer in bytes (used for variable-length block read)
+            - Output: actual number of bytes returned by slave device
 
         - Error codes:
 
-            - status_pmbus_not_support_cmd: Unsupported command
-            - status_pmbus_not_transaction_type: Invalid transaction type
+            - ``status_pmbus_not_support_cmd``: Unsupported command type (mfr_defined / extended_command)
+            - ``status_pmbus_not_transaction_type``: Invalid transaction type
 
     - API prototype:
 
@@ -410,26 +411,40 @@ Read Operation
               - PMBus command code
             * - data
               - uint8_t*
-              - Data receive buffer pointer
+              - Buffer to store data read from slave device
             * - len
               - uint32_t*
-              - Input: buffer capacity / Output: actual data length
+              - Input: buffer capacity in bytes (for variable-length block read); Output: actual bytes returned by slave
 
     - Returns:
         - ``status_success``: Operation successful
-        - ``status_pmbus_not_support_cmd``: Unsupported PMBus command
+        - ``status_pmbus_not_support_cmd``: Unsupported PMBus command (mfr_defined / extended_command)
         - ``status_pmbus_not_transaction_type``: Invalid transaction type
+        - other: Error from underlying SMBus layer (e.g. PEC error, I2C timeout)
 
-    - Example: Read output voltage:
+    - Example 1: Read fixed-length output voltage value
 
         .. code-block:: c
 
             /* PMBus initialization omitted */
             uint8_t vout_data[2];
-            uint32_t read_len = 2;
+            uint32_t read_len = sizeof(vout_data);
             hpm_stat_t status = hpm_pmbus_master_read(I2C0, 0x5A, PMBUS_CODE_VOUT_COMMAND, vout_data, &read_len);
             if (status == status_success) {
                 float voltage = (vout_data[0] | (vout_data[1] << 8)) * 0.001; /* Convert to voltage value */
+            }
+
+    - Example 2: Read variable-length manufacturer ID (length varies by manufacturer)
+
+        .. code-block:: c
+
+            /* PMBus initialization omitted */
+            uint8_t mfr_id[32];
+            uint32_t read_len = sizeof(mfr_id); /* Input: buffer capacity */
+            hpm_stat_t status = hpm_pmbus_master_read(I2C0, 0x5A, PMBUS_CODE_MFR_ID, mfr_id, &read_len);
+            if (status == status_success) {
+                /* read_len is updated to actual string length */
+                printf("MFR_ID: %.*s\n", read_len, mfr_id);
             }
 
 Slave Mode

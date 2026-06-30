@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,43 +17,15 @@
 #include "hpm_dmamux_drv.h"
 #include "audio_v2_speaker_sync.h"
 
+static bool i2s_invert_fclk_out;
+
 #if defined(USING_CODEC) && USING_CODEC
-#if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-#include "hpm_wm8960.h"
-wm8960_config_t wm8960_config = {
-    .route = wm8960_route_playback,
-    .left_input = wm8960_input_closed,
-    .right_input = wm8960_input_closed,
-    .play_source = wm8960_play_source_dac,
-    .bus = wm8960_bus_left_justified,
-    .format = { .mclk_hz = 0U, .sample_rate = 0U, .bit_width = 32U },
-    .lrclk_polarity = wm8960_lrclk_polarity_low_for_left_channel,
-};
-
-wm8960_control_t wm8960_control = {
+#include "hpm_codec_common.h"
+/* Static control structure for codec access across multiple functions */
+static codec_control_t s_codec_control = {
     .ptr = CODEC_I2C,
-    .slave_address = WM8960_I2C_ADDR, /* I2C address */
+    .slave_address = BOARD_AUDIO_CODEC_I2C_ADDR,
 };
-#elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
-#include "hpm_sgtl5000.h"
-sgtl_config_t sgtl5000_config = {
-    .route = sgtl_route_playback_record, /*!< Audio data route.*/
-    .bus = sgtl_bus_left_justified,      /*!< Audio transfer protocol */
-    .master = false,                     /*!< Master or slave. True means master, false means slave. */
-    .format = { .mclk_hz = 0,
-                .sample_rate = 0,
-                .bit_width = 32,
-                .sclk_edge = sgtl_sclk_valid_edge_rising }, /*!< audio format */
-    .lrclk_polarity = sgtl_lrclk_polarity_low_for_left_channel,
-};
-
-sgtl_context_t sgtl5000_context = {
-    .ptr = CODEC_I2C,
-    .slave_address = SGTL5000_I2C_ADDR, /* I2C address */
-};
-#else
-#error no specified Audio Codec!!!
-#endif
 #elif defined(USING_DAO) && USING_DAO
 #include "hpm_dao_drv.h"
 dao_config_t dao_config;
@@ -81,7 +53,7 @@ dao_config_t dao_config;
 
 #define AUDIO_ADJUST_MIN_STEP (0x01)
 
-#define BMCONTROL (AUDIO_V2_FU_CONTROL_MUTE | AUDIO_V2_FU_CONTROL_VOLUME)
+#define BMCONTROL (AUDIO_V2_CONTROL_MUTE | AUDIO_V2_CONTROL_VOLUME)
 
 #define OUT_CHANNEL_NUM 2
 #if OUT_CHANNEL_NUM == 1
@@ -111,18 +83,19 @@ dao_config_t dao_config;
 #endif
 
 #define SPEAKER_DMA_CHANNEL 1U
-#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL)
+#define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL)
 
 #define AUDIO_BUFFER_COUNT      32
-#define AUDIO_OUT_PACKET        ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000))
+#define AUDIO_FRAME_SIZE        ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000))
+#define AUDIO_OUT_PACKET        ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000) + (OUT_CHANNEL_NUM * SPEAKER_SLOT_BYTE_SIZE))
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (9 +                                                     \
-                                   AUDIO_V2_AC_DESCRIPTOR_INIT_LEN +                       \
+                                   AUDIO_V2_AC_DESCRIPTOR_LEN +                            \
                                    AUDIO_V2_SIZEOF_AC_CLOCK_SOURCE_DESC +                  \
                                    AUDIO_V2_SIZEOF_AC_INPUT_TERMINAL_DESC +                \
                                    AUDIO_V2_SIZEOF_AC_FEATURE_UNIT_DESC(OUT_CHANNEL_NUM) + \
                                    AUDIO_V2_SIZEOF_AC_OUTPUT_TERMINAL_DESC +               \
-                                   AUDIO_V2_AS_FEEDBACK_DESCRIPTOR_INIT_LEN)
+                                   AUDIO_V2_AS_FEEDBACK_DESCRIPTOR_LEN)
 
 #define AUDIO_AC_SIZ (AUDIO_V2_SIZEOF_AC_HEADER_DESC +                        \
                       AUDIO_V2_SIZEOF_AC_CLOCK_SOURCE_DESC +                  \
@@ -182,7 +155,7 @@ static const char *string_descriptors[] = {
     (const char[]){ 0x09, 0x04 }, /* Langid */
     "HPMicro",                    /* Manufacturer */
     "HPMicro UAC V2 DEMO",        /* Product */
-    "2024061706",                 /* Serial Number */
+    "2026062201",                 /* Serial Number */
 };
 
 static const uint8_t *device_descriptor_callback(uint8_t speed)
@@ -254,7 +227,7 @@ static const uint8_t default_sampling_freq_table[] = {
 
 /* Static Variables */
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_audio_buffer[AUDIO_OUT_PACKET];
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_out_buffer[AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET];
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_out_buffer[AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_feedback_buffer[4];
 static volatile uint32_t s_speaker_i2s_mclk_hz;
 static volatile bool s_speaker_rx_flag;
@@ -357,23 +330,47 @@ void speaker_init_i2s_dao_codec(void)
 
 #if defined(USING_CODEC) && USING_CODEC
 #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
+    wm8960_config_t wm8960_config;
+    wm8960_get_default_config(&wm8960_config);
+
+    /* Override default route for playback only */
     wm8960_config.route = wm8960_route_playback;
     wm8960_config.format.sample_rate = s_speaker_sample_rate;
     wm8960_config.format.bit_width = SPEAKER_AUDIO_DEPTH;
     wm8960_config.format.mclk_hz = s_speaker_i2s_mclk_hz;
     wm8960_config.lrclk_polarity = (i2s_invert_fclk_out) ? wm8960_lrclk_polarity_high_for_left_channel : wm8960_lrclk_polarity_low_for_left_channel;
-    if (wm8960_init(&wm8960_control, &wm8960_config) != status_success) {
+    if (wm8960_init(&s_codec_control, &wm8960_config) != status_success) {
         printf("Init Audio Codec failed\n");
     }
+
 #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
+    sgtl_config_t sgtl5000_config;
+    sgtl_get_default_config(&sgtl5000_config);
+
+    /* Override default route for playback only */
     sgtl5000_config.route = sgtl_route_playback;
     sgtl5000_config.format.sample_rate = s_speaker_sample_rate;
     sgtl5000_config.format.bit_width = SPEAKER_AUDIO_DEPTH;
     sgtl5000_config.format.mclk_hz = s_speaker_i2s_mclk_hz;
     sgtl5000_config.lrclk_polarity = (i2s_invert_fclk_out) ? sgtl_lrclk_polarity_high_for_left_channel : sgtl_lrclk_polarity_low_for_left_channel;
-    if (sgtl_init(&sgtl5000_context, &sgtl5000_config) != status_success) {
+    if (sgtl_init(&s_codec_control, &sgtl5000_config) != status_success) {
         printf("Init Audio Codec failed\n");
     }
+
+#elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
+    es8389_config_t es8389_config;
+    es8389_get_default_config(&es8389_config);
+
+    es8389_config.sample_rate = s_speaker_sample_rate;
+    es8389_config.data_width = SPEAKER_AUDIO_DEPTH;
+    es8389_config.mclk_hz = s_speaker_i2s_mclk_hz;
+    es8389_config.lrclk_polarity = (i2s_invert_fclk_out) ? es8389_lrclk_polarity_high_for_left_channel : es8389_lrclk_polarity_low_for_left_channel;
+    if (es8389_init(&s_codec_control, &es8389_config) != status_success) {
+        printf("Init Audio Codec failed\n");
+    }
+
+#else
+    #error no specified Audio Codec!!!
 #endif
 #elif defined(USING_DAO) && USING_DAO
     dao_get_default_config(HPM_DAO, &dao_config);
@@ -387,15 +384,15 @@ void i2s_enable_dma_irq_with_priority(int32_t priority)
     i2s_enable_tx_dma_request(TARGET_I2S);
     dmamux_config(BOARD_APP_DMAMUX, SPEAKER_DMAMUX_CHANNEL, TARGET_I2S_TX_DMAMUX_SRC, true);
 
-    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, priority);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, priority);
 }
 
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA1_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile uint32_t speaker_status;
 
-    speaker_status = dma_check_transfer_status(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL);
+    speaker_status = dma_check_transfer_status(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL);
     if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
         s_speaker_dma_transfer_done = true;
         speaker_calculate_feedback();
@@ -413,15 +410,15 @@ void audio_v2_task(uint8_t busid)
                 s_speaker_dma_transfer_req = false;
                 speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front], (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000);
                 front += (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000;
-                if (front >= AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) {
-                    front = front - AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET;
+                if (front >= AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE) {
+                    front = front - AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE;
                 }
             } else if (s_speaker_dma_transfer_done) {
                 s_speaker_dma_transfer_done = false;
                 speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front], (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000);
                 front += (s_speaker_sample_rate * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000;
-                if (front >= AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) {
-                    front = front - AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET;
+                if (front >= AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE) {
+                    front = front - AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE;
                 }
             } else {
                 ;    /* Do Nothing */
@@ -488,12 +485,21 @@ void usbd_audio_set_volume(uint8_t busid, uint8_t ep, uint8_t ch, int volume)
 #if defined(USING_CODEC) && USING_CODEC
     #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
         volume = 255 * s_speaker_volume_percent / 100;
-        if (wm8960_set_volume(&wm8960_control, wm8960_module_dac, volume) != status_success) {
+        if (wm8960_set_volume(&s_codec_control, wm8960_module_dac, volume) != status_success) {
             USB_LOG_RAW("set volume Fail!\r\n");
         }
     #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
         volume = SGTL5000_DAC_MAX_VOLUME_VALUE - (SGTL5000_DAC_MAX_VOLUME_VALUE - SGTL5000_DAC_MIN_VOLUME_VALUE) * s_speaker_volume_percent / 100;
-        if (sgtl_set_volume(&sgtl5000_context, sgtl_module_dac, volume) != status_success) {
+        if (sgtl_set_volume(&s_codec_control, sgtl_module_dac, volume) != status_success) {
+            USB_LOG_RAW("set volume Fail!\r\n");
+        }
+    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
+        /* ES8389 volume range: 0-255, where 191 (0xBF) represents 0dB */
+        volume = 255 * s_speaker_volume_percent / 100;
+        if (es8389_set_volume(&s_codec_control, es8389_dac1, volume) != status_success) {
+            USB_LOG_RAW("set volume Fail!\r\n");
+        }
+        if (es8389_set_volume(&s_codec_control, es8389_dac2, volume) != status_success) {
             USB_LOG_RAW("set volume Fail!\r\n");
         }
     #endif
@@ -529,13 +535,20 @@ void usbd_audio_set_mute(uint8_t busid, uint8_t ep, uint8_t ch, bool mute)
 #if defined(USING_CODEC) && USING_CODEC
     #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
         if (s_speaker_mute) {
-            wm8960_set_volume(&wm8960_control, wm8960_module_dac, 0);
+            wm8960_set_volume(&s_codec_control, wm8960_module_dac, 0);
         } else {
             volume = 255 * s_speaker_volume_percent / 100;
-            wm8960_set_volume(&wm8960_control, wm8960_module_dac, volume);
+            wm8960_set_volume(&s_codec_control, wm8960_module_dac, volume);
         }
     #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
-        if (sgtl_set_mute(&sgtl5000_context, sgtl_module_dac, s_speaker_mute) != status_success) {
+        if (sgtl_set_mute(&s_codec_control, sgtl_module_dac, s_speaker_mute) != status_success) {
+            USB_LOG_RAW("set mute Fail!\r\n");
+        }
+    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
+        if (es8389_mute(&s_codec_control, es8389_dac1, s_speaker_mute) != status_success) {
+            USB_LOG_RAW("set mute Fail!\r\n");
+        }
+        if (es8389_mute(&s_codec_control, es8389_dac2, s_speaker_mute) != status_success) {
             USB_LOG_RAW("set mute Fail!\r\n");
         }
     #endif
@@ -575,9 +588,11 @@ void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_f
         if (state == status_success) {
 #if defined(USING_CODEC) && USING_CODEC
     #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-            wm8960_set_data_format(&wm8960_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
+            wm8960_set_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
     #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
-            sgtl_config_data_format(&sgtl5000_context, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
+            sgtl_config_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
+    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
+            es8389_set_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
     #endif
 #endif
             USB_LOG_RAW("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", sampling_freq, s_speaker_i2s_mclk_hz);
@@ -623,12 +638,12 @@ static void usbd_audio_iso_out_callback(uint8_t busid, uint8_t ep, uint32_t nbyt
         for (uint32_t i = 0; i < nbytes; i++) {
             s_speaker_out_buffer[s_speaker_out_buffer_rear] = s_speaker_audio_buffer[i];
             s_speaker_out_buffer_rear++;
-            if (s_speaker_out_buffer_rear >= AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) {
+            if (s_speaker_out_buffer_rear >= AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE) {
                 s_speaker_out_buffer_rear = 0;
             }
         }
 
-        if (!s_speaker_first_calc_feedback && (s_speaker_out_buffer_rear >= ((AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) / 2u))) {
+        if (!s_speaker_first_calc_feedback && (s_speaker_out_buffer_rear >= ((AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE) / 2u))) {
             s_speaker_first_calc_feedback = true;
             s_speaker_play_flag = true;
             s_speaker_dma_transfer_req = true;
@@ -666,6 +681,7 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
     i2s_config.enable_mclk_out = true;
 #endif
     i2s_init(TARGET_I2S, &i2s_config);
+    i2s_invert_fclk_out = i2s_config.invert_fclk_out;
 
     i2s_get_default_transfer_config_for_dao(&transfer);
     transfer.data_line = TARGET_I2S_TX_DATA_LINE;
@@ -688,7 +704,7 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
 
-    dma_default_channel_config(BOARD_APP_XDMA, &ch_config);
+    dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
     ch_config.dst_addr = (uint32_t)&TARGET_I2S->TXD[TARGET_I2S_TX_DATA_LINE];
     ch_config.src_width = DMA_TRANSFER_WIDTH_WORD;
@@ -699,7 +715,7 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.src_burst_size = 0;
 
-    if (status_success != dma_setup_channel(BOARD_APP_XDMA, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
+    if (status_success != dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
     }
 }
@@ -727,15 +743,15 @@ static void speaker_calculate_feedback(void)
         if (s_speaker_out_buffer_rear >= front) {
             s_speaker_out_buffer_used = s_speaker_out_buffer_rear - front;
         } else {
-            s_speaker_out_buffer_used = (AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) + s_speaker_out_buffer_rear - front;
+            s_speaker_out_buffer_used = (AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE) + s_speaker_out_buffer_rear - front;
         }
 
-        if (s_speaker_out_buffer_used >= ((AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) * 5u / 8u)) {
+        if (s_speaker_out_buffer_used >= ((AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE) * 5u / 8u)) {
             s_speaker_feedback_cnt_1++;
             s_speaker_feedback_value -= AUDIO_ADJUST_MIN_STEP;
         }
 
-        if (s_speaker_out_buffer_used <= ((AUDIO_BUFFER_COUNT * AUDIO_OUT_PACKET) * 3u / 8u)) {
+        if (s_speaker_out_buffer_used <= ((AUDIO_BUFFER_COUNT * AUDIO_FRAME_SIZE) * 3u / 8u)) {
             s_speaker_feedback_cnt_2++;
             s_speaker_feedback_value += AUDIO_ADJUST_MIN_STEP;
         }

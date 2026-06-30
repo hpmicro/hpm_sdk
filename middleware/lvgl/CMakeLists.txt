@@ -1,9 +1,10 @@
-# Copyright (c) 2021-2025 HPMicro
+# Copyright (c) 2021-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 file(GLOB_RECURSE LVGL_SRC lvgl/src/*.c)
 sdk_inc(lvgl)
 sdk_src(${LVGL_SRC})
+sdk_inc(lvgl/src/libs/vg_lite_driver/inc)
 
 if(NOT CONFIG_LVGL_CUSTOM_PORTABLE)
     sdk_inc(porting)

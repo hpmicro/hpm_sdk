@@ -1,4 +1,4 @@
-# Copyright (c) 2025 HPMicro
+# Copyright (c) 2025-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -8,7 +8,6 @@ set(CONFIG_EEPROM_EMULATION 1) # using eeprom emulation compenent
 
 # LwIP
 set(CONFIG_LWIP 1)
-set(APP_USE_ENET_PORT_COUNT 1)
 
 if("${HPM_BUILD_TYPE}" STREQUAL "")
     SET(HPM_BUILD_TYPE flash_xip)

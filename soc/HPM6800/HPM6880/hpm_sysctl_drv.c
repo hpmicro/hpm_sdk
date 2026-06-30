@@ -102,7 +102,7 @@ sysctl_monitor_measure_frequency(SYSCTL_Type *ptr, uint8_t monitor_index, monito
     return frequency;
 }
 
-hpm_stat_t sysctl_set_cpu0_entry(SYSCTL_Type *ptr, uint32_t entry)
+hpm_stat_t sysctl_set_cpu0_wakeup_entry(SYSCTL_Type *ptr, uint32_t entry)
 {
     ptr->CPU[0].GPR[0] = entry;
     ptr->CPU[0].GPR[1] = SYSCTL_CPU_RELEASE_KEY(0);

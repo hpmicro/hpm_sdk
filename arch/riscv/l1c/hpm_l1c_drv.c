@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022,2025 HPMicro
+ * Copyright (c) 2021-2022,2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,7 +10,7 @@
 
 
 #define ASSERT_ADDR_SIZE(addr, size) do { \
-                                             assert(address % HPM_L1C_CACHELINE_SIZE == 0); \
+                                             assert(addr % HPM_L1C_CACHELINE_SIZE == 0); \
                                              assert(size % HPM_L1C_CACHELINE_SIZE == 0); \
                                         } while (0)
 

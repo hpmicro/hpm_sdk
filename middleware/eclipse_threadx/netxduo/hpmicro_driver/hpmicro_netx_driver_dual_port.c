@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,7 +9,7 @@
 #include "hpm_common.h"
 #include "hpm_enet_drv.h"
 #include "hpm_enet_phy.h"
-#include "hpm_enet_phy_common.h"
+#include "hpm_enet_phy_adaptive_glue.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_otp_drv.h"
 #include "nx_api.h"
@@ -108,7 +108,22 @@ static VOID _nx_driver_packet_send(NX_IP_DRIVER *driver_req_ptr);
 static VOID _nx_driver_link_enable(NX_IP_DRIVER *driver_req_ptr);
 static VOID _nx_driver_link_disable(NX_IP_DRIVER *driver_req_ptr);
 
-static enet_phy_status_t last_status_eth0, last_status_eth1;
+static enet_phy_status_t last_status_eth0 = {.enet_phy_link = enet_phy_link_unknown};
+static enet_phy_status_t last_status_eth1 = {.enet_phy_link = enet_phy_link_unknown};
+
+static uint8_t _nx_driver_get_enet_port_index(ENET_Type *base)
+{
+    if (base == HPM_ENET0) {
+        return 0;
+    }
+#ifdef HPM_ENET1
+    if (base == HPM_ENET1) {
+        return 1;
+    }
+#endif
+    assert(0);
+    return 0;
+}
 
 void register_nx_ip(NX_IP *ip, ENET_Type *enet, bool is_rgmii, enet_inf_type_t itf)
 {
@@ -145,64 +160,37 @@ ATTR_RAMFUNC NX_DRIVER_INFORMATION *get_info_struct_from_ip_driver(NX_IP *ip)
 
 VOID enet_self_adaptive_port_speed(VOID)
 {
-    enet_phy_status_t status_eth1, status_eth0;
+    enet_phy_adaptive_binding_t binding_eth0 = {
+        .last = &last_status_eth0,
+        .enet_base = enet0_drv_info_p->base,
+        .phy_port = _nx_driver_get_enet_port_index(enet0_drv_info_p->base),
+        .log_prefix = "ETH0",
+        .print_port_banner = false,
+        .notify_netif = false,
+        .netif_idx = 0,
+        .notify_link = NULL,
+        .status_mbox = NULL,
+        .link_msg = NULL,
+    };
+    enet_phy_adaptive_binding_t binding_eth1 = {
+        .last = &last_status_eth1,
+        .enet_base = enet1_drv_info_p->base,
+        .phy_port = _nx_driver_get_enet_port_index(enet1_drv_info_p->base),
+        .log_prefix = "ETH1",
+        .print_port_banner = false,
+        .notify_netif = false,
+        .netif_idx = 0,
+        .notify_link = NULL,
+        .status_mbox = NULL,
+        .link_msg = NULL,
+    };
 
-    enet_line_speed_t line_speed[] = {enet_line_speed_10mbps, enet_line_speed_100mbps, enet_line_speed_1000mbps};
-    CHAR *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
-    CHAR *duplex_str[] = {"Half duplex", "Full duplex"};
-    NX_DRIVER_INFORMATION *p = enet0_drv_info_p;
-    if (p->is_rgmii) {
-#if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_get_phy_status(p->base, DP83867_ADDR, &status_eth0);
-#else
-        rtl8211_get_phy_status(p->base, RTL8211_ADDR, &status_eth0);
-#endif
-    } else {
-#if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_get_phy_status(p->base, DP83848_ADDR, &status_eth0);
-#else
-        rtl8201_get_phy_status(p->base, RTL8201_ADDR, &status_eth0);
-#endif
-    }
+    enet_phy_status_t status = {0};
 
-    if (memcmp(&last_status_eth0, &status_eth0, sizeof(enet_phy_status_t)) != 0) {
-        memcpy(&last_status_eth0, &status_eth0, sizeof(enet_phy_status_t));
-        if (status_eth0.enet_phy_link) {
-            printf("ETH0 Link Status: Up\n");
-            printf("ETH0 Link Speed:  %s\n", speed_str[status_eth0.enet_phy_speed]);
-            printf("ETH0 Link Duplex: %s\n", duplex_str[status_eth0.enet_phy_duplex]);
-            enet_set_line_speed(p->base, line_speed[status_eth0.enet_phy_speed]);
-            enet_set_duplex_mode(p->base, status_eth0.enet_phy_duplex);
-        } else {
-            printf("ETH0 Link Status: Down\n");
-        }
-    }
-    p = enet1_drv_info_p;
-    if (p->is_rgmii) {
-#if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_get_phy_status(p->base, DP83867_ADDR, &status_eth1);
-#else
-        rtl8211_get_phy_status(p->base, RTL8211_ADDR, &status_eth1);
-#endif
-    } else {
-#if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_get_phy_status(p->base, DP83848_ADDR, &status_eth1);
-#else
-        rtl8201_get_phy_status(p->base, RTL8201_ADDR, &status_eth1);
-#endif
-    }
-    if (memcmp(&last_status_eth1, &status_eth1, sizeof(enet_phy_status_t)) != 0) {
-        memcpy(&last_status_eth1, &status_eth1, sizeof(enet_phy_status_t));
-        if (status_eth1.enet_phy_link) {
-            printf("ETH1 Link Status: Up\n");
-            printf("ETH1 Link Speed:  %s\n", speed_str[status_eth1.enet_phy_speed]);
-            printf("ETH1 Link Duplex: %s\n", duplex_str[status_eth1.enet_phy_duplex]);
-            enet_set_line_speed(p->base, line_speed[status_eth1.enet_phy_speed]);
-            enet_set_duplex_mode(p->base, status_eth1.enet_phy_duplex);
-        } else {
-            printf("ETH1 Link Status: Down\n");
-        }
-    }
+    board_get_enet_phy_status(binding_eth0.phy_port, &status);
+    enet_phy_adaptive_binding_poll(&binding_eth0, &status);
+    board_get_enet_phy_status(binding_eth1.phy_port, &status);
+    enet_phy_adaptive_binding_poll(&binding_eth1, &status);
 }
 VOID sys_timer_callback(VOID)
 {
@@ -397,46 +385,20 @@ static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
         }
     }
 
-    if (p->is_rgmii) {
-#if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_config_t phy_config;
-        dp83867_reset(p->base, DP83867_ADDR);
-#if __DISABLE_AUTO_NEGO
-        dp83867_set_mdi_crossover_mode(p->base, DP83867_ADDR, enet_phy_mdi_crossover_manual_mdix);
-#endif
-        dp83867_basic_mode_default_config(p->base, &phy_config);
-        if (dp83867_basic_mode_init(p->base, DP83867_ADDR, &phy_config) == true) {
-#else
-        rtl8211_config_t phy_config;
-        rtl8211_reset(p->base, RTL8211_ADDR);
-        rtl8211_basic_mode_default_config(p->base, &phy_config);
-        if (rtl8211_basic_mode_init(p->base, RTL8211_ADDR, &phy_config) == true) {
-#endif
+    if (board_init_enet_phy(p->base) == status_success) {
+        if (p->is_rgmii) {
             printf("Enet RGMII phy init passed !\n");
-            return status_success;
         } else {
-            printf("Enet RGMII phy init failed !\n");
-            return status_fail;
-        }
-    } else {
-#if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_config_t phy_config;
-        dp83848_reset(p->base, DP83848_ADDR);
-        dp83848_basic_mode_default_config(p->base, &phy_config);
-        if (dp83848_basic_mode_init(p->base, DP83848_ADDR, &phy_config) == true) {
-#else
-        rtl8201_config_t phy_config;
-        rtl8201_reset(p->base, RTL8201_ADDR);
-        rtl8201_basic_mode_default_config(p->base, &phy_config);
-        phy_config.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
-        if (rtl8201_basic_mode_init(p->base, RTL8201_ADDR, &phy_config) == true) {
-#endif
             printf("Enet RMII phy init passed !\n");
-            return status_success;
+        }
+        return status_success;
+    } else {
+        if (p->is_rgmii) {
+            printf("Enet RGMII phy init failed !\n");
         } else {
             printf("Enet RMII phy init failed !\n");
-            return status_fail;
         }
+        return status_fail;
     }
     /* Return success!  */
     return (NX_SUCCESS);
@@ -545,7 +507,7 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
     NX_PARAMETER_NOT_USED(driver_req_ptr);
     NX_DRIVER_INFORMATION *p = get_info_struct_from_ip_driver(driver_req_ptr->nx_ip_driver_ptr);
 
-    enet_phy_status_t status;
+    enet_phy_status_t status = {0};
     enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
 
@@ -584,19 +546,7 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
     enet_disable_lpi_interrupt(p->base);
 
     while (1) {
-        if (p->is_rgmii) {
-#if defined(__USE_DP83867) && __USE_DP83867
-            dp83867_get_phy_status(p->base, DP83867_ADDR, &status);
-#else
-            rtl8211_get_phy_status(p->base, RTL8211_ADDR, &status);
-#endif
-        } else {
-#if defined(__USE_DP83848) && __USE_DP83848
-            dp83848_get_phy_status(p->base, DP83848_ADDR, &status);
-#else
-            rtl8201_get_phy_status(p->base, RTL8201_ADDR, &status);
-#endif
-        }
+        board_get_enet_phy_status(_nx_driver_get_enet_port_index(p->base), &status);
         if (status.enet_phy_link)
             break;
         tx_thread_sleep(10);

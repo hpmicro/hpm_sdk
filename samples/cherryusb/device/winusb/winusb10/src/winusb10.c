@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -30,74 +30,16 @@
 #endif
 
 static const uint8_t WCID_StringDescriptor_MSOS[18] = {
-    /*
-     * MS OS string descriptor
-     */
-    0x12,                       /* bLength */
-    USB_DESCRIPTOR_TYPE_STRING, /* bDescriptorType */
-    /* MSFT100 */
-    'M', 0x00, 'S', 0x00, 'F', 0x00, 'T', 0x00, /* wcChar_7 */
-    '1', 0x00, '0', 0x00, '0', 0x00,            /* wcChar_7 */
-    WCID_VENDOR_CODE,                           /* bVendorCode */
-    0x00,                                       /* bReserved */
+    USB_MSOSV1_STRING_DESCRIPTOR_INIT(WCID_VENDOR_CODE)
 };
 
-#if DOUBLE_WINUSB == 0
-static const uint8_t WINUSB_WCIDDescriptor[40] = {
-    /*
-     * WCID descriptor
-     */
-    0x28, 0x00, 0x00, 0x00,                   /* dwLength */
-    0x00, 0x01,                               /* bcdVersion */
-    0x04, 0x00,                               /* wIndex */
-    0x01,                                     /* bCount */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* bReserved_7 */
-
-    /*
-     * WCID function descriptor
-     */
-    0x00, /* bFirstInterfaceNumber */
-    0x01, /* bReserved */
-    /* WINUSB */
-    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, /* cCID_8 */
-    /*  */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* cSubCID_8 */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             /* bReserved_6 */
-};
-#else
-static const uint8_t WINUSB_WCIDDescriptor[64] = {
-    /*
-     * WCID descriptor
-     */
-    0x40, 0x00, 0x00, 0x00,                   /* dwLength */
-    0x00, 0x01,                               /* bcdVersion */
-    0x04, 0x00,                               /* wIndex */
-    0x02,                                     /* bCount */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* bReserved_7 */
-
-    /*
-     * WCID function descriptor
-     */
-    0x00, /* bFirstInterfaceNumber */
-    0x01, /* bReserved */
-    /* WINUSB */
-    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, /* cCID_8 */
-    /*  */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* cSubCID_8 */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             /* bReserved_6 */
-
-    /*
-     * WCID function descriptor
-     */
-    0x01, /* bFirstInterfaceNumber */
-    0x01, /* bReserved */
-    /* WINUSB */
-    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, /* cCID_8 */
-    /*  */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* cSubCID_8 */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             /* bReserved_6 */
-};
+static const uint8_t WINUSB_WCIDDescriptor[] = {
+    USB_MSOSV1_COMP_ID_HEADER_DESCRIPTOR_INIT(INTF_NUM),
+    USB_MSOSV1_COMP_ID_FUNCTION_WINUSB_DESCRIPTOR_INIT(0),
+#if INTF_NUM == 2
+    USB_MSOSV1_COMP_ID_FUNCTION_WINUSB_DESCRIPTOR_INIT(1),
 #endif
+};
 
 static const uint8_t WINUSB_IF0_WCIDProperties[142] = {
     /*

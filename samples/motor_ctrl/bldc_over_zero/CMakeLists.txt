@@ -1,9 +1,9 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
 set(CONFIG_MOTORCTRL 1)
-set(CONFIG_HPM_ADC 1)
+set(CONFIG_HPM_ADC_V2 1)
 # set(CONFIG_SEGGER_RTT 1)
 
 # set(HPM_MATH_DSP_SES_LIB "libdspf")

@@ -727,13 +727,13 @@ I2C初始化
 
   - 主机带命令码的块读取
 
-    - 调用 ``hpm_smbus_master_read_block_in_command`` API 来实现主机模式下的带命令码的块读取操作。
+    - 调用 ``hpm_smbus_master_read_block_in_command`` API 来实现主机模式下的带命令码的块读取操作。从设备返回的第一个字节表示实际数据长度，适用于 MFR_ID、MFR_MODEL 等长度不固定的响应。
 
       - ``hpm_smbus_master_read_block_in_command`` API原型：
 
         .. code-block:: c
 
-              hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t size);
+              hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_address, uint8_t command, uint8_t *data, uint32_t size, uint32_t *actual_len);
 
         - 参数说明：
 
@@ -754,27 +754,33 @@ I2C初始化
                       - 命令码
                     * - data
                       - uint8_t*
-                      - 读取到的数据
+                      - 存储读取数据的缓冲区指针
                     * - size
                       - uint32_t
-                      - 数据长度（字节）
+                      - 缓冲区容量（字节），不大于 (I2C_SOC_TRANSFER_COUNT_MAX - 5)
+                    * - actual_len
+                      - uint32_t*
+                      - 输出参数，用于返回从设备实际读取的数据长度（字节），不关心时可传 NULL
 
         - 返回值：
 
           - ``status_success``: 成功
           - ``status_invalid_argument``: 无效参数
           - ``status_timeout``: 超时
-          - ``status_fail``: 失败
+          - ``status_fail``: 失败（PEC校验错误）
 
-      - **举例**: 主机模式下，通过I2C总线从从设备0x16读取命令0x01的数据。
+      - **举例**: 主机模式下，通过I2C总线从从设备0x16读取命令0x01的数据，实际长度由从设备决定。
 
      .. code-block:: c
 
               hpm_stat_t stat;
-              uint8_t data[3];
+              uint8_t data[32];
+              uint32_t actual_len = 0;
               /* 初始化I2C，不做举例... */
-              stat = hpm_smbus_master_read_block_in_command(TEST_SMBUS, 0x16, 0x01, data, 3);
-              if (stat!= status_success) {
+              stat = hpm_smbus_master_read_block_in_command(TEST_SMBUS, 0x16, 0x01, data, sizeof(data), &actual_len);
+              if (stat != status_success) {
                   printf("hpm_smbus_master_read_block_in_command failed.\n");
+              } else {
+                  printf("read %u bytes\n", actual_len);
               }
 

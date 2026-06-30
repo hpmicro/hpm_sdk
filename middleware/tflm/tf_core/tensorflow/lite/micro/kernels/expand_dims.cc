@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2025 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,10 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include <cstdint>
+
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_utils.h"
 
 namespace tflite {
@@ -31,8 +34,7 @@ TfLiteStatus GetAxisValueFromTensor(TfLiteContext* context,
                                     int32_t* axis_value) {
   const int axis_dims = (tflite::GetTensorShape(axis)).DimensionsCount();
   if (axis_dims > 1) {
-    TF_LITE_KERNEL_LOG(context, "Axis has only one element for Expand_Dims.",
-                       axis_dims);
+    MicroPrintf("Axis has only one element for Expand_Dims.", axis_dims);
     return kTfLiteError;
   }
 
@@ -41,9 +43,8 @@ TfLiteStatus GetAxisValueFromTensor(TfLiteContext* context,
     *axis_value = axis_ptr[0];
     return kTfLiteOk;
   } else {
-    TF_LITE_KERNEL_LOG(context,
-                       "Axis type %s (%d) not supported by Expand_Dims.",
-                       TfLiteTypeGetName(axis->type), axis->type);
+    MicroPrintf("Axis type %s (%d) not supported by Expand_Dims.",
+                TfLiteTypeGetName(axis->type), axis->type);
     return kTfLiteError;
   }
 }
@@ -83,7 +84,7 @@ TfLiteStatus VerifyTensorDim(TfLiteContext* context, const TfLiteTensor* input,
   return kTfLiteOk;
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus ExpandDimsPrepare(TfLiteContext* context, TfLiteNode* node) {
   MicroContext* micro_context = GetMicroContext(context);
 
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
@@ -98,11 +99,8 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
       micro_context->AllocateTempOutputTensor(node, kOutputTensor);
   TF_LITE_ENSURE(context, output != nullptr);
   output->type = input->type;
-  if (IsDynamicTensor(axis)) {
-    TF_LITE_KERNEL_LOG(context,
-                       "DynamicTensor is not yet supported by Expand_Dims.");
-    return kTfLiteError;
-  }
+  TF_LITE_ENSURE_MSG(context, IsConstantTensor(axis),
+                     "Non-constant >axis< tensor is not supported");
   TF_LITE_ENSURE_OK(context, VerifyTensorDim(context, input, axis, output));
 
   micro_context->DeallocateTempTfLiteTensor(input);
@@ -118,7 +116,7 @@ void memCopyN(T* out, const T* in, const int num_elements) {
   }
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus ExpandDimsEval(TfLiteContext* context, TfLiteNode* node) {
   const TfLiteEvalTensor* input =
       tflite::micro::GetEvalInput(context, node, kInputTensor);
   TfLiteEvalTensor* output =
@@ -130,14 +128,18 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       memCopyN(tflite::micro::GetTensorData<float>(output),
                tflite::micro::GetTensorData<float>(input), flat_size);
     } break;
+    case kTfLiteInt16: {
+      memCopyN(tflite::micro::GetTensorData<int16_t>(output),
+               tflite::micro::GetTensorData<int16_t>(input), flat_size);
+    } break;
     case kTfLiteInt8: {
       memCopyN(tflite::micro::GetTensorData<int8_t>(output),
                tflite::micro::GetTensorData<int8_t>(input), flat_size);
     } break;
     default:
-      TF_LITE_KERNEL_LOG(
-          context,
-          "Expand_Dims only currently supports int8 and float32, got %d.",
+      MicroPrintf(
+          "Expand_Dims only currently supports int8, int16 and float32, got "
+          "%d.",
           input->type);
       return kTfLiteError;
   }
@@ -145,15 +147,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }
 }  // namespace
 
-TfLiteRegistration Register_EXPAND_DIMS() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_EXPAND_DIMS() {
+  return tflite::micro::RegisterOp(nullptr, ExpandDimsPrepare, ExpandDimsEval);
 }
 
 }  // namespace tflite

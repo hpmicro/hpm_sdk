@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,11 +10,13 @@
 #include "hpm_otp_drv.h"
 #include "ethernetif.h"
 #include "netconf.h"
+#include "netinfo.h"
 #include "lwip.h"
 #include "lwip/timeouts.h"
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "osal.h"
+#include "tsw_phy_adaptive_lwip.h"
 
 static tsw_phy_status_t last_status = {.tsw_phy_link = tsw_phy_link_unknown};
 
@@ -165,55 +167,20 @@ bool tsw_get_link_status(void)
 
 void tsw_self_adaptive_port_speed(void)
 {
-    tsw_phy_status_t status = {0};
+    lwip_tsw_phy_adaptive_binding_t binding = {
+        .last = &last_status,
+        .tsw_base = BOARD_TSW,
+        .tsw_port = BOARD_TSW_PORT,
+        .frame_dst_port = tsw_dst_port_cpu,
+        .notify_netif = true,
+        .netif_idx = LWIP_NETIF_IDX,
+#if defined(NO_SYS) && !NO_SYS
+        .status_mbox = (void *)&netif_status_mbox,
+        .link_msg = &msg,
+#endif
+    };
 
-    tsw_port_speed_t port_speed[] = {tsw_port_speed_10mbps, tsw_port_speed_100mbps, tsw_port_speed_1000mbps};
-    char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
-    char *duplex_str[] = {"Half duplex", "Full duplex"};
-
-    rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
-
-    if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
-        if (memcmp(&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
-            memcpy(&last_status, &status, sizeof(tsw_phy_status_t));
-            if (status.tsw_phy_link) {
-                printf("Link Status: Up\n");
-                printf("Link Speed:  %s\n", speed_str[status.tsw_phy_speed]);
-                printf("Link Duplex: %s\n", duplex_str[status.tsw_phy_duplex]);
-
-                if (!status.tsw_phy_duplex) {
-                    printf("Error: PHY is in half duplex now, but TSW MAC supports only full duplex mode!\n");
-                    return;
-                }
-
-                tsw_set_port_speed(BOARD_TSW, BOARD_TSW_PORT, port_speed[status.tsw_phy_speed]);
-
-                /* Set broadcast frame and unknown frame actions */
-                tsw_set_broadcast_frame_action(BOARD_TSW, tsw_dst_port_cpu);
-                tsw_set_unknown_frame_action(BOARD_TSW, tsw_dst_port_cpu);
-
-                #if defined(NO_SYS) && !NO_SYS
-                msg = tsw_phy_link_up;
-                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-                #else
-                netif_set_link_up(netif_get_by_index(LWIP_NETIF_IDX));
-                #endif
-            } else {
-                printf("Link Status: Down\n");
-
-                /* Clear broadcast frame and unknown frame actions */
-                tsw_clear_unknown_frame_action(BOARD_TSW, tsw_dst_port_cpu);
-                tsw_clear_broadcast_frame_action(BOARD_TSW, tsw_dst_port_cpu);
-
-                #if defined(NO_SYS) && !NO_SYS
-                msg = tsw_phy_link_down;
-                sys_mbox_trypost_fromisr(&netif_status_mbox, &msg);
-                #else
-                netif_set_link_down(netif_get_by_index(LWIP_NETIF_IDX));
-                #endif
-            }
-        }
-    }
+    lwip_tsw_phy_adaptive_poll(&binding);
 }
 
 void tsw_services(struct netif *netif)
@@ -248,3 +215,4 @@ void isr_tsw_port_cpu(void)
     intc_m_disable_irq(IRQn_TSW_0);
 }
 #endif
+

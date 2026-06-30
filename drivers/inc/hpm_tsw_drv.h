@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -52,13 +52,15 @@
 
 /**
  * @brief MDIO control operation: Write
+ * @note Prefixed with TSW_ to avoid conflict with tsn_ctrl_ll.h enum members
  */
-#define MAC_MDIO_CTRL_OP_WR (0x01)
+#define TSW_MAC_MDIO_OP_WR (0x01)
 
 /**
  * @brief MDIO control operation: Read
+ * @note Prefixed with TSW_ to avoid conflict with tsn_ctrl_ll.h enum members
  */
-#define MAC_MDIO_CTRL_OP_RD (0x02)
+#define TSW_MAC_MDIO_OP_RD (0x02)
 
 /**
  * @brief Default send descriptor count
@@ -93,6 +95,34 @@
 #endif
 
 /**
+ * @brief Byte offset of Ethernet payload in a TSW TX/RX DMA buffer
+ */
+#define TSW_SOC_ETH_PAYLOAD_OFFSET  (TSW_SOC_SWITCH_HEADER_LEN)
+
+/**
+ * @brief Total DMA frame length when frame buffer includes switch header and payload
+ * @param frame_buf byte array including TSW switch header, e.g. data_buff or data_buff1
+ */
+#define TSW_DMA_FRAME_LEN(frame_buf) (sizeof(frame_buf))
+
+/**
+ * @brief Ethernet frame length parsed from a received DMA frame length
+ * @param total_len Total length reported by tsw_recv_frame (header + Ethernet)
+ */
+#define TSW_FRAME_ETH_LEN(total_len) ((total_len) - TSW_SOC_SWITCH_HEADER_LEN)
+
+/**
+ * @brief Check whether lwIP netif MTU needs MAC JUMBO
+ *
+ * @param[in] ip_mtu lwIP netif MTU (max IPv4 datagram length / ip.len, includes IP header)
+ * @return true if L2 payload may exceed @ref TSW_SOC_ENVELOPE_FRAME_PAYLOAD_MAX
+ */
+static inline bool tsw_mac_jumbo_required_for_ip_mtu(uint16_t ip_mtu)
+{
+    return ip_mtu > TSW_SOC_ENVELOPE_FRAME_PAYLOAD_MAX;
+}
+
+/**
  * @brief Nanoseconds in one second
  * @note This can be overridden by defining TSW_NS_IN_ONE_SEC before including this header
  */
@@ -125,6 +155,13 @@
 #endif
 
 /**
+ * @brief TSW MDIO busy wait retry count
+ */
+#ifndef TSW_MDIO_BUSY_RETRY_CNT
+#define TSW_MDIO_BUSY_RETRY_CNT (100000UL)
+#endif
+
+/**
  * @brief Ethernet MAC address size in bytes
  */
 #define TSW_ENET_MAC              (6U)
@@ -138,6 +175,7 @@
  * @brief FPE MMS maximum verify time maximum value (128ms)
  */
 #define TSW_FPE_MMS_MAX_VTIME_MAX (128U)
+
 /*---------------------------------------------------------------------
  *  Typedef Struct Declarations
  *-------------------------------------------------------------------*/
@@ -148,7 +186,7 @@ typedef struct {
     union {
         uint32_t tx_hdr0;
         struct {
-            uint32_t dest_port: 8; /**< dest port */
+            uint32_t dest_port: 8; /**< dest port, see @ref tsw_cpu_send_to_port_t */
             uint32_t          : 8; /**< reserved */
             uint32_t queue    : 3; /**< the priority queue for TSW TX */
             uint32_t utag     : 3; /**< TSW-EP TX user sideband information */
@@ -160,13 +198,49 @@ typedef struct {
     union {
         uint32_t tx_hdr1;
         struct {
-            uint32_t cb: 32; /**< CB field. Optionally used for external stream identification */
+            uint32_t seqno : 16; /**< sequence number for external stream identification */
+            uint32_t sid   : 8;  /**< stream ID for external stream identification */
+            uint32_t       : 7;  /**< reserved, must be 0 */
+            uint32_t valid : 1;  /**< valid flag for external stream identification */
         } tx_hdr1_bm;
     };
 
     uint32_t tx_hdr2; /**< reserved */
     uint32_t tx_hdr3; /**< reserved */
 } tx_hdr_desc_t;
+
+/**
+ * @brief Fill TSW TX header routing fields (dest_port/queue/utag)
+ *
+ * @param[in] hdr       Pointer to TX header descriptor in send buffer
+ * @param[in] dest_port Destination port (@ref tsw_cpu_send_to_port_t, @ref TSW_CPU_SEND_TO_LOOKUP, @ref TSW_CPU_SEND_TO_PORT)
+ * @param[in] queue     Traffic queue
+ * @param[in] utag      User sideband tag field value (0..7), not (tag << 3)
+ */
+static inline void tsw_set_tx_hdr_route(tx_hdr_desc_t *hdr, uint8_t dest_port, uint8_t queue, uint8_t utag)
+{
+    uint8_t *base = (uint8_t *)hdr;
+
+    base[0] = dest_port;
+    base[2] = (queue & 0x07U) | ((utag & 0x07U) << 3);
+}
+
+/**
+ * @brief Fill TSW TX header stream identification fields (sid/seqno/valid)
+ *
+ * @param[in] hdr   Pointer to TX header descriptor in send buffer
+ * @param[in] sid   Stream ID
+ * @param[in] seqno Sequence number, set 0 when hardware generates sequence number
+ */
+static inline void tsw_set_tx_hdr_stream(tx_hdr_desc_t *hdr, uint8_t sid, uint16_t seqno)
+{
+    uint8_t *base = (uint8_t *)hdr;
+
+    base[4] = (uint8_t)(seqno & 0xffU);
+    base[5] = (uint8_t)(seqno >> 8);
+    base[6] = sid;
+    base[7] = 0x80U;
+}
 
 /**
  * @brief TSW RX header descriptor structure
@@ -189,7 +263,10 @@ typedef struct {
     union {
         uint32_t rx_hdr1;
         struct {
-            uint32_t cb: 32; /**< CB field. */
+            uint32_t seqno : 16; /**< sequence number from stream identification */
+            uint32_t sid   : 8;  /**< stream ID from stream identification */
+            uint32_t       : 7;  /**< reserved, must be 0 */
+            uint32_t valid : 1;  /**< valid flag from stream identification */
         } rx_hdr1_bm;
     };
 
@@ -198,12 +275,65 @@ typedef struct {
 } rx_hdr_desc_t;
 
 /**
+ * @brief Get TSW RX header routing fields (src_port/queue/utag)
+ *
+ * @param[in] buff      Pointer to RX DMA buffer or rx_hdr_desc_t
+ * @param[out] src_port Source port
+ * @param[out] queue    Traffic queue
+ * @param[out] utag     User sideband tag field value (0..7)
+ */
+static inline void tsw_get_rx_hdr_route(const uint8_t *buff, uint8_t *src_port, uint8_t *queue, uint8_t *utag)
+{
+    *src_port = buff[0];
+    *queue = buff[2] & 0x07U;
+    *utag = (buff[2] >> 3) & 0x07U;
+}
+
+/**
+ * @brief Get TSW RX header FPE flag
+ *
+ * @param[in] buff Pointer to RX DMA buffer or rx_hdr_desc_t
+ * @return FPE flag (0 or 1)
+ */
+static inline uint8_t tsw_get_rx_hdr_fpe(const uint8_t *buff)
+{
+    return buff[3] & 0x01U;
+}
+
+/**
+ * @brief Get TSW RX header stream identification fields (sid/seqno/valid)
+ *
+ * @param[in] buff      Pointer to RX DMA buffer or rx_hdr_desc_t
+ * @param[out] sid      Stream ID
+ * @param[out] seqno    Sequence number
+ * @param[out] valid    Valid flag (0 or 1)
+ */
+static inline void tsw_get_rx_hdr_stream(const uint8_t *buff, uint8_t *sid, uint16_t *seqno, uint8_t *valid)
+{
+    *seqno = (uint16_t)buff[4] | ((uint16_t)buff[5] << 8);
+    *sid = buff[6];
+    *valid = (buff[7] >> 7) & 0x01U;
+}
+
+/**
+ * @brief Get TSW RX header timestamp fields
+ *
+ * @param[in] buff  Pointer to RX DMA buffer or rx_hdr_desc_t
+ * @param[out] sec  Timestamp second part
+ * @param[out] nsec Timestamp nanosecond part
+ */
+static inline void tsw_get_rx_hdr_timestamp(const uint8_t *buff, uint32_t *sec, uint32_t *nsec)
+{
+    *nsec = (uint32_t)buff[8] | ((uint32_t)buff[9] << 8) | ((uint32_t)buff[10] << 16) | ((uint32_t)buff[11] << 24);
+    *sec = (uint32_t)buff[12] | ((uint32_t)buff[13] << 8) | ((uint32_t)buff[14] << 16) | ((uint32_t)buff[15] << 24);
+}
+
+/**
  * @brief TSW frame action configuration structure
  */
 typedef struct {
     uint16_t dest;  /**< Destination port */
     uint8_t  queue; /**< Queue number */
-    uint8_t  drop;  /**< Drop flag */
     uint8_t  qsel;  /**< Queue select */
     uint8_t  utag;  /**< User tag */
 } tsw_frame_action_config_t;
@@ -511,6 +641,10 @@ typedef enum {
 
 /**
  * @brief TSW CPU send to port enumeration
+ *
+ * Also used as TX switch header dest_port (byte 0 of @ref tx_hdr_desc_t).
+ * Use @ref TSW_CPU_SEND_TO_LOOKUP for CAM lookup
+ * and @ref TSW_CPU_SEND_TO_PORT for a fixed TSNPORT index.
  */
 typedef enum {
   tsw_cpu_send_to_lookup    = 0x00, /**< Send to lookup */
@@ -519,6 +653,17 @@ typedef enum {
   tsw_cpu_send_to_port_3    = 0x03, /**< Send to port 3 */
   tsw_cpu_send_to_all_ports = 0x80  /**< Send to all ports */
 } tsw_cpu_send_to_port_t;
+
+/** @brief TX header dest_port: CAM/L2 lookup (no fixed egress port) */
+#define TSW_CPU_SEND_TO_LOOKUP     ((uint8_t)tsw_cpu_send_to_lookup)
+
+/** @brief TX header dest_port: flood to all ports */
+#define TSW_CPU_SEND_TO_ALL_PORTS  ((uint8_t)tsw_cpu_send_to_all_ports)
+
+/**
+ * @brief Map TSNPORT index to CPU send dest_port / TX header dest_port
+ */
+#define TSW_CPU_SEND_TO_PORT(tsnport) ((uint8_t)(tsw_cpu_send_to_port_1 + (tsnport)))
 
 /**
  * @brief TSW MAC mode enumeration
@@ -880,6 +1025,22 @@ hpm_stat_t tsw_ep_set_mac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii);
  * @return hpm_stat_t
  */
 hpm_stat_t tsw_ep_set_xmac_mode(TSW_Type *ptr, uint8_t port, uint8_t gmii, tsw_mac_type_t mac_type);
+
+/**
+ * @brief Enable or disable LLEMAC-1G jumbo frame support
+ *
+ * When disabled, frames with L2 payload larger than @ref TSW_SOC_ENVELOPE_FRAME_PAYLOAD_MAX
+ * are rejected (TX/RX error signals). JUMBO may be changed while MAC TX/RX is enabled;
+ * the new setting is valid after clock domain crossing. Ensure DMA/software buffers are
+ * large enough before sending or receiving jumbo frames.
+ *
+ * @param[in] ptr      TSW peripheral base address
+ * @param[in] port     TSW port number
+ * @param[in] mac_type MAC type @ref tsw_mac_type_t
+ * @param[in] enable   true to enable jumbo frames; false for envelope frames only
+ * @return             Result of configuring jumbo frame support
+ */
+hpm_stat_t tsw_ep_set_jumbo_frame(TSW_Type *ptr, uint8_t port, tsw_mac_type_t mac_type, bool enable);
 
 /**
  * @brief Set Port GPR

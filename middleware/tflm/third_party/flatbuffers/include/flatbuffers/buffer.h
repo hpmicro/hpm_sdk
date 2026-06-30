@@ -17,29 +17,64 @@
 #ifndef FLATBUFFERS_BUFFER_H_
 #define FLATBUFFERS_BUFFER_H_
 
+#include <algorithm>
+
 #include "flatbuffers/base.h"
+#include "flatbuffers/stl_emulation.h"
 
 namespace flatbuffers {
 
 // Wrapper for uoffset_t to allow safe template specialization.
 // Value is allowed to be 0 to indicate a null object (see e.g. AddOffset).
-template<typename T> struct Offset {
-  uoffset_t o;
+template <typename T = void>
+struct Offset {
+  // The type of offset to use.
+  typedef uoffset_t offset_type;
+
+  offset_type o;
   Offset() : o(0) {}
-  Offset(uoffset_t _o) : o(_o) {}
-  Offset<void> Union() const { return Offset<void>(o); }
+  Offset(const offset_type _o) : o(_o) {}
+  Offset<> Union() const { return o; }
   bool IsNull() const { return !o; }
 };
+
+template <typename T>
+struct is_specialisation_of_Offset : false_type {};
+template <typename T>
+struct is_specialisation_of_Offset<Offset<T>> : true_type {};
+
+// Wrapper for uoffset64_t Offsets.
+template <typename T = void>
+struct Offset64 {
+  // The type of offset to use.
+  typedef uoffset64_t offset_type;
+
+  offset_type o;
+  Offset64() : o(0) {}
+  Offset64(const offset_type offset) : o(offset) {}
+  Offset64<> Union() const { return o; }
+  bool IsNull() const { return !o; }
+};
+
+template <typename T>
+struct is_specialisation_of_Offset64 : false_type {};
+template <typename T>
+struct is_specialisation_of_Offset64<Offset64<T>> : true_type {};
+
+// Litmus check for ensuring the Offsets are the expected size.
+static_assert(sizeof(Offset<>) == 4, "Offset has wrong size");
+static_assert(sizeof(Offset64<>) == 8, "Offset64 has wrong size");
 
 inline void EndianCheck() {
   int endiantest = 1;
   // If this fails, see FLATBUFFERS_LITTLEENDIAN above.
-  FLATBUFFERS_ASSERT(*reinterpret_cast<char *>(&endiantest) ==
+  FLATBUFFERS_ASSERT(*reinterpret_cast<char*>(&endiantest) ==
                      FLATBUFFERS_LITTLEENDIAN);
   (void)endiantest;
 }
 
-template<typename T> FLATBUFFERS_CONSTEXPR size_t AlignOf() {
+template <typename T>
+FLATBUFFERS_CONSTEXPR size_t AlignOf() {
   // clang-format off
   #ifdef _MSC_VER
     return __alignof(T);
@@ -55,8 +90,8 @@ template<typename T> FLATBUFFERS_CONSTEXPR size_t AlignOf() {
 
 // Lexicographically compare two strings (possibly containing nulls), and
 // return true if the first is less than the second.
-static inline bool StringLessThan(const char *a_data, uoffset_t a_size,
-                                  const char *b_data, uoffset_t b_size) {
+static inline bool StringLessThan(const char* a_data, uoffset_t a_size,
+                                  const char* b_data, uoffset_t b_size) {
   const auto cmp = memcmp(a_data, b_data, (std::min)(a_size, b_size));
   return cmp == 0 ? a_size < b_size : cmp < 0;
 }
@@ -69,47 +104,92 @@ static inline bool StringLessThan(const char *a_data, uoffset_t a_size,
 // return type like this.
 // The typedef is for the convenience of callers of this function
 // (avoiding the need for a trailing return decltype)
-template<typename T> struct IndirectHelper {
+template <typename T, typename Enable = void>
+struct IndirectHelper {
   typedef T return_type;
   typedef T mutable_return_type;
   static const size_t element_stride = sizeof(T);
-  static return_type Read(const uint8_t *p, uoffset_t i) {
-    return EndianScalar((reinterpret_cast<const T *>(p))[i]);
+
+  static return_type Read(const uint8_t* p, const size_t i) {
+    return EndianScalar((reinterpret_cast<const T*>(p))[i]);
   }
-};
-template<typename T> struct IndirectHelper<Offset<T>> {
-  typedef const T *return_type;
-  typedef T *mutable_return_type;
-  static const size_t element_stride = sizeof(uoffset_t);
-  static return_type Read(const uint8_t *p, uoffset_t i) {
-    p += i * sizeof(uoffset_t);
-    return reinterpret_cast<return_type>(p + ReadScalar<uoffset_t>(p));
-  }
-};
-template<typename T> struct IndirectHelper<const T *> {
-  typedef const T *return_type;
-  typedef T *mutable_return_type;
-  static const size_t element_stride = sizeof(T);
-  static return_type Read(const uint8_t *p, uoffset_t i) {
-    return reinterpret_cast<const T *>(p + i * sizeof(T));
+  static mutable_return_type Read(uint8_t* p, const size_t i) {
+    return reinterpret_cast<mutable_return_type>(
+        Read(const_cast<const uint8_t*>(p), i));
   }
 };
 
-/// @brief Get a pointer to the the file_identifier section of the buffer.
+// For vector of Offsets.
+template <typename T, template <typename> class OffsetT>
+struct IndirectHelper<OffsetT<T>> {
+  typedef const T* return_type;
+  typedef T* mutable_return_type;
+  typedef typename OffsetT<T>::offset_type offset_type;
+  static const offset_type element_stride = sizeof(offset_type);
+
+  static return_type Read(const uint8_t* const p, const offset_type i) {
+    // Offsets are relative to themselves, so first update the pointer to
+    // point to the offset location.
+    const uint8_t* const offset_location = p + i * element_stride;
+
+    // Then read the scalar value of the offset (which may be 32 or 64-bits) and
+    // then determine the relative location from the offset location.
+    return reinterpret_cast<return_type>(
+        offset_location + ReadScalar<offset_type>(offset_location));
+  }
+  static mutable_return_type Read(uint8_t* const p, const offset_type i) {
+    // Offsets are relative to themselves, so first update the pointer to
+    // point to the offset location.
+    uint8_t* const offset_location = p + i * element_stride;
+
+    // Then read the scalar value of the offset (which may be 32 or 64-bits) and
+    // then determine the relative location from the offset location.
+    return reinterpret_cast<mutable_return_type>(
+        offset_location + ReadScalar<offset_type>(offset_location));
+  }
+};
+
+// For vector of structs.
+template <typename T>
+struct IndirectHelper<
+    T, typename std::enable_if<
+           !std::is_scalar<typename std::remove_pointer<T>::type>::value &&
+           !is_specialisation_of_Offset<T>::value &&
+           !is_specialisation_of_Offset64<T>::value>::type> {
+ private:
+  typedef typename std::remove_pointer<typename std::remove_cv<T>::type>::type
+      pointee_type;
+
+ public:
+  typedef const pointee_type* return_type;
+  typedef pointee_type* mutable_return_type;
+  static const size_t element_stride = sizeof(pointee_type);
+
+  static return_type Read(const uint8_t* const p, const size_t i) {
+    // Structs are stored inline, relative to the first struct pointer.
+    return reinterpret_cast<return_type>(p + i * element_stride);
+  }
+  static mutable_return_type Read(uint8_t* const p, const size_t i) {
+    // Structs are stored inline, relative to the first struct pointer.
+    return reinterpret_cast<mutable_return_type>(p + i * element_stride);
+  }
+};
+
+/// @brief Get a pointer to the file_identifier section of the buffer.
 /// @return Returns a const char pointer to the start of the file_identifier
 /// characters in the buffer.  The returned char * has length
 /// 'flatbuffers::FlatBufferBuilder::kFileIdentifierLength'.
 /// This function is UNDEFINED for FlatBuffers whose schema does not include
 /// a file_identifier (likely points at padding or the start of a the root
 /// vtable).
-inline const char *GetBufferIdentifier(const void *buf,
+inline const char* GetBufferIdentifier(const void* buf,
                                        bool size_prefixed = false) {
-  return reinterpret_cast<const char *>(buf) +
+  return reinterpret_cast<const char*>(buf) +
          ((size_prefixed) ? 2 * sizeof(uoffset_t) : sizeof(uoffset_t));
 }
 
 // Helper to see if the identifier in a buffer has the expected value.
-inline bool BufferHasIdentifier(const void *buf, const char *identifier,
+inline bool BufferHasIdentifier(const void* buf, const char* identifier,
                                 bool size_prefixed = false) {
   return strncmp(GetBufferIdentifier(buf, size_prefixed), identifier,
                  flatbuffers::kFileIdentifierLength) == 0;
@@ -117,24 +197,27 @@ inline bool BufferHasIdentifier(const void *buf, const char *identifier,
 
 /// @cond FLATBUFFERS_INTERNAL
 // Helpers to get a typed pointer to the root object contained in the buffer.
-template<typename T> T *GetMutableRoot(void *buf) {
+template <typename T>
+T* GetMutableRoot(void* buf) {
+  if (!buf) return nullptr;
   EndianCheck();
-  return reinterpret_cast<T *>(
-      reinterpret_cast<uint8_t *>(buf) +
-      EndianScalar(*reinterpret_cast<uoffset_t *>(buf)));
+  return reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(buf) +
+                              EndianScalar(*reinterpret_cast<uoffset_t*>(buf)));
 }
 
-template<typename T> T *GetMutableSizePrefixedRoot(void *buf) {
-  return GetMutableRoot<T>(reinterpret_cast<uint8_t *>(buf) +
-                           sizeof(uoffset_t));
+template <typename T, typename SizeT = uoffset_t>
+T* GetMutableSizePrefixedRoot(void* buf) {
+  return GetMutableRoot<T>(reinterpret_cast<uint8_t*>(buf) + sizeof(SizeT));
 }
 
-template<typename T> const T *GetRoot(const void *buf) {
-  return GetMutableRoot<T>(const_cast<void *>(buf));
+template <typename T>
+const T* GetRoot(const void* buf) {
+  return GetMutableRoot<T>(const_cast<void*>(buf));
 }
 
-template<typename T> const T *GetSizePrefixedRoot(const void *buf) {
-  return GetRoot<T>(reinterpret_cast<const uint8_t *>(buf) + sizeof(uoffset_t));
+template <typename T, typename SizeT = uoffset_t>
+const T* GetSizePrefixedRoot(const void* buf) {
+  return GetRoot<T>(reinterpret_cast<const uint8_t*>(buf) + sizeof(SizeT));
 }
 
 }  // namespace flatbuffers

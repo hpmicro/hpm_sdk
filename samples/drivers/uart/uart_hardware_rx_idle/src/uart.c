@@ -21,7 +21,7 @@
 #define TEST_UART_BAUDRATE            BOARD_CONSOLE_UART_BAUDRATE
 #define TEST_UART_CLK_NAME            BOARD_CONSOLE_UART_CLK_NAME
 
-#define TEST_DMA                      BOARD_APP_HDMA
+#define TEST_DMA                      BOARD_APP_DMA0
 #define TEST_DMA_CHANNEL              (0U)
 #define TEST_DMAMUX                   BOARD_APP_DMAMUX
 #define TEST_DMAMUX_CHANNEL           DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_DMA, TEST_DMA_CHANNEL)

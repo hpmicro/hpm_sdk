@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,11 +22,12 @@
 #include "hpm_debug_console.h"
 #endif
 #if defined(CONFIG_ENET_PHY) && CONFIG_ENET_PHY
-#include "hpm_enet_phy.h"
+#include "hpm_enet_phy_port.h"
 #endif
 
 #define BOARD_NAME          "hpm6750evkmini"
 #define BOARD_UF2_SIGNATURE (0x0A4D5048UL)
+#define BOARD_DFU_SIGNATURE (0x48504D21UL)
 
 #define SEC_CORE_IMG_START ILM_LOCAL_BASE
 
@@ -174,10 +175,10 @@
 #define BOARD_ACMP_MINUS_INPUT ACMP_INPUT_ANALOG_6 /* align with used pin */
 
 /* dma section */
-#define BOARD_APP_XDMA      HPM_XDMA
-#define BOARD_APP_HDMA      HPM_HDMA
-#define BOARD_APP_XDMA_IRQ  IRQn_XDMA
-#define BOARD_APP_HDMA_IRQ  IRQn_HDMA
+#define BOARD_APP_DMA1      HPM_XDMA
+#define BOARD_APP_DMA0      HPM_HDMA
+#define BOARD_APP_DMA1_IRQ  IRQn_XDMA
+#define BOARD_APP_DMA0_IRQ  IRQn_HDMA
 #define BOARD_APP_DMAMUX    HPM_DMAMUX
 #define TEST_DMA_CONTROLLER HPM_XDMA
 #define TEST_DMA_IRQ        IRQn_XDMA
@@ -208,6 +209,7 @@
 #define BOARD_B_GPIO_INDEX GPIO_DI_GPIOB
 #define BOARD_B_GPIO_PIN   20
 
+#define BOARD_LED_GPIO_NAME  "PB18"
 #define BOARD_LED_GPIO_CTRL  BOARD_G_GPIO_CTRL
 #define BOARD_LED_GPIO_INDEX BOARD_G_GPIO_INDEX
 #define BOARD_LED_GPIO_PIN   BOARD_G_GPIO_PIN
@@ -474,6 +476,7 @@
 #define BOARD_BLDC_QEI_TRGM_QEI_B_SRC            HPM_TRGM2_INPUT_SRC_TRGM2_P7
 #define BOARD_BLDC_QEI_MOTOR_PHASE_COUNT_PER_REV (16U)
 #define BOARD_BLDC_QEI_CLOCK_SOURCE              clock_mot2
+#define BOARD_BLDC_MOTOR_CLOCK_SOURCE            clock_mot2
 #define BOARD_BLDC_QEI_FOC_PHASE_COUNT_PER_REV   (4000U)
 
 /*Timer define*/
@@ -502,11 +505,12 @@
 #define BOARD_BLDC_HFI_PLL_KI (1.0f)
 
 /*adc*/
-#define BOARD_BLDC_ADC_MODULE    ADCX_MODULE_ADC12
 #define BOARD_BLDC_ADC_U_BASE    HPM_ADC0
+#define BOARD_BLDC_ADC_RES_BITS              (12U)
+#define BOARD_BLDC_ADC_CLOCK_DIV             (3U)
+#define BOARD_BLDC_ADC_CHANNEL_SAMPLE_CYCLE  (15U)
 #define BOARD_BLDC_ADC_V_BASE    HPM_ADC1
 #define BOARD_BLDC_ADC_W_BASE    HPM_ADC2
-#define BOARD_BLDC_ADC_TRIG_FLAG adc12_event_trig_complete
 
 #define BOARD_BLDC_ADC_CH_U                   (1U)
 #define BOARD_BLDC_ADC_CH_V                   (2U)
@@ -616,6 +620,14 @@
 
 #define BOARD_BROWNOUT_INDICATE_GPIO_CTRL          HPM_GPIO0
 #define BOARD_BROWNOUT_INDICATE_PIN                IOC_PAD_PZ09
+
+/* sent decode pin */
+
+#define BOARD_SENT_IDLE_HIGH_GPTMR                   HPM_GPTMR5
+#define BOARD_SENT_IDLE_HIGH_GPTMR_IRQ               IRQn_GPTMR5
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CHANNEL           2
+#define BOARD_SENT_IDLE_HIGH_GPTMR_CLK_NAME          clock_gptmr5
+#define BOARD_SENT_IDLE_HIGH_GPTMR_DMA_SRC           HPM_DMA_SRC_GPTMR5_2
 
 #if defined(__cplusplus)
 extern "C" {
@@ -764,6 +776,7 @@ void init_sdxc_clk_data_pins(SDXC_Type *ptr, uint32_t width, bool is_1v8);
 void init_trgmux_pins(uint32_t pin);
 void init_wifi_pins(void);
 void board_init_brownout_indicate_pin(void);
+void init_sent_decode_pins(bool idle_high);
 
 #if defined(__cplusplus)
 }

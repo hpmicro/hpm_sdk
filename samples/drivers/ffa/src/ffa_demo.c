@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,6 +27,9 @@ void show_menu(void);
 void test_fft_complex_q31(void);
 void test_ifft_complex_q31(void);
 void consttest_fir_real_q31_coeff_17taps_src_46taps(void);
+void test_chained_fir(void);
+void test_chained_fft(void);
+void test_chained_mixed(void);
 static void l1c_dc_flush_cacheline_aligned(uint32_t src, uint32_t size);
 static void l1c_dc_invalidate_cacheline_aligned(uint32_t src, uint32_t size);
 
@@ -53,6 +56,15 @@ ATTR_ALIGN(64) ffa_complex_q31_t ffa_fft_q31_dst[512];
 ATTR_ALIGN(64) ffa_complex_q31_t ffa_ifft_q31_dst[512];
 
 ATTR_ALIGN(64) ffa_q31_t ffa_fir_q31_coeff_17taps_src_48taps_dst[30];
+
+ATTR_ALIGN(64) ffa_q31_t ffa_chained_fir_dst0[30];
+ATTR_ALIGN(64) ffa_q31_t ffa_chained_fir_dst1[30];
+ATTR_ALIGN(64) ffa_q31_t ffa_chained_fir_dst2[30];
+
+ATTR_ALIGN(64) ffa_complex_q31_t ffa_chained_fft_dst0[16];
+ATTR_ALIGN(64) ffa_complex_q31_t ffa_chained_fft_dst1[32];
+
+ATTR_ALIGN(64) ffa_chained_desc_t ffa_desc_chain[3];
 
 ffa_fft_test_context_t fft_test_ctx[] = {
     {
@@ -131,12 +143,20 @@ int main(void)
         case '1':
             test_fft_complex_q31();
             break;
-
         case '2':
             test_ifft_complex_q31();
             break;
         case '3':
             consttest_fir_real_q31_coeff_17taps_src_46taps();
+            break;
+        case '4':
+            test_chained_fir();
+            break;
+        case '5':
+            test_chained_fft();
+            break;
+        case '6':
+            test_chained_mixed();
             break;
         default:
             show_menu();
@@ -169,6 +189,9 @@ void show_menu(void)
                                     "*    1. Complex Q31 FFT Test                                                  *\n"
                                     "*    2. 8-Point Complex Q31 IFFT Test                                         *\n"
                                     "*    3. Real Q31 FIR Test                                                     *\n"
+                                    "*    4. Chained FIR Test (3 FIR operations)                                   *\n"
+                                    "*    5. Chained FFT Test (2 FFT operations)                                   *\n"
+                                    "*    6. Chained Mixed Test (FFT + FIR)                                        *\n"
                                     "*                                                                             *\n"
                                     "*******************************************************************************\n";
     printf("%s\n", menu_info);
@@ -303,5 +326,232 @@ void consttest_fir_real_q31_coeff_17taps_src_46taps(void)
                                          FIR_DEVIATION_MAX,
                                          NULL);
         printf("FIR test %s\n", is_equal ? "PASSED" : "FAILED");
+    }
+}
+
+void test_chained_fir(void)
+{
+    printf("%s start...\n", __func__);
+
+    fir_xfer_t xfer0 = { 0 };
+    fir_xfer_t xfer1 = { 0 };
+    fir_xfer_t xfer2 = { 0 };
+
+    /* Configure 3 FIR operations with same input/coeff but different output buffers */
+    xfer0.coef_taps = ARRAY_SIZE(ffa_fir_q31_17_taps_coeff);
+    xfer0.input_taps = ARRAY_SIZE(ffa_fir_q31_46_taps_src);
+    xfer0.data_type = FFA_DATA_TYPE_REAL_Q31;
+    xfer0.src = &ffa_fir_q31_46_taps_src;
+    xfer0.coeff = &ffa_fir_q31_17_taps_coeff;
+    xfer0.dst = &ffa_chained_fir_dst0;
+
+    xfer1.coef_taps = ARRAY_SIZE(ffa_fir_q31_17_taps_coeff);
+    xfer1.input_taps = ARRAY_SIZE(ffa_fir_q31_46_taps_src);
+    xfer1.data_type = FFA_DATA_TYPE_REAL_Q31;
+    xfer1.src = &ffa_fir_q31_46_taps_src;
+    xfer1.coeff = &ffa_fir_q31_17_taps_coeff;
+    xfer1.dst = &ffa_chained_fir_dst1;
+
+    xfer2.coef_taps = ARRAY_SIZE(ffa_fir_q31_17_taps_coeff);
+    xfer2.input_taps = ARRAY_SIZE(ffa_fir_q31_46_taps_src);
+    xfer2.data_type = FFA_DATA_TYPE_REAL_Q31;
+    xfer2.src = &ffa_fir_q31_46_taps_src;
+    xfer2.coeff = &ffa_fir_q31_17_taps_coeff;
+    xfer2.dst = &ffa_chained_fir_dst2;
+
+    /* Build chained descriptors: op0 -> op1 -> op2 -> NULL */
+    ffa_build_fir_chained_desc(&ffa_desc_chain[0], &xfer0, &ffa_desc_chain[1], FFA_CHAINED_CMD_LEN_FIR);
+    ffa_build_fir_chained_desc(&ffa_desc_chain[1], &xfer1, &ffa_desc_chain[2], FFA_CHAINED_CMD_LEN_FIR);
+    ffa_build_fir_chained_desc(&ffa_desc_chain[2], &xfer2, NULL, 0);
+
+    /* Cache maintenance:
+     * 1. Flush input data (src, coeff) to ensure FFA reads correct data
+     * 2. Flush descriptors to ensure FFA reads correct descriptor chain
+     * 3. Invalidate output buffers to discard any stale cache data before FFA writes
+     */
+    if (l1c_dc_is_enabled()) {
+        /* Flush input data */
+        l1c_dc_flush_cacheline_aligned((uint32_t) &ffa_fir_q31_17_taps_coeff,
+                                       HPM_L1C_CACHELINE_ALIGN_UP(sizeof(ffa_fir_q31_17_taps_coeff)));
+        l1c_dc_flush_cacheline_aligned((uint32_t) &ffa_fir_q31_46_taps_src,
+                                       HPM_L1C_CACHELINE_ALIGN_UP(sizeof(ffa_fir_q31_46_taps_src)));
+        /* Flush descriptors */
+        l1c_dc_flush_cacheline_aligned((uint32_t) &ffa_desc_chain,
+                                       HPM_L1C_CACHELINE_ALIGN_UP(sizeof(ffa_desc_chain)));
+        /* Invalidate output buffers before FFA writes to avoid dirty cache writeback */
+        l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst0, sizeof(ffa_chained_fir_dst0));
+        l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst1, sizeof(ffa_chained_fir_dst1));
+        l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst2, sizeof(ffa_chained_fir_dst2));
+    }
+
+    /* Execute chained FIR operations */
+    hpm_stat_t status = ffa_calculate_chained_blocking(HPM_FFA, &ffa_desc_chain[0]);
+
+    if (status != status_success) {
+        printf("Chained FIR calculation failed, error_code=%d\n", status);
+    } else {
+        /* Invalidate cache for output buffers */
+        if (l1c_dc_is_enabled()) {
+            l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst0, sizeof(ffa_chained_fir_dst0));
+            l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst1, sizeof(ffa_chained_fir_dst1));
+            l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst2, sizeof(ffa_chained_fir_dst2));
+        }
+
+        /* Verify all 3 results */
+        bool result0 = ffa_result_check((const int32_t *) &ffa_chained_fir_dst0,
+                                        (const int32_t *) &ffa_fir_q31_coeff_17taps_src48taps_result,
+                                        0, sizeof(ffa_chained_fir_dst0) / sizeof(int32_t),
+                                        FIR_DEVIATION_MAX, NULL);
+
+        bool result1 = ffa_result_check((const int32_t *) &ffa_chained_fir_dst1,
+                                        (const int32_t *) &ffa_fir_q31_coeff_17taps_src48taps_result,
+                                        0, sizeof(ffa_chained_fir_dst1) / sizeof(int32_t),
+                                        FIR_DEVIATION_MAX, NULL);
+
+        bool result2 = ffa_result_check((const int32_t *) &ffa_chained_fir_dst2,
+                                        (const int32_t *) &ffa_fir_q31_coeff_17taps_src48taps_result,
+                                        0, sizeof(ffa_chained_fir_dst2) / sizeof(int32_t),
+                                        FIR_DEVIATION_MAX, NULL);
+
+        bool overall = result0 && result1 && result2;
+        printf("Chained FIR test: op0=%s, op1=%s, op2=%s, overall=%s\n",
+               result0 ? "PASS" : "FAIL",
+               result1 ? "PASS" : "FAIL",
+               result2 ? "PASS" : "FAIL",
+               overall ? "PASSED" : "FAILED");
+    }
+}
+
+void test_chained_fft(void)
+{
+    printf("%s start...\n", __func__);
+
+    fft_xfer_t xfer0 = { 0 };
+    fft_xfer_t xfer1 = { 0 };
+
+    xfer0.num_points = 16;
+    xfer0.src = ffa_fft_complex_q31_16_point_src;
+    xfer0.dst = ffa_chained_fft_dst0;
+    xfer0.is_ifft = false;
+    xfer0.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+    xfer0.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+
+    xfer1.num_points = 32;
+    xfer1.src = ffa_fft_complex_q31_32_point_src;
+    xfer1.dst = ffa_chained_fft_dst1;
+    xfer1.is_ifft = false;
+    xfer1.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+    xfer1.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+
+    ffa_build_fft_chained_desc(&ffa_desc_chain[0], &xfer0, &ffa_desc_chain[1], FFA_CHAINED_CMD_LEN_FFT);
+    ffa_build_fft_chained_desc(&ffa_desc_chain[1], &xfer1, NULL, 0);
+
+    /* Cache maintenance */
+    if (l1c_dc_is_enabled()) {
+        /* Flush input data */
+        l1c_dc_flush_cacheline_aligned((uint32_t) ffa_fft_complex_q31_16_point_src,
+                                       16 * sizeof(ffa_complex_q31_t));
+        l1c_dc_flush_cacheline_aligned((uint32_t) ffa_fft_complex_q31_32_point_src,
+                                       32 * sizeof(ffa_complex_q31_t));
+        /* Flush descriptors */
+        l1c_dc_flush_cacheline_aligned((uint32_t) &ffa_desc_chain,
+                                       HPM_L1C_CACHELINE_ALIGN_UP(sizeof(ffa_desc_chain)));
+        /* Invalidate output buffers before FFA writes */
+        l1c_dc_invalidate_cacheline_aligned((uint32_t) ffa_chained_fft_dst0, sizeof(ffa_chained_fft_dst0));
+        l1c_dc_invalidate_cacheline_aligned((uint32_t) ffa_chained_fft_dst1, sizeof(ffa_chained_fft_dst1));
+    }
+
+    hpm_stat_t status = ffa_calculate_chained_blocking(HPM_FFA, &ffa_desc_chain[0]);
+
+    if (status != status_success) {
+        printf("Chained FFT calculation failed, error_code=%d\n", status);
+    } else {
+        if (l1c_dc_is_enabled()) {
+            l1c_dc_invalidate_cacheline_aligned((uint32_t) ffa_chained_fft_dst0,
+                                                16 * sizeof(ffa_complex_q31_t));
+            l1c_dc_invalidate_cacheline_aligned((uint32_t) ffa_chained_fft_dst1,
+                                                32 * sizeof(ffa_complex_q31_t));
+        }
+
+        bool result0 = ffa_result_check((const int32_t *) ffa_chained_fft_dst0,
+                                        (const int32_t *) ffa_fft_complex_q31_16_point_result,
+                                        4, 16 * 2, FFT_DEVIATION_MAX, NULL);
+        bool result1 = ffa_result_check((const int32_t *) ffa_chained_fft_dst1,
+                                        (const int32_t *) ffa_fft_complex_q31_32_point_result,
+                                        5, 32 * 2, FFT_DEVIATION_MAX, NULL);
+
+        printf("Chained FFT test: 16pt=%s, 32pt=%s, overall=%s\n",
+               result0 ? "PASS" : "FAIL",
+               result1 ? "PASS" : "FAIL",
+               (result0 && result1) ? "PASSED" : "FAILED");
+    }
+}
+
+void test_chained_mixed(void)
+{
+    printf("%s start...\n", __func__);
+
+    fft_xfer_t fft_xfer = { 0 };
+    fir_xfer_t fir_xfer = { 0 };
+
+    fft_xfer.num_points = 16;
+    fft_xfer.src = ffa_fft_complex_q31_16_point_src;
+    fft_xfer.dst = ffa_chained_fft_dst0;
+    fft_xfer.is_ifft = false;
+    fft_xfer.src_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+    fft_xfer.dst_data_type = FFA_DATA_TYPE_COMPLEX_Q31;
+
+    fir_xfer.coef_taps = ARRAY_SIZE(ffa_fir_q31_17_taps_coeff);
+    fir_xfer.input_taps = ARRAY_SIZE(ffa_fir_q31_46_taps_src);
+    fir_xfer.data_type = FFA_DATA_TYPE_REAL_Q31;
+    fir_xfer.src = &ffa_fir_q31_46_taps_src;
+    fir_xfer.coeff = &ffa_fir_q31_17_taps_coeff;
+    fir_xfer.dst = &ffa_chained_fir_dst0;
+
+    /* cmd_len specifies the length of next descriptor (FIR) */
+    ffa_build_fft_chained_desc(&ffa_desc_chain[0], &fft_xfer, &ffa_desc_chain[1], FFA_CHAINED_CMD_LEN_FIR);
+    ffa_build_fir_chained_desc(&ffa_desc_chain[1], &fir_xfer, NULL, 0);
+
+    /* Cache maintenance */
+    if (l1c_dc_is_enabled()) {
+        /* Flush input data */
+        l1c_dc_flush_cacheline_aligned((uint32_t) ffa_fft_complex_q31_16_point_src,
+                                       16 * sizeof(ffa_complex_q31_t));
+        l1c_dc_flush_cacheline_aligned((uint32_t) &ffa_fir_q31_17_taps_coeff,
+                                       HPM_L1C_CACHELINE_ALIGN_UP(sizeof(ffa_fir_q31_17_taps_coeff)));
+        l1c_dc_flush_cacheline_aligned((uint32_t) &ffa_fir_q31_46_taps_src,
+                                       HPM_L1C_CACHELINE_ALIGN_UP(sizeof(ffa_fir_q31_46_taps_src)));
+        /* Flush descriptors */
+        l1c_dc_flush_cacheline_aligned((uint32_t) &ffa_desc_chain,
+                                       HPM_L1C_CACHELINE_ALIGN_UP(sizeof(ffa_desc_chain)));
+        /* Invalidate output buffers before FFA writes */
+        l1c_dc_invalidate_cacheline_aligned((uint32_t) ffa_chained_fft_dst0, sizeof(ffa_chained_fft_dst0));
+        l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst0, sizeof(ffa_chained_fir_dst0));
+    }
+
+    hpm_stat_t status = ffa_calculate_chained_blocking(HPM_FFA, &ffa_desc_chain[0]);
+
+    if (status != status_success) {
+        printf("Chained Mixed calculation failed, error_code=%d\n", status);
+    } else {
+        if (l1c_dc_is_enabled()) {
+            l1c_dc_invalidate_cacheline_aligned((uint32_t) ffa_chained_fft_dst0,
+                                                16 * sizeof(ffa_complex_q31_t));
+            l1c_dc_invalidate_cacheline_aligned((uint32_t) &ffa_chained_fir_dst0,
+                                                sizeof(ffa_chained_fir_dst0));
+        }
+
+        bool fft_result = ffa_result_check((const int32_t *) ffa_chained_fft_dst0,
+                                           (const int32_t *) ffa_fft_complex_q31_16_point_result,
+                                           4, 16 * 2, FFT_DEVIATION_MAX, NULL);
+        bool fir_result = ffa_result_check((const int32_t *) &ffa_chained_fir_dst0,
+                                           (const int32_t *) &ffa_fir_q31_coeff_17taps_src48taps_result,
+                                           0, sizeof(ffa_chained_fir_dst0) / sizeof(int32_t),
+                                           FIR_DEVIATION_MAX, NULL);
+
+        printf("Chained Mixed test: FFT=%s, FIR=%s, overall=%s\n",
+               fft_result ? "PASS" : "FAIL",
+               fir_result ? "PASS" : "FAIL",
+               (fft_result && fir_result) ? "PASSED" : "FAILED");
     }
 }

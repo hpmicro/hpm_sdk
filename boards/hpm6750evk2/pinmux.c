@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -859,4 +859,15 @@ void board_init_i2c_eeprom_pin(void)
     HPM_IOC->PAD[IOC_PAD_PZ10].FUNC_CTL = IOC_PZ10_FUNC_CTL_I2C0_SDA | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
     HPM_BIOC->PAD[IOC_PAD_PZ10].FUNC_CTL = BIOC_PZ10_FUNC_CTL_SOC_PZ_10;
     HPM_IOC->PAD[IOC_PAD_PZ10].PAD_CTL = IOC_PAD_PAD_CTL_OD_SET(1);
+}
+
+void init_trgm_gptmr4_cap2_invert_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PD16].FUNC_CTL = IOC_PD16_FUNC_CTL_TRGM2_P_06;
+
+    trgm_output_t trgm2_io_config0 = {0};
+    trgm2_io_config0.invert = 1;
+    trgm2_io_config0.type = trgm_output_same_as_input;
+    trgm2_io_config0.input = HPM_TRGM2_INPUT_SRC_TRGM2_P6;
+    trgm_output_config(HPM_TRGM2, HPM_TRGM2_OUTPUT_SRC_GPTMR4_IN2, &trgm2_io_config0);
 }

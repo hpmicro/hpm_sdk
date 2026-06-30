@@ -8,7 +8,7 @@ Overview
 
 The HPM5E00 is a single-core MCU with high computing power and abundant peripheral resources, 512KB of RAM on the chip and 1MB flash.
 
-The HPM5E00EVK is an evaluation board for the HPM6E00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/SEI/PWM/ADC), CAN interface, Ethernet interface, EtherCAT interfaces, USB interface, audio interface, PPI/FREMC interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
+The HPM5E00EVK is an evaluation board for the HPM5E00 series MCU, providing a range of interfaces including ADC input with SMA interface, SDM input with SMA interface, motor control interface (QEO/QEI/PWM/ADC), CAN interface, Ethernet interface, EtherCAT interfaces, USB interface, PPI interface, and Raspberry Pi interface. It also integrates an onboard debugger FT2232 for easy debugging by users.
 
 .. image:: doc/hpm5e00evk.png
    :alt: hpm5e00evk
@@ -98,7 +98,7 @@ Plug-in
      - J17
      - All connected: use the on-board ft2232, All disconnected: use JTAG interface
 
-- PPI/FEMC interface
+- PPI interface
 
 .. list-table::
    :header-rows: 1
@@ -183,6 +183,23 @@ The UART4 is used for some functional testing using UART, such as MICROROS_UART,
      - J4
      - request to connect JP2, JP4, JP5
 
+- ADC16 Differential Input
+
+  Used by ``samples/drivers/adc/adc16_differential`` and other differential ADC16 examples. HPM5E31 provides ADC0 and ADC1 only; differential mode pairs ADC0 (master) with ADC1 (slave).
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Function
+       - Pin
+       - Position
+     * - ADC16 diff master (ADC0)
+       - PF28 (ADC0.IN05)
+       - J3[13] (ADC_IU)
+     * - ADC16 diff slave (ADC1)
+       - PF30 (ADC1.IN06)
+       - J3[15] (ADC_IW)
+
 - ACMP
 
 .. list-table::
@@ -199,7 +216,7 @@ The UART4 is used for some functional testing using UART, such as MICROROS_UART,
 
 .. note::
 
-   QEO ABZ pins should be connected as documented here
+   The QEO ABZ pin silkscreen on the board is mislabeled. Connect according to the actual function as documented here.
    When a HALL sensor is required, the development board cannot be connected directly to the HALL.U/V/W of the motor board, but needs to be wired separately.
 
 .. list-table::
@@ -250,12 +267,12 @@ The UART4 is used for some functional testing using UART, such as MICROROS_UART,
    * - Function
      - Pin
      - Note
-   * - Example1
-     - J3[10]
-     - Example Note 1
-   * - Example2
-     - J3[12]
-     - Example Note 2
+   * - ADC2.INA11
+     - J3[15]
+     - ADC_IW (Cos)
+   * - ADC0.INA14
+     - J3[13]
+     - ADC_IU (Sin)
 
 - PLB Pulse Output Pin
 
@@ -318,7 +335,7 @@ This pin is used for UART LIN Slave baud rate adaptive demo to detect the clock 
    * - GPTMR0.CAPT_2
      - PC00
      - P5[7]
-     -
+     - SENT decode input pin (idle high and low levels share the same pin)
    * - GPTMR0.CAPT_3
      - PC08
      - P5[5]

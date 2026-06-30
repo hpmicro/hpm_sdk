@@ -31,9 +31,7 @@ I2S Interrupt
 工程配置
 ------------
 
-1. 音频编解码器配置
-   - 在文件 `CMakeLists.txt` 中，根据开发板原理图，设置匹配的audio codec类型
-   - 例如："set(CONFIG_CODEC "sgtl5000")"
+- Audio Codec类型缺省条件下依据`boards/<board_name>/<board_name>.yaml`自动匹配(feature: board_codec_xxxx)，如需指定audio codec类型，可在`CMakeLists.txt`中设置："set(CONFIG_CODEC_NAME "wm8960")"。
 
 硬件设置
 ------------

@@ -1,8 +1,20 @@
-# Copyright (c) 2021-2022,2024-2025 HPMicro
+# Copyright (c) 2021-2022,2024-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Suppress developer warnings
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE INTERNAL "" FORCE)
+
+# Board feature categories that need special processing
+# These categories are extracted from board features matching board_category_value format
+# and will set corresponding CONFIG_* variables
+# To add a new category, append it to this list and add handling logic in application.cmake
+# Format: list items are space-separated, similar to Python list [a, b, c]
+set(HPM_BOARD_SPECIAL_CATEGORIES
+    "codec"
+    # "camera"  # Example: uncomment to add camera category
+    # "phy"  # Example: uncomment to add phy category
+    CACHE INTERNAL "Board feature categories requiring special processing"
+)
 
 # Check if GNURISCV_TOOLCHAIN_PATH environment variable is set
 if(NOT DEFINED ENV{GNURISCV_TOOLCHAIN_PATH})
@@ -218,7 +230,7 @@ endif()
 
 # Convert HPM build type to lowercase and validate it
 string(TOLOWER ${HPM_BUILD_TYPE} HPM_BUILD_TYPE)
-set(supported_hpm_build_types "ram|flash_xip|flash_sdram_xip|flash_uf2|sec_core_img|flash_xip_hybrid")
+set(supported_hpm_build_types "ram|flash_xip|flash_sdram_xip|flash_uf2|flash_sdram_dfu|flash_dfu|sec_core_img|flash_xip_hybrid")
 string(REGEX MATCH "${supported_hpm_build_types}" is_valid_hpm_build_type ${HPM_BUILD_TYPE})
 if(NOT is_valid_hpm_build_type)
     message(FATAL_ERROR "\n!!! invalid HPM_BUILD_TYPE: ${HPM_BUILD_TYPE}, supported types:\n    ${supported_hpm_build_types}\n")
@@ -292,6 +304,50 @@ set(HPM_DEVICE_NAME ${device_name})
 # Get the flash size and external RAM size of the board from the board YAML file
 get_flash_size_of_board(${BOARD_YAML} flash_size)
 get_extram_size_of_board(${BOARD_YAML} extram_size)
+
+# Process board features with board_category_value format
+# Extract category and value from features matching board_(\w+)_(.+) pattern
+# Categories in the special_categories list will set corresponding CONFIG_* variables
+# This must be done before board CMakeLists.txt is included
+get_board_info(${BOARD_YAML} feature board_features)
+if(board_features AND NOT board_features STREQUAL "0" AND NOT board_features STREQUAL "not found")
+    # Convert colon-separated string to CMake list
+    string(REPLACE ":" ";" feature_list "${board_features}")
+
+    # Get categories that need special processing from global configuration
+    # This list is defined in cmake-ext.cmake as HPM_BOARD_SPECIAL_CATEGORIES
+    set(special_categories ${HPM_BOARD_SPECIAL_CATEGORIES})
+
+    # Process each feature
+    foreach(feature ${feature_list})
+        # Match board_category_value pattern
+        # First group ([a-zA-Z0-9_]+) is category, second group (.+) is value
+        # Note: CMake regex doesn't support \w, so we use [a-zA-Z0-9_] instead
+        # CMAKE_MATCH_1 contains category, CMAKE_MATCH_2 contains value
+        string(REGEX MATCH "^board_([a-zA-Z0-9_]+)_(.+)$" matched "${feature}")
+        if(matched)
+            # Use CMAKE_MATCH_n automatic variables set by REGEX MATCH
+            # CMAKE_MATCH_1 = category (e.g., "codec" from "board_codec_sgtl5000")
+            # CMAKE_MATCH_2 = value (e.g., "sgtl5000" from "board_codec_sgtl5000")
+            set(category "${CMAKE_MATCH_1}")
+            set(value "${CMAKE_MATCH_2}")
+
+            # Check if category needs special processing
+            list(FIND special_categories ${category} category_index)
+            if(category_index GREATER_EQUAL 0)
+                # Category found in special_categories list
+                # Convert category to uppercase for variable name
+                string(TOUPPER ${category} category_upper)
+                # Dynamically construct variable name: CONFIG_{CATEGORY}_NAME
+                set(config_var_name "CONFIG_${category_upper}_NAME")
+                # Set the variable if not already defined
+                if(NOT DEFINED ${config_var_name})
+                    set(${config_var_name} ${value} CACHE STRING "Board ${category_upper} Name")
+                endif()
+            endif()
+        endif()
+    endforeach()
+endif()
 
 # Check if the build type is supported for the board
 string(TOLOWER ${HPM_BUILD_TYPE} build_type)

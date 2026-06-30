@@ -1,6 +1,6 @@
 /* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
    Copyright 2022 Andes Technology Corporation. All rights reserved.
-   Copyright (c) 2022 HPMicro
+   Copyright (c) 2022-2026 HPMicro
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/reference/pooling.h"
 
 #include "tensorflow/lite/c/builtin_op_data.h"
-#include "tensorflow/lite/c/common.h"
-#include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/pooling.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 
@@ -66,12 +65,15 @@ void AverageEvalQuantized(TfLiteContext* context, const TfLiteNode* node,
   const int output_height = output_shape.Dims(1);
   const int output_width = output_shape.Dims(2);
 
-hpm_nn_avepool_HWC_s8_any_act(
+  /* hpm_nn API declares in_tensor as non-const int8_t*; const_cast needed */
+  hpm_nn_avepool_HWC_s8_any_act(
       input_height, input_width, output_height, output_width,
-      op_params.stride_height, op_params.stride_width, op_params.filter_height, 
-      op_params.filter_width, op_params.padding_values.height, op_params.padding_values.width,
-      op_params.quantized_activation_min, op_params.quantized_activation_max, depth,
-      (int8_t *)tflite::micro::GetTensorData<int8_t>(input),
+      op_params.stride_height, op_params.stride_width,
+      op_params.filter_height, op_params.filter_width,
+      op_params.padding_values.height, op_params.padding_values.width,
+      op_params.quantized_activation_min,
+      op_params.quantized_activation_max, depth,
+      const_cast<int8_t *>(tflite::micro::GetTensorData<int8_t>(input)),
       nullptr, tflite::micro::GetTensorData<int8_t>(output));
 }
 
@@ -85,18 +87,20 @@ TfLiteStatus MaxPrepare(TfLiteContext* context, TfLiteNode* node) {
 TfLiteStatus AveragePrepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_STATUS(PoolingPrepare(context, node));
 
-  const TfLiteTensor* input = GetInput(context, node, kPoolingInputTensor);
-  TfLiteTensor* output = GetOutput(context, node, kPoolingOutputTensor);
+  MicroContext* micro_context = GetMicroContext(context);
+  TfLiteTensor* input =
+      micro_context->AllocateTempInputTensor(node, kPoolingInputTensor);
+  TF_LITE_ENSURE(context, input != nullptr);
+  TfLiteTensor* output =
+      micro_context->AllocateTempOutputTensor(node, kPoolingOutputTensor);
+  TF_LITE_ENSURE(context, output != nullptr);
 
   if (input->type == kTfLiteInt8) {
-    RuntimeShape input_shape = GetTensorShape(input);
-    TFLITE_DCHECK_EQ(input_shape.DimensionsCount(), 4);
+    TFLITE_DCHECK_EQ(input->dims->size, 4);
+    TFLITE_DCHECK_EQ(output->dims->size, 4);
 
-    RuntimeShape output_shape = GetTensorShape(output);
-    TFLITE_DCHECK_EQ(output_shape.DimensionsCount(), 4);
-
-    const int depth = MatchingDim(input_shape, 3, output_shape, 3);
-    const int output_width = output_shape.Dims(2);
+    const int depth = output->dims->data[3];
+    const int output_width = output->dims->data[2];
 
     const int32_t buffer_size =
 hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(output_width, depth);
@@ -109,6 +113,9 @@ hpm_nn_avepool_HWC_s8_any_act_get_buffer_size(output_width, depth);
       data->buffer_idx = -1;
     }
   }
+
+  micro_context->DeallocateTempTfLiteTensor(input);
+  micro_context->DeallocateTempTfLiteTensor(output);
   return kTfLiteOk;
 }
 
@@ -134,8 +141,8 @@ TfLiteStatus AverageEval(TfLiteContext* context, TfLiteNode* node) {
       AverageEvalQuantized(context, node, params, data, input, output);
       break;
     default:
-      TF_LITE_KERNEL_LOG(context, "Input type %s is not currently supported",
-                         TfLiteTypeGetName(input->type));
+      MicroPrintf("Input type %s is not currently supported",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
   }
   return kTfLiteOk;
@@ -159,11 +166,11 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
       MaxPoolingEvalFloat(context, node, params, data, input, output);
       break;
     case kTfLiteInt8:
-      MaxPoolingEvalQuantized(context, node, params, data, input, output);
+      MaxPoolingEvalQuantized<int8_t>(context, node, params, data, input, output);
       break;
     default:
-      TF_LITE_KERNEL_LOG(context, "Type %s not currently supported.",
-                         TfLiteTypeGetName(input->type));
+      MicroPrintf("Type %s not currently supported.",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
   }
   return kTfLiteOk;
@@ -171,26 +178,12 @@ TfLiteStatus MaxEval(TfLiteContext* context, TfLiteNode* node) {
 
 }  // namespace 
 
-TfLiteRegistration Register_AVERAGE_POOL_2D() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/AveragePrepare,
-          /*invoke=*/AverageEval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_AVERAGE_POOL_2D() {
+  return tflite::micro::RegisterOp(Init, AveragePrepare, AverageEval);
 }
 
-TfLiteRegistration Register_MAX_POOL_2D() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/MaxPrepare,
-          /*invoke=*/MaxEval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+TFLMRegistration Register_MAX_POOL_2D() {
+  return tflite::micro::RegisterOp(Init, MaxPrepare, MaxEval);
 }
 
 }  // namespace tflite

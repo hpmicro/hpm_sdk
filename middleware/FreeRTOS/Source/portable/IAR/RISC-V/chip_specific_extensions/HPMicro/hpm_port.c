@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,7 +17,12 @@ extern volatile uint64_t * pullMachineTimerCompareRegister;
  */
 #if ( configUSE_TICKLESS_IDLE != 0 )
 #if( configMTIME_BASE_ADDRESS == 0 ) || ( configMTIMECMP_BASE_ADDRESS == 0 )
+
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#define portMAX_32_BIT_NUMBER                 ( 0xFFFFFFUL )
+#else
 #define portMAX_32_BIT_NUMBER                 ( 0xFFFFFFFFUL )
+#endif
 
 /* A fiddle factor to estimate the number of gptmr counts that would have
  * occurred while the gptmr counter is stopped during tickless idle
@@ -56,6 +61,9 @@ void vPortSetupTimerInterrupt( void )
 }
 #else
 #if defined (portTIMER_SOURCE_GPTMR)
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+#define portGPTMTV2_PRESCALER          ( 0x100UL )
+#endif
 volatile uint32_t uxGptimerIncrementsForOneTick;
 SDK_DECLARE_EXT_ISR_M(FREERTOS_TIMER_IRQ, vPortSysTimerIsr)
 void vPortSysTimerIsr(void)
@@ -81,8 +89,17 @@ void vPortSysTimerIsr(void)
 #endif
             /* Critical section start */
             need_switch = xTaskIncrementTick();
-            if (pdTRUE == need_switch)
+            if (pdTRUE == need_switch) {
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+                traceISR_EXIT_TO_SCHEDULER();
+#endif
                 vTaskSwitchContext();
+            }
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+            else {
+                traceISR_EXIT();
+            }
+#endif
             /* Critical section end */
 #if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
         }
@@ -99,6 +116,10 @@ void vPortSetupTimerInterrupt( void )
     clock_add_to_group(FREERTOS_TIMER_CLOCK, 0);
     gptmr_channel_get_default_config(FREERTOS_TIMER_RESOURCE, &config);
     gptmr_freq = clock_get_frequency(FREERTOS_TIMER_CLOCK);
+#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
+    config.prescaler = portGPTMTV2_PRESCALER;
+    gptmr_freq = gptmr_freq / config.prescaler;
+#endif
     config.reload = gptmr_freq / configTICK_RATE_HZ;
     uxGptimerIncrementsForOneTick = gptmr_freq / configTICK_RATE_HZ;
     gptmr_channel_config(FREERTOS_TIMER_RESOURCE, FREERTOS_TIMER_CH, &config, false);
@@ -143,8 +164,17 @@ void vPortSysTimerIsr(void)
 #endif
                 /* Critical section start */
                 need_switch = xTaskIncrementTick();
-                if (pdTRUE == need_switch)
+                if (pdTRUE == need_switch) {
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)
+                    traceISR_EXIT_TO_SCHEDULER();
+#endif
                     vTaskSwitchContext();
+                }
+#if defined(CONFIG_SEGGER_SYSVIEW) && (CONFIG_SEGGER_SYSVIEW != 0)                
+                else {
+                    traceISR_EXIT();
+                }
+#endif
                 /* Critical section end */
 #if !defined(DISABLE_IRQ_PREEMPTIVE) || (DISABLE_IRQ_PREEMPTIVE == 0)
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,7 +19,7 @@ void adc12_get_default_config(adc12_config_t *config)
     config->adc_clk_div        = adc12_clock_divider_1;
     config->wait_dis           = true;
     config->sel_sync_ahb       = true;
-    config->adc_ahb_en         = false;
+    config->adc_ahb_en         = false; /* Deprecated field; ignored by @ref adc12_init. */
 }
 
 void adc12_get_channel_default_config(adc12_channel_config_t *config)
@@ -97,6 +97,7 @@ hpm_stat_t adc12_deinit(ADC12_Type *ptr)
 hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
 {
     uint32_t adc_clk_div;
+    uint32_t adc_ahb_en;
 
     /**
      * disable adc
@@ -124,9 +125,14 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
     ptr->CONV_CFG1 = ADC12_CONV_CFG1_CONVERT_CLOCK_NUMBER_SET(2 * config->res + 7)
                    | ADC12_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div - 1);
 
-    /* Set ADC Config0 */
+    /* Set ADC_CFG0; program ADC_AHB_EN from conv_mode. */
+    if ((config->conv_mode == adc12_conv_mode_sequence) || (config->conv_mode == adc12_conv_mode_preemption)) {
+        adc_ahb_en = 1U;
+    } else {
+        adc_ahb_en = 0U;
+    }
     ptr->ADC_CFG0 = ADC12_ADC_CFG0_SEL_SYNC_AHB_SET(config->sel_sync_ahb)
-                  | ADC12_ADC_CFG0_ADC_AHB_EN_SET(config->adc_ahb_en);
+                  | ADC12_ADC_CFG0_ADC_AHB_EN_SET(adc_ahb_en);
 
     /* Set wait_dis */
     ptr->BUF_CFG0 = ADC12_BUF_CFG0_WAIT_DIS_SET(config->wait_dis);
@@ -190,10 +196,15 @@ hpm_stat_t adc12_init_channel(ADC12_Type *ptr, adc12_channel_config_t *config)
                                 | ADC12_SAMPLE_CFG_SAMPLE_CLOCK_NUMBER_SHIFT_SET(config->sample_cycle_shift)
                                 | ADC12_SAMPLE_CFG_SAMPLE_CLOCK_NUMBER_SET(config->sample_cycle);
 
-    /* Enable watchdog interrupt */
+#if defined(ADC12_SOC_WDOG_INT_EN_DEFERRED) && (ADC12_SOC_WDOG_INT_EN_DEFERRED)
+    /* Watchdog IRQ enable is deferred: see adc12_enable_wdog_interrupt() after in-window conversion. */
+    (void) config->wdog_int_en;
+#else
+    /* Enable WDOG interrupt together with threshold (SoCs / callers without deferred mode). */
     if (config->wdog_int_en) {
-        ptr->INT_EN |= 1 << config->ch;
+        ptr->INT_EN |= 1U << config->ch;
     }
+#endif
 
     return status_success;
 }
@@ -235,12 +246,11 @@ hpm_stat_t adc12_init_seq_dma(ADC12_Type *ptr, adc12_dma_config_t *dma_config)
     ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG & ~ADC12_SEQ_DMA_CFG_BUF_LEN_MASK)
                      | ADC12_SEQ_DMA_CFG_BUF_LEN_SET(dma_config->buff_len_in_4bytes - 1);
 
-    /* Set stop_en and stop_pos */
-    if (dma_config->stop_en) {
-        ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG & ~ADC12_SEQ_DMA_CFG_STOP_POS_MASK)
-                         | ADC12_SEQ_DMA_CFG_STOP_EN_MASK
-                         | ADC12_SEQ_DMA_CFG_STOP_POS_SET(dma_config->stop_pos);
-    }
+    /* STOP_EN and STOP_POS are programmed independently. */
+    ptr->SEQ_DMA_CFG = (ptr->SEQ_DMA_CFG
+                        & ~(ADC12_SEQ_DMA_CFG_STOP_EN_MASK | ADC12_SEQ_DMA_CFG_STOP_POS_MASK))
+                     | ADC12_SEQ_DMA_CFG_STOP_POS_SET(dma_config->stop_pos)
+                     | (dma_config->stop_en ? ADC12_SEQ_DMA_CFG_STOP_EN_MASK : 0U);
 
     return status_success;
 }

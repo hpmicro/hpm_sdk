@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,8 +15,8 @@ uint8_t mac[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17};
 ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) tsw_tsf_t entry[10];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t send_buff[TSW_SEND_DESC_COUNT][TSW_SEND_BUFF_LEN];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t recv_buff[TSW_RECV_DESC_COUNT][TSW_RECV_BUFF_LEN];
-ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4)  uint8_t data_buff[] = {
-0x00, 0x00, 0x01, 0x00,
+ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) uint8_t data_buff[] = {
+0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
@@ -34,9 +34,8 @@ ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4)  uint8_t data_buff[] = {
 0xc0, 0xa8, 0x64, 0x05,
 };
 
-
-ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4)  uint8_t data_buff1[16+1024] = {
-0x00, 0x00, 0x01, 0x00,
+ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) uint8_t data_buff1[TSW_SOC_SWITCH_HEADER_LEN + 1024] = {
+0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
@@ -58,7 +57,6 @@ ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4)  uint8_t data_buff1[16+1024] =
  *---------------------------------------------------------------------*/
 hpm_stat_t tsw_init(TSW_Type *ptr)
 {
-    rtl8211_config_t phy_config;
     tsw_dma_config_t config;
 
     /* Disable all MACs(TX/RX) */
@@ -95,10 +93,6 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     /* Initialize DMA for sending */
     tsw_init_send(ptr, &config);
 
-    for (uint8_t i = 0; i < TSW_SEND_DESC_COUNT; i++) {
-        *send_buff[i] = BOARD_TSW_PORT + 1;
-    }
-
     /* Initialize DMA for receiving */
     tsw_init_recv(ptr, &config);
 
@@ -110,9 +104,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_ep_set_mdio_config(BOARD_TSW, BOARD_TSW_PORT, 19);
 
     /* Initialize PHY */
-    rtl8211_reset(ptr, BOARD_TSW_PORT);
-    rtl8211_basic_mode_default_config(ptr, &phy_config);
-    if (rtl8211_basic_mode_init(ptr, BOARD_TSW_PORT, &phy_config) == true) {
+    if (board_init_tsw_port_phy(ptr) == status_success) {
         printf("TSW phy init passed !\n");
         return status_success;
     } else {
@@ -135,7 +127,7 @@ void tsw_self_adaptive_port_speed(void)
     char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
     char *duplex_str[] = {"Half duplex", "Full duplex"};
 
-    rtl8211_get_phy_status(BOARD_TSW, BOARD_TSW_PORT, &status);
+    board_get_tsw_port_phy_status(BOARD_TSW_PORT, &status);
 
     if (status.tsw_phy_link || (status.tsw_phy_link != last_status.tsw_phy_link)) {
         if (memcmp((uint8_t *)&last_status, &status, sizeof(tsw_phy_status_t)) != 0) {
@@ -177,7 +169,7 @@ int main(void)
 
     printf("This is a TSW demo: Frame Preemption Ingress\n");
 
-    #if defined(RGMII) && RGMII
+    #if defined(HPM_TSW_RGMII) && HPM_TSW_RGMII
     board_init_tsw_rgmii_clock_delay(BOARD_TSW, BOARD_TSW_PORT);
     #endif
 
@@ -188,10 +180,6 @@ int main(void)
 
     /* Initialize MAC and DMA */
     if (tsw_init(BOARD_TSW) == 0) {
-        /* Set dest port */
-        data_buff[0] = BOARD_TSW_PORT + 1;
-        data_buff1[0] = BOARD_TSW_PORT + 1;
-
         /* Prepare streams */
         memcpy(send_buff[0], data_buff, sizeof(data_buff));
         memcpy(send_buff[1], data_buff1, sizeof(data_buff1));
@@ -203,13 +191,11 @@ int main(void)
 
         while (1) {
             if (tsw_get_link_status()) {
-                send_buff[1][2] = tsw_traffic_queue_1;
-                send_buff[1][2] |= 2 << 3;
-                tsw_send_frame(BOARD_TSW, send_buff[1], sizeof(data_buff1), 2);
+                tsw_set_tx_hdr_route((tx_hdr_desc_t *)send_buff[1], TSW_CPU_SEND_TO_PORT(BOARD_TSW_PORT), tsw_traffic_queue_1, 2);
+                tsw_send_frame(BOARD_TSW, send_buff[1], TSW_DMA_FRAME_LEN(data_buff1), 1);
 
-                send_buff[0][2] = tsw_traffic_queue_0;
-                send_buff[0][2] |= 1 << 3;
-                tsw_send_frame(BOARD_TSW, send_buff[0], sizeof(data_buff), 0);
+                tsw_set_tx_hdr_route((tx_hdr_desc_t *)send_buff[0], TSW_CPU_SEND_TO_PORT(BOARD_TSW_PORT), tsw_traffic_queue_0, 1);
+                tsw_send_frame(BOARD_TSW, send_buff[0], TSW_DMA_FRAME_LEN(data_buff), 0);
                 board_delay_ms(500);
 
                 tsw_fpe_get_mms_statistics_counter(BOARD_TSW, BOARD_TSW_PORT, tsw_fpe_mms_fragment_tx_counter, &value);

@@ -1,4 +1,4 @@
-# Copyright (c) 2025 HPMicro
+# Copyright (c) 2025-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -33,12 +33,17 @@ sdk_compile_definitions(-DLWIP_DHCP=0)
 project(tsn_lwip_iperf_example)
 sdk_inc(../ports/baremetal/single)
 sdk_inc(../ports/baremetal/single/arch)
+sdk_inc(../../../lwip/common)
 sdk_inc(../common/single)
+sdk_inc(../../common)
+sdk_inc(../../../lwip/common/utils)
 sdk_inc(inc)
 
 sdk_app_src(../ports/baremetal/single/arch/sys_arch.c)
 sdk_app_src(../ports/baremetal/single/ethernetif.c)
 sdk_app_src(../common/single/common.c)
+sdk_app_src(../../common/tsw_phy_adaptive_lwip.c)
 sdk_app_src(../common/single/netconf.c)
+sdk_app_src(../../../lwip/common/utils/utils.c)
 sdk_app_src(src/lwip.c)
 generate_ide_projects()

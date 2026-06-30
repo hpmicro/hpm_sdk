@@ -79,6 +79,8 @@ static ATTR_PLACE_AT_NONCACHEABLE usb_device_handle_t usb_device_handle[USB_SOC_
 
 static ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(USB_SOC_DCD_DATA_RAM_ADDRESS_ALIGNMENT) dcd_data_t _dcd_data;
 
+static uint8_t _setup_data[8];
+
 /*---------------------------------------------------------------------*
  * Device API
  *---------------------------------------------------------------------*/
@@ -241,6 +243,7 @@ void dcd_int_handler(uint8_t rhport)
         bus_reset(rhport);
         speed = usb_device_get_port_speed(handle);
         dcd_event_bus_reset(rhport, (tusb_speed_t)speed, true);
+        return;
     }
 
     if (int_status & intr_suspend) {
@@ -309,10 +312,17 @@ void dcd_int_handler(uint8_t rhport)
         }
 
         if (edpt_setup_status) {
-            /*------------- Set up Received -------------*/
-            usb_device_clear_setup_status(handle, edpt_setup_status);
+            /*------------- Setup Received -------------*/
             dcd_qhd_t *qhd0 = usb_device_qhd_get(&usb_device_handle[rhport], 0);
-            dcd_event_setup_received(rhport, (uint8_t *)(uintptr_t) &qhd0->setup_request, true);
+
+            usb_device_clear_setup_status(handle, edpt_setup_status);
+            do {
+                usb_dcd_set_sutw(handle->regs, true);
+                memcpy(_setup_data, (uint8_t *)(&qhd0->setup_request), 8);
+            } while (!usb_dcd_get_sutw(handle->regs));
+            usb_dcd_set_sutw(handle->regs, false);
+
+            dcd_event_setup_received(rhport, _setup_data, true);
         }
 
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -57,10 +57,10 @@ void bsp_init(void)
     printf("This is an Ethernet/IP demo.\n");
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
 
-    #if defined(RGMII) && RGMII
+    #if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
     /* Set RGMII clock delay */
     board_init_enet_rgmii_clock_delay(ENET);
-    #elif defined(RMII) && RMII
+    #elif defined(HPM_ENET_RMII) && HPM_ENET_RMII
     /* Set RMII reference clock */
     board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
     printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
@@ -72,20 +72,6 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
     enet_tx_control_config_t enet_tx_control_config;
-
-    #if defined(RGMII) && RGMII
-        #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_config_t phy_config;
-        #else
-        rtl8211_config_t phy_config;
-        #endif
-    #else
-        #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_config_t phy_config;
-        #else
-        rtl8201_config_t phy_config;
-        #endif
-    #endif
 
     /* Initialize td, rd and the corresponding buffers */
     memset((uint8_t *)dma_tx_desc_tab, 0x00, sizeof(dma_tx_desc_tab));
@@ -138,38 +124,14 @@ hpm_stat_t enet_init(ENET_Type *ptr)
     /* Disable LPI interrupt */
     enet_disable_lpi_interrupt(ENET);
 
-    /* Initialize phy */
-    #if defined(RGMII) && RGMII
-        #if defined(__USE_DP83867) && __USE_DP83867
-        dp83867_reset(ptr, DP83867_ADDR);
-        #if defined(__DISABLE_AUTO_NEGO) && __DISABLE_AUTO_NEGO
-        dp83867_set_mdi_crossover_mode(ENET, DP83867_ADDR, enet_phy_mdi_crossover_manual_mdix);
-        #endif
-        dp83867_basic_mode_default_config(ptr, &phy_config);
-        if (dp83867_basic_mode_init(ptr, DP83867_ADDR, &phy_config) == true) {
-        #else
-        rtl8211_reset(ptr, RTL8211_ADDR);
-        rtl8211_basic_mode_default_config(ptr, &phy_config);
-        if (rtl8211_basic_mode_init(ptr, RTL8211_ADDR, &phy_config) == true) {
-        #endif
-    #else
-        #if defined(__USE_DP83848) && __USE_DP83848
-        dp83848_reset(ptr, DP83848_ADDR);
-        dp83848_basic_mode_default_config(ptr, &phy_config);
-        if (dp83848_basic_mode_init(ptr, DP83848_ADDR, &phy_config) == true) {
-        #else
-        rtl8201_reset(ptr, RTL8201_ADDR);
-        rtl8201_basic_mode_default_config(ptr, &phy_config);
-        phy_config.rmii_refclk_dir = BOARD_ENET_RMII_INT_REF_CLK;
-        if (rtl8201_basic_mode_init(ptr, RTL8201_ADDR, &phy_config) == true) {
-        #endif
-    #endif
-            printf("Enet phy init passed !\n");
-            return status_success;
-        } else {
-            printf("Enet phy init failed !\n");
-            return status_fail;
-        }
+    if (board_init_enet_phy(ptr) == status_success) {
+        printf("Enet phy init passed !\n");
+        return status_success;
+    } else {
+        printf("Enet phy init failed !\n");
+        return status_fail;
+    }
+
 }
 
 int main(void)

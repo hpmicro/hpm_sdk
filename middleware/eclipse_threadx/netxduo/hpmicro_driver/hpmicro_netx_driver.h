@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -34,9 +34,15 @@
 #define NX_DRIVER_ERROR 90
 
 /* Exported Macros------------------------------------------------------------*/
-#if defined(RGMII) && RGMII
+#if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
 #define ENET_INF_TYPE enet_inf_rgmii
 #define ENET BOARD_ENET_RGMII
+#elif defined(HPM_ENET_RMII) && HPM_ENET_RMII
+#define ENET_INF_TYPE enet_inf_rmii
+#define ENET BOARD_ENET_RMII
+#elif defined(HPM_ENET_MII) && HPM_ENET_MII
+#define ENET_INF_TYPE enet_inf_mii
+#define ENET BOARD_ENET_RMII
 #else
 #define ENET_INF_TYPE enet_inf_rmii
 #define ENET BOARD_ENET_RMII

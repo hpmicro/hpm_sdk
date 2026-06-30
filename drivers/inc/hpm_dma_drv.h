@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -83,6 +83,8 @@
 #ifndef DMA_SUPPORT_64BIT_ADDR
 #define DMA_SUPPORT_64BIT_ADDR (0)
 #endif
+
+#define DMA_LINKED_DESCRIPTOR_ALIGN (32)
 
 /**
  * @brief Linked descriptor

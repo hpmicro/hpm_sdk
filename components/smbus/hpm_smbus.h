@@ -118,18 +118,25 @@ hpm_stat_t hpm_smbus_master_write_block_in_command(I2C_Type *ptr, uint8_t slave_
 /**
  * @brief SMbus master block read from certain slave device in command code
  *
- * @details block read from SMbus device in command code
- * @note size should not not greater than I2C_SOC_TRANSFER_COUNT_MAX
+ * @details block read from SMbus device in command code.
+ *          The actual data length is determined by the first byte returned by the slave device.
+ *          This is especially useful for variable-length responses such as MFR_ID, MFR_MODEL, etc.
+ * @note size is the capacity of the data buffer, not the expected data length.
+ *       The actual number of bytes read will be returned via actual_len.
+ *       size should not be greater than (I2C_SOC_TRANSFER_COUNT_MAX - 5)
  *
  * @param [in] ptr I2C base address
  * @param [in] slave_address SMbus slave address
  * @param [in] command command code
  * @param [out] data pointer of the buffer to store data read from device
- * @param [in] size size of data to be read in bytes
+ * @param [in] size capacity of the data buffer in bytes
+ * @param [out] actual_len pointer to store the actual number of bytes read from slave,
+ *                         can be NULL if not needed
  * @retval hpm_stat_t: status_success if reading is completed without any error
  */
 hpm_stat_t hpm_smbus_master_read_block_in_command(I2C_Type *ptr, uint8_t slave_address,
-                                                  uint8_t command, uint8_t *data, uint32_t size);
+                                                  uint8_t command, uint8_t *data,
+                                                  uint32_t size, uint32_t *actual_len);
 
 /**
  * @brief SMbus master write data to certain slave device

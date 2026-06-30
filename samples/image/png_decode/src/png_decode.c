@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -256,20 +256,28 @@ int main(void)
             continue;
         }
 
+        if (f_info.fsize == 0) {
+            printf("%s size is 0, skip\n", f_info.fname);
+            continue;
+        }
+
         if (f_info.fsize > FILE_BUFFER_LEN) {
             printf("%s size is too large (%d bytes > %d bytes), skip\n", f_info.fname, f_info.fsize, FILE_BUFFER_LEN);
             continue;
         }
 
-        stat = f_open(&file, f_info.fname, FA_OPEN_ALWAYS | FA_READ);
+        stat = f_open(&file, f_info.fname, FA_OPEN_EXISTING | FA_READ);
         if (stat != FR_OK) {
             printf("fail to open file %s, status=%d\n", f_info.fname, stat);
-            while (1) {
-            }
+            continue;
         }
 
-        f_read(&file, file_buffer, FILE_BUFFER_LEN, (UINT *)&size);
+        stat = f_read(&file, file_buffer, FILE_BUFFER_LEN, (UINT *)&size);
         f_close(&file);
+        if (stat != FR_OK || size == 0) {
+            printf("fail to read file %s, status=%d, read size=%d\n", f_info.fname, stat, size);
+            continue;
+        }
 
         printf("%s:\n", f_info.fname);
         decode_show(file_buffer, size);

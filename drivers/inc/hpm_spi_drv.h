@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -1273,6 +1273,13 @@ static inline void spi_master_enable_cs_select(SPI_Type *ptr, spi_cs_index_t cs)
  * @retval hpm_stat_t status_success if spi reset complete
  */
 hpm_stat_t spi_poll_reset_complete(SPI_Type *ptr, spi_reset_mask_t reset_mask, uint32_t retry);
+
+/**
+ * @brief SPI deinit
+ *
+ * @param [in] ptr SPI base address
+ */
+void spi_deinit(SPI_Type *ptr);
 
 /**
  * @}

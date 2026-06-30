@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -129,7 +129,7 @@ typedef struct {
 /*
  * TXFIFOCLR (RW)
  *
- * Self-clear
+ * Doesn't support self clear
  */
 #define I2S_CTRL_TXFIFOCLR_MASK (0x400U)
 #define I2S_CTRL_TXFIFOCLR_SHIFT (10U)
@@ -139,7 +139,7 @@ typedef struct {
 /*
  * RXFIFOCLR (RW)
  *
- * Self-clear
+ * Doesn't support self clear
  */
 #define I2S_CTRL_RXFIFOCLR_MASK (0x200U)
 #define I2S_CTRL_RXFIFOCLR_SHIFT (9U)

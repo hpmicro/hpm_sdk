@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -72,7 +72,7 @@ void pdgo_get_pcnt_defconfig(PDGO_Type *ptr, dgo_pcnt_num_t num, dgo_pcnt_cfg_t 
     cfg->dump_state.state = 0;
     cfg->tacho_mode = dgo_pcnt_tacho_disable;
     cfg->tacho_len = 0;
-    cfg->cmp0_mode = dgo_pcnt_cmp_disable;
+    cfg->match0_mode = dgo_pcnt_match_disable;
     cfg->range_cmp_src = dgo_pcnt_cmp_src_line_phase;
     cfg->cmp0_value = 0;
     cfg->cmp1_value = 0;
@@ -104,7 +104,7 @@ void pdgo_config_pcnt(PDGO_Type *ptr, dgo_pcnt_num_t num, dgo_pcnt_cfg_t *cfg)
         | PDGO_PCNT_HOMING_CFG_HSTATE_SET(cfg->h_state.state)
         | PDGO_PCNT_HOMING_CFG_DMODE_SET(cfg->dump_mode)
         | PDGO_PCNT_HOMING_CFG_DSTATE_SET(cfg->dump_state.state)
-        | PDGO_PCNT_HOMING_CFG_CMP0_MODE_SET(cfg->cmp0_mode)
+        | PDGO_PCNT_HOMING_CFG_MATCH0_MODE_SET(cfg->match0_mode)
         | PDGO_PCNT_HOMING_CFG_RNG_CMP_SRC_SET(cfg->range_cmp_src);
     ptr->PCNT[num].HOMING_CFG = tmp;
 
@@ -235,10 +235,10 @@ uint32_t pdgo_convert_pcnt_counter(PDGO_Type *ptr, dgo_pcnt_num_t num, dgo_pcnt_
 
 void pdgo_config_pcnt_range_compare(PDGO_Type *ptr, dgo_pcnt_num_t num, uint32_t cmp0, uint32_t  cmp1)
 {
-    pdgo_set_pcnt_cmp_mode(ptr, num, dgo_pcnt_cmp_disable);
+    pdgo_set_pcnt_cmp_mode(ptr, num, dgo_pcnt_match_disable);
     pdgo_set_pcnt_cmp0_value(ptr, num, cmp0);
     pdgo_set_pcnt_cmp1_value(ptr, num, cmp1);
-    pdgo_set_pcnt_cmp_mode(ptr, num, dgo_pcnt_cmp_range_match_mode);
+    pdgo_set_pcnt_cmp_mode(ptr, num, dgo_pcnt_match_range_cmp0_cmp1_mode);
 }
 
 float pdgo_calc_pcnt_tacho_cycles_per_line(PDGO_Type *ptr, dgo_pcnt_num_t num)

@@ -905,7 +905,19 @@ For custom boards or development kits:
             - samples/motor_ctrl/bldc_hfi
             - samples/trace_recorder/rtthread-nano
 
-   **Note:** Both `feature` and `excluded_samples` fields are used by the SDK for dependency maintenance and are not required for custom board configurations. The `feature` field specifies board-specific hardware features for sample application compatibility, while `excluded_samples` specifies which sample applications should not be built for this board due to hardware limitations or compatibility issues.
+   **About Board YAML Resource Descriptions:**
+
+   The YAML example above shows a complete configuration for an SDK standard development board. The following fields describe the **actual hardware resources on that board**:
+
+   - ``on-board-ram`` — type, capacity, and width of the on-board RAM
+   - ``on-board-flash`` — type and capacity of the on-board Flash
+   - ``soc`` — the SoC model used on this board
+   - ``device`` — device name used for JLink connection
+   - ``openocd-soc`` / ``openocd-probe`` — OpenOCD configuration file names
+
+   If you are basing your custom board on an SDK development board, update these fields to reflect your actual hardware (e.g., different Flash chip capacity, different debug probe, etc.). These values directly affect linker script generation and debug configuration.
+
+   The ``feature`` and ``excluded_samples`` fields are used internally by the SDK for sample application dependency maintenance and are not required for custom board configurations.
 
 3. **Using Custom Board**
 
@@ -1349,6 +1361,101 @@ After building, the following IDE project files will be generated in the `build`
 
 Best Practices
 **************
+
+CMake Variable Reference
+========================
+
+The following table lists all CMake variables that can be set **before** ``find_package(hpm-sdk)`` and passed through to the SDK build system.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 35 40
+
+   * - Variable
+     - Values / Default
+     - Description
+   * - ``HPM_BUILD_TYPE``
+     - ``ram`` (default), ``flash_xip``, ``flash_sdram_xip``, ``flash_hybrid_xip``, ``sec_core_img``
+     - Build type, determines linker script and memory layout
+   * - ``CMAKE_BUILD_TYPE``
+     - ``debug`` (default), ``release``
+     - Compilation optimization level
+   * - ``APP_NAME``
+     - string, default ``demo``
+     - Output file name prefix (``<name>.elf``, ``<name>.bin``, ``<name>.map``)
+   * - ``BOARD``
+     - Required (e.g. ``hpm6200evk``)
+     - Target board name, set via ``-DBOARD=<name>`` on command line
+   * - ``BOARD_SEARCH_PATH``
+     - path
+     - Search path for custom board configurations
+
+   * - ``HEAP_SIZE``
+     - hex number, default ``0x4000``
+     - Heap size in bytes. Supports ``32K`` / ``1M`` suffix format
+   * - ``STACK_SIZE``
+     - hex number, default ``0x4000``
+     - Stack size in bytes. Supports ``32K`` / ``1M`` suffix format
+   * - ``CUSTOM_GCC_LINKER_FILE``
+     - file path
+     - Custom GCC linker script (``.ld``)
+   * - ``CUSTOM_SES_LINKER_FILE``
+     - file path
+     - Custom SEGGER Embedded Studio linker config (``.icf``)
+
+   * - ``RV_ARCH``
+     - string, default ``rv32imac``
+     - RISC-V architecture flags (e.g. ``rv32imafc``)
+   * - ``RV_ABI``
+     - string, default ``ilp32``
+     - RISC-V ABI (``ilp32``, ``ilp32f``, ``ilp32d``)
+
+   * - ``EXTRA_C_FLAGS``
+     - compiler flag string
+     - Additional C compiler flags (e.g. ``-fstack-protector-strong``)
+   * - ``EXTRA_LD_FLAGS``
+     - linker flag string
+     - Additional linker flags (e.g. ``-Wl,--gc-sections``)
+   * - ``EXTRA_AS_FLAGS``
+     - assembler flag string
+     - Additional assembler flags
+   * - ``EXTRA_LD_SYMBOLS``
+     - linker symbol string
+     - Additional linker symbol definitions (e.g. ``--defsym=...``)
+
+   * - ``GNURISCV_TOOLCHAIN_PATH``
+     - path
+     - RISC-V GCC toolchain path (can also be set as environment variable)
+   * - ``CUSTOM_TARGET_TRIPLET``
+     - string, default ``riscv32-unknown-elf``
+     - Custom cross-compilation target triplet
+   * - ``HPM_SDK_LD_NO_NANO_SPECS``
+     - ``1`` to disable, unset by default (enabled)
+     - Disable nano.specs and use the full standard library
+
+   * - ``SEC_CORE_IMG_C_ARRAY_OUTPUT``
+     - file path, default ``sec_core_img.c``
+     - Output path for secondary core image C array in multicore builds
+   * - ``DISABLE_LINKED_PROJECT_BUILD``
+     - ``ON`` / ``OFF``
+     - Disable linked project compilation (for multicore development/debugging)
+
+   * - ``CONFIG_*``
+     - ``1`` / ``0``
+     - SDK feature switches, e.g. ``CONFIG_FREERTOS``, ``CONFIG_LWIP``, ``CONFIG_LVGL``. Available switches depend on SoC and SDK version
+
+   * - ``SES_TOOLCHAIN_VARIANT``
+     - ``Standard``, ``Andes``
+     - SEGGER Embedded Studio toolchain variant
+   * - ``SES_COMPILER_VARIANT``
+     - ``gcc``, ``SEGGER``
+     - SES compiler variant
+   * - ``SES_ASSEMBLER_VARIANT``
+     - ``gcc``, ``SEGGER``
+     - SES assembler variant
+   * - ``SES_LINKER_VARIANT``
+     - ``gnu``, ``SEGGER``
+     - SES linker variant
 
 Project Organization
 ====================

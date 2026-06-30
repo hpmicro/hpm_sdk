@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -34,13 +34,15 @@
  * sdk_compile_definitions(-DLV_USE_SYSMON=1)
  */
 
- #undef LV_USE_HPM_MODE_DIRECT
- #define LV_USE_HPM_MODE_DIRECT     0
+#undef LV_USE_HPM_MODE_DIRECT
+#define LV_USE_HPM_MODE_DIRECT     0
 
- #undef LV_USE_HPM_PDMA_FLUSH
- #define LV_USE_HPM_PDMA_FLUSH      0
+#undef LV_USE_HPM_PDMA_FLUSH
+#define LV_USE_HPM_PDMA_FLUSH      0
 
- #undef LV_USE_HPM_PDMA_WAIT_VSYNC
- #define LV_USE_HPM_PDMA_WAIT_VSYNC 0
+#undef LV_USE_HPM_PDMA_WAIT_VSYNC
+#define LV_USE_HPM_PDMA_WAIT_VSYNC 0
 
+#undef LV_USE_HPM_3RD_BUFFER
+#define LV_USE_HPM_3RD_BUFFER 0
 #endif

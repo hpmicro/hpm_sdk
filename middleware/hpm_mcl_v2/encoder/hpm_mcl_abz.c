@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,7 +14,7 @@
 
 hpm_mcl_stat_t hpm_mcl_abz_get_theta(void *qei_base, uint32_t phase_count, float deta_theta, float *theta)
 {
-    uint32_t  pos;
+    uint32_t pos = 0;
     float angle = 0.0;
 
     MCL_ASSERT_OPT(theta != NULL, mcl_invalid_pointer);
@@ -33,14 +33,14 @@ hpm_mcl_stat_t hpm_mcl_abz_get_theta(void *qei_base, uint32_t phase_count, float
 
 hpm_mcl_stat_t hpm_mcl_abz_get_abs_theta(void *qei_base, uint32_t phase_count, float deta_theta, float offset, float *theta)
 {
-    int32_t ph, z;
+    int32_t ph = 0, z = 0;
     float theta1;
 
     MCL_ASSERT_OPT(theta != NULL, mcl_invalid_pointer);
 #ifdef HPMSOC_HAS_HPMSDK_QEI
     ph = qei_get_current_phase_phcnt((QEI_Type *)qei_base);
     z = qei_get_current_count((QEI_Type *)qei_base, qei_counter_type_z);
- #endif
+#endif
 #ifdef HPMSOC_HAS_HPMSDK_QEIV2
     ph = qeiv2_get_current_phase_phcnt((QEIV2_Type *)qei_base);
     z = qeiv2_get_current_count((QEIV2_Type *)qei_base, qeiv2_counter_type_z);

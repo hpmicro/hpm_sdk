@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,8 +21,8 @@
 
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(4) uint8_t s_dst_buffer[LINKED_DESCRIPTOR_NUM + 1][SIZE_PER_TEST];
 ATTR_PLACE_AT_WITH_ALIGNMENT(".fast_ram.non_init", 4) uint8_t s_src_buffer[SIZE_PER_TEST];
-/* descriptor should be 8-byte aligned */
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors[LINKED_DESCRIPTOR_NUM];
+/* descriptor should be DMA_LINKED_DESCRIPTOR_ALIGN aligned */
+ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(DMA_LINKED_DESCRIPTOR_ALIGN) dma_linked_descriptor_t descriptors[LINKED_DESCRIPTOR_NUM];
 
 #define DST_ADDRESS     ((uint32_t)(&s_dst_buffer[0][0]))
 #define SRC_ADDRESS     ((uint32_t)(&s_src_buffer[0]))
@@ -32,7 +32,7 @@ ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(8) dma_linked_descriptor_t descriptors
 #endif
 
 #ifndef TEST_DMA_IRQ
-#define TEST_DMA_IRQ BOARD_APP_XDMA_IRQ
+#define TEST_DMA_IRQ BOARD_APP_DMA1_IRQ
 #endif
 
 #ifndef TEST_DMA_CHANNEL
@@ -222,7 +222,7 @@ void test_unchained_transfer(uint32_t src, uint32_t dst, bool verbose)
         printf("dma transferring data from 0x%x to 0x%x, burst size: %d bytes\n",
                 src, dst, burst_len_in_byte);
         now = mchtmr_get_count(HPM_MCHTMR);
-        stat = dma_start_memcpy(TEST_DMA_CONTROLLER, 0,
+        stat = dma_start_memcpy(TEST_DMA_CONTROLLER, TEST_DMA_CHANNEL,
                 (uint32_t)core_local_mem_to_sys_address(HPM_CORE0, dst),
                 (uint32_t)core_local_mem_to_sys_address(HPM_CORE0, src),
                 SIZE_PER_TEST, burst_len_in_byte);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,193 +14,292 @@
 #define DEMO_RX_SIZE        (512)
 #define DEMO_BLOCK_SIZE_MAX (32)
 #define DEMO_WRITE_CYCLE    (5)
+#define DEMO_TEST_VAR_CNT   (50)
 #define DEMO_ERASE_SIZE     (4096)
 #define DEMO_SECTOR_CNT     (32)
 #define DEMO_MANAGE_SIZE    (DEMO_ERASE_SIZE * DEMO_SECTOR_CNT)
-#define DEMO_MANAGE_OFFSET  (BOARD_FLASH_SIZE - DEMO_MANAGE_SIZE)
+#define DEMO_MANAGE_OFFSET  (BOARD_FLASH_SIZE - DEMO_MANAGE_SIZE * 2)
 
 #define PERF_CONFIG_TEST     ('1')
-#define PERF_FLUSH_TEST      ('2')
-#define PERF_READ_TEST       ('3')
-#define PERF_SHOW_INFO       ('4')
+#define PERF_WRITE_TEST      ('2')
+#define PERF_FLUSH_TEST      ('3')
+#define PERF_READ_TEST       ('4')
+#define PERF_DELETE_TEST     ('5')
+#define PERF_SHOW_INFO       ('6')
 #define PERF_SHOW_INDEX      ('i')
 
-e2p_t e2p_demo;
+static nor_flash_config_t g_nor_cfg;
+static e2p_t g_e2p_ctx;
 
-uint8_t _read_buf[DEMO_RX_SIZE];
+static uint8_t g_read_buf[DEMO_RX_SIZE];
 
-uint64_t delta_time;
+static uint64_t g_perf_start_time;
 
-static uint32_t demo_read(uint8_t *buf, uint32_t addr, uint32_t size)
+static hpm_stat_t demo_flash_read(uint8_t *buf, uint32_t addr, uint32_t size)
 {
-    return nor_flash_read(&e2p_demo.nor_config, buf, addr, size);
+    return nor_flash_read(&g_nor_cfg, buf, addr, size);
 }
 
-static uint32_t demo_write(uint8_t *buf, uint32_t addr, uint32_t size)
+static hpm_stat_t demo_flash_write(const uint8_t *buf, uint32_t addr, uint32_t size)
 {
-    return nor_flash_write(&e2p_demo.nor_config, buf, addr, size);
+    return nor_flash_write(&g_nor_cfg, buf, addr, size);
 }
 
-static void demo_erase(uint32_t start_addr, uint32_t size)
+static hpm_stat_t demo_flash_erase(uint32_t start_addr, uint32_t size)
 {
-    nor_flash_erase(&e2p_demo.nor_config, start_addr, size);
+    return nor_flash_erase(&g_nor_cfg, start_addr, size);
 }
 
-static void start_time(void)
+static void perf_timer_start(void)
 {
-    delta_time = hpm_csr_get_core_mcycle();
+    g_perf_start_time = hpm_csr_get_core_mcycle();
 }
 
-static uint32_t get_end_time(void)
+static uint32_t perf_timer_stop_us(void)
 {
-    delta_time = hpm_csr_get_core_mcycle() - delta_time;
-    return delta_time;
-}
-
-static void eeprom_perf_write_data(void)
-{
-    uint32_t blob = 0;
-    uint32_t blob_data[2];
-    int i = 0;
-    int count_per_blob;
-    memset(blob_data, 0x00, sizeof(blob_data));
-    
-    blob_data[0] = E2P_MAGIC_ID;
-    while (i < EEPROM_MAX_VAR_CNT) {
-        count_per_blob = 0;
-        blob++;
-        while (count_per_blob < DEMO_WRITE_CYCLE) {
-            blob_data[1] += 10;
-            e2p_write(blob, sizeof(blob_data), (uint8_t *)blob_data);
-            count_per_blob++;        
-        }
-        i++;
-    }    
-}
-
-static uint32_t eeprom_perf_config_time(void)
-{
-    uint32_t run_time;
-    uint32_t run_us;
+    uint64_t elapsed = hpm_csr_get_core_mcycle() - g_perf_start_time;
     uint32_t tick_per_us = clock_get_frequency(clock_cpu0) / 1000 / 1000;
-
-    e2p_clear();
-    e2p_config(&e2p_demo);
-
-    eeprom_perf_write_data();
-    start_time();
-    e2p_config(&e2p_demo);
-    run_time = get_end_time();
-
-    run_us = run_time / tick_per_us;
-    printf("eeprom config run time=(%u)us\n", run_us);
-    return run_us;
-}
-
-static uint32_t eeprom_perf_flush_time(void)
-{
-    uint32_t run_time;
-    uint32_t run_us;
-    uint32_t tick_per_us = clock_get_frequency(clock_cpu0) / 1000 / 1000;
-
-    e2p_config(&e2p_demo);
-
-    eeprom_perf_write_data();
-    start_time();
-    e2p_flush(E2P_FLUSH_BEGIN);
-    run_time = get_end_time();
-
-    run_us = run_time / tick_per_us;
-    printf("eeprom flush run time=(%u)us\n", run_us);
-    return run_us;
-}
-
-static uint32_t eeprom_perf_read_time(void)
-{
-    uint32_t run_time;
-    uint32_t run_us;
-    uint32_t tick_per_us = clock_get_frequency(clock_cpu0) / 1000 / 1000;
-
-    e2p_config(&e2p_demo);
-
-    eeprom_perf_write_data();
-    start_time();
-    e2p_read(EEPROM_MAX_VAR_CNT, DEMO_BLOCK_SIZE_MAX, _read_buf);
-    run_time = get_end_time();
-
-    run_us = run_time / tick_per_us;
-    printf("eeprom read run time=(%u)us\n", run_us);
-    return run_us;
+    return (uint32_t)(elapsed / tick_per_us);
 }
 
 static void eeprom_init(void)
 {
-    e2p_demo.nor_config.xpi_base = BOARD_APP_XPI_NOR_XPI_BASE;
-    e2p_demo.nor_config.base_addr = BOARD_FLASH_BASE_ADDRESS;
-    e2p_demo.config.start_addr = e2p_demo.nor_config.base_addr + DEMO_MANAGE_OFFSET;
-    e2p_demo.config.erase_size = DEMO_ERASE_SIZE;
-    e2p_demo.config.sector_cnt = DEMO_SECTOR_CNT;
-    e2p_demo.config.version = 0x4553; /* 'E' 'S' */
-    e2p_demo.nor_config.opt_header = BOARD_APP_XPI_NOR_CFG_OPT_HDR;
-    e2p_demo.nor_config.opt0 = BOARD_APP_XPI_NOR_CFG_OPT_OPT0;
-    e2p_demo.nor_config.opt1 = BOARD_APP_XPI_NOR_CFG_OPT_OPT1;
-    e2p_demo.config.flash_read = demo_read;
-    e2p_demo.config.flash_write = demo_write;
-    e2p_demo.config.flash_erase = demo_erase;
+    nor_flash_init(&g_nor_cfg);
 
-    nor_flash_init(&e2p_demo.nor_config);
-    e2p_config(&e2p_demo);
+    g_e2p_ctx.config.start_addr = g_nor_cfg.base_addr + DEMO_MANAGE_OFFSET;
+    g_e2p_ctx.config.erase_size = DEMO_ERASE_SIZE;
+    g_e2p_ctx.config.sector_cnt = DEMO_SECTOR_CNT;
+    g_e2p_ctx.config.version = 0x4553; /* 'E' 'S' */
+    g_e2p_ctx.config.flash_read = demo_flash_read;
+    g_e2p_ctx.config.flash_write = demo_flash_write;
+    g_e2p_ctx.config.flash_erase = demo_flash_erase;
+
+    e2p_config(&g_e2p_ctx);
 }
 
-static void eeprom_show_info(void)
+static void perf_write_data(void)
+{
+    uint32_t var_count = 0;
+    uint32_t blob_data[2] = {0, 0};
+    int cycle_count;
+
+    printf("Writing %d variables, %d updates each...\n", DEMO_TEST_VAR_CNT, DEMO_WRITE_CYCLE);
+
+    while (var_count < DEMO_TEST_VAR_CNT) {
+        cycle_count = 0;
+        blob_data[0] = E2P_MAGIC_ID;
+
+        while (cycle_count < DEMO_WRITE_CYCLE) {
+            blob_data[1] += 10;
+            if (e2p_write(var_count, sizeof(blob_data), (uint8_t *)blob_data) != E2P_STATUS_OK) {
+                printf("Write failed at var %d, cycle %d\n", var_count, cycle_count);
+            }
+            cycle_count++;
+        }
+        var_count++;
+    }
+
+    printf("Write completed: %d variables x %d updates = %d total writes\n",
+           DEMO_TEST_VAR_CNT, DEMO_WRITE_CYCLE, DEMO_TEST_VAR_CNT * DEMO_WRITE_CYCLE);
+}
+
+static uint32_t perf_test_config(void)
+{
+    uint32_t time_us;
+
+    printf("\n=== Test: Configuration (Init) ===\n");
+
+    e2p_clear();
+    g_e2p_ctx.config.sector_cnt = DEMO_SECTOR_CNT;
+    perf_timer_start();
+    if (e2p_config(&g_e2p_ctx) != E2P_STATUS_OK) {
+        printf("Config failed\n");
+        return 0;
+    }
+    time_us = perf_timer_stop_us();
+
+    printf("  Config time: %u us\n", time_us);
+    return time_us;
+}
+
+static uint32_t perf_test_write(void)
+{
+    uint32_t time_us;
+
+    g_e2p_ctx.config.sector_cnt = DEMO_SECTOR_CNT;
+    printf("\n=== Test: Write Performance ===\n");
+
+    e2p_clear();
+    e2p_config(&g_e2p_ctx);
+
+    perf_timer_start();
+    perf_write_data();
+    time_us = perf_timer_stop_us();
+
+    uint32_t total_writes = DEMO_TEST_VAR_CNT * DEMO_WRITE_CYCLE;
+    printf("  Total writes: %u\n", total_writes);
+    printf("  Total time: %u us\n", time_us);
+    printf("  Avg per write: %u us\n", time_us / total_writes);
+    return time_us;
+}
+
+static uint32_t perf_test_flush(void)
+{
+    uint32_t time_us;
+
+    g_e2p_ctx.config.sector_cnt = DEMO_SECTOR_CNT;
+    printf("\n=== Test: Flush Performance ===\n");
+
+    e2p_clear();
+    e2p_config(&g_e2p_ctx);
+    perf_write_data();
+
+    perf_timer_start();
+    if (e2p_flush(E2P_FLUSH_FORCE) != E2P_STATUS_OK) {
+        printf("Flush failed\n");
+        return 0;
+    }
+    time_us = perf_timer_stop_us();
+
+    printf("  Flush time: %u us\n", time_us);
+    return time_us;
+}
+
+static uint32_t perf_test_read(void)
+{
+    uint32_t time_us;
+    uint32_t success_reads = 0;
+
+    g_e2p_ctx.config.sector_cnt = DEMO_SECTOR_CNT;
+    printf("\n=== Test: Read Performance ===\n");
+
+    e2p_clear();
+    e2p_config(&g_e2p_ctx);
+    perf_write_data();
+
+    perf_timer_start();
+    for (uint32_t i = 0; i < DEMO_TEST_VAR_CNT; i++) {
+        if (e2p_read(i, sizeof(g_read_buf), g_read_buf) == E2P_STATUS_OK) {
+            success_reads++;
+        }
+    }
+    time_us = perf_timer_stop_us();
+
+    printf("  Success reads: %u / %u\n", success_reads, DEMO_TEST_VAR_CNT);
+    printf("  Total time: %u us\n", time_us);
+    if (success_reads > 0) {
+        printf("  Avg per read: %u us\n", time_us / success_reads);
+    }
+    return time_us;
+}
+
+static uint32_t perf_test_delete(void)
+{
+    uint32_t time_us;
+    uint32_t success_deletes = 0;
+
+    g_e2p_ctx.config.sector_cnt = DEMO_SECTOR_CNT;
+    printf("\n=== Test: Delete Performance ===\n");
+
+    e2p_clear();
+    e2p_config(&g_e2p_ctx);
+    perf_write_data();
+
+    perf_timer_start();
+    for (uint32_t i = 0; i < DEMO_TEST_VAR_CNT; i++) {
+        if (e2p_delete(i) == E2P_STATUS_OK) {
+            success_deletes++;
+        }
+    }
+    time_us = perf_timer_stop_us();
+
+    printf("  Success deletes: %u / %u\n", success_deletes, DEMO_TEST_VAR_CNT);
+    printf("  Total time: %u us\n", time_us);
+    if (success_deletes > 0) {
+        printf("  Avg per delete: %u us\n", time_us / success_deletes);
+    }
+    return time_us;
+}
+
+static void perf_show_menu(void)
+{
+    printf("\n");
+    printf("========================================\n");
+    printf("  EEPROM Emulation Perf Test\n");
+    printf("========================================\n");
+    printf("  1 - Test config/init time\n");
+    printf("  2 - Test write performance\n");
+    printf("  3 - Test flush performance\n");
+    printf("  4 - Test read performance\n");
+    printf("  5 - Test delete performance\n");
+    printf("  6 - Show status info\n");
+    printf("  i - Show this menu\n");
+    printf("========================================\n");
+}
+
+static void perf_show_info(void)
 {
     e2p_show_info();
-}
-
-static void eeprom_show_index(void)
-{
-    printf(" eeprom emulation perf test\r\n----------------------------------------\r\n");
-    printf(" 1 - Test config perf\r\n");
-    printf(" 2 - Test flush perf\r\n");
-    printf(" 3 - Test read perf\r\n");
-    printf(" 4 - show area base info\r\n");
-    printf(" Others - Show index menu\r\n");
 }
 
 int main(void)
 {
     board_init();
-    eeprom_init();
-    eeprom_show_index();
-    char click;
 
-    while(1)
-    {
-        click = getchar();
-        putchar(click);
+    printf("========================================\n");
+    printf("  EEPROM Emulation Performance Test\n");
+    printf("========================================\n");
+    printf("  Test variables: %d\n", DEMO_TEST_VAR_CNT);
+    printf("  Updates per var: %d\n", DEMO_WRITE_CYCLE);
+    printf("  Erase size: %d bytes\n", DEMO_ERASE_SIZE);
+    printf("  Sector count: %d\n", DEMO_SECTOR_CNT);
+    printf("========================================\n");
+
+    g_nor_cfg.xpi_base = BOARD_APP_XPI_NOR_XPI_BASE;
+    g_nor_cfg.base_addr = BOARD_FLASH_BASE_ADDRESS;
+    g_nor_cfg.opt_header = BOARD_APP_XPI_NOR_CFG_OPT_HDR;
+    g_nor_cfg.opt0 = BOARD_APP_XPI_NOR_CFG_OPT_OPT0;
+    g_nor_cfg.opt1 = BOARD_APP_XPI_NOR_CFG_OPT_OPT1;
+
+    eeprom_init();
+    perf_show_menu();
+
+    while (1) {
+        char ch = getchar();
+        putchar(ch);
         putchar('\n');
-        
-        switch (click) {
-            case PERF_CONFIG_TEST:
-                eeprom_perf_config_time();
-                break;
-            case PERF_FLUSH_TEST:
-                eeprom_perf_flush_time();
-                break;
-            case PERF_READ_TEST:
-                eeprom_perf_read_time();
-                break;
-            case PERF_SHOW_INFO:
-                eeprom_show_info();
-                break;
-            case '\r':
-                break;
-            case '\n':
-                break;
-            default:
-                eeprom_show_index();
-                break;
+
+        switch (ch) {
+        case PERF_CONFIG_TEST:
+            perf_test_config();
+            break;
+        case PERF_WRITE_TEST:
+            perf_test_write();
+            break;
+        case PERF_FLUSH_TEST:
+            perf_test_flush();
+            break;
+        case PERF_READ_TEST:
+            perf_test_read();
+            break;
+        case PERF_DELETE_TEST:
+            perf_test_delete();
+            break;
+        case PERF_SHOW_INFO:
+            perf_show_info();
+            break;
+        case PERF_SHOW_INDEX:
+            perf_show_menu();
+            break;
+        case '\r':
+        case '\n':
+            break;
+        default:
+            printf("Invalid input\n");
+            perf_show_menu();
+            break;
         }
     }
+
     return 0;
 }

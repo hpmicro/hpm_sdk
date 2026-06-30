@@ -17,6 +17,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "osal.h"
+#include "enet_phy_adaptive_lwip.h"
 
 #ifndef DHCP_TASK_PRIO
   #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
@@ -174,6 +175,7 @@ void timer_callback(void *parameter)
 #endif
 
 /* Log task to handle unified log printing */
+#if defined(LWIP_DHCP) && LWIP_DHCP
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
 static void log_task(void *pvParameters) /* NOLINT */
 {
@@ -198,6 +200,7 @@ static void log_task(void *parameter) /* NOLINT */
         }
     }
 }
+#endif
 #endif
 
 #if defined(NO_SYS) && !NO_SYS
@@ -373,45 +376,22 @@ bool enet_get_link_status(uint8_t i)
 
 void enet_self_adaptive_port_speed(void)
 {
-    enet_base_t *base;
-    enet_phy_status_t status = {0};
-    enet_line_speed_t line_speed[] = {enet_line_speed_10mbps, enet_line_speed_100mbps, enet_line_speed_1000mbps};
-
-    char *speed_str[] = {"10Mbps", "100Mbps", "1000Mbps"};
-    char *duplex_str[] = {"Half duplex", "Full duplex"};
-
     for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
-        base = board_get_enet_base(netif_get_by_index(i+1)->num);
-        board_get_enet_phy_status(i, &status);
-        if (status.enet_phy_link || (status.enet_phy_link != last_status[i].enet_phy_link)) {
-            if (memcmp(&last_status[i], &status, sizeof(enet_phy_status_t)) != 0) {
-                memcpy(&last_status[i], &status, sizeof(enet_phy_status_t));
-                printf("================ Network Interface %d ================\n", netif_get_by_index(i+1)->num);
-                if (status.enet_phy_link) {
-                    printf("Link Status: Up\n");
-                    printf("Link Speed:  %s\n", speed_str[status.enet_phy_speed]);
-                    printf("Link Duplex: %s\n", duplex_str[status.enet_phy_duplex]);
+        lwip_enet_phy_adaptive_binding_t binding = {
+            .last = &last_status[i],
+            .enet_base = board_get_enet_base(netif_get_by_index(i + 1)->num),
+            .phy_port = i,
+            .log_prefix = NULL,
+            .print_port_banner = true,
+            .notify_netif = true,
+            .netif_idx = (uint8_t)(i + 1U),
+#if defined(NO_SYS) && !NO_SYS
+            .status_mbox = (void *)&netif_status_mbox[i],
+            .link_msg = &msg[i],
+#endif
+        };
 
-                    enet_set_line_speed(base, line_speed[status.enet_phy_speed]);
-                    enet_set_duplex_mode(base, status.enet_phy_duplex);
-
-                    #if defined(NO_SYS) && !NO_SYS
-                    msg[i] = enet_phy_link_up;
-                    sys_mbox_trypost_fromisr(&netif_status_mbox[i], &msg[i]);
-                    #else
-                    netif_set_link_up(netif_get_by_index(i+1));
-                    #endif
-                } else {
-                    printf("Link Status: Down\n");
-                    #if defined(NO_SYS) && !NO_SYS
-                    msg[i] = enet_phy_link_down;
-                    sys_mbox_trypost_fromisr(&netif_status_mbox[i], &msg[i]);
-                    #else
-                    netif_set_link_down(netif_get_by_index(i+1));
-                    #endif
-                }
-            }
-        }
+        lwip_enet_phy_adaptive_poll(&binding);
     }
 }
 

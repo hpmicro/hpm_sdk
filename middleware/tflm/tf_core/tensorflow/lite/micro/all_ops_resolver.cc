@@ -20,7 +20,6 @@ limitations under the License.
 namespace tflite {
 
 AllOpsResolver::AllOpsResolver() {
-  // Please keep this list of Builtin Operators in alphabetical order.
   AddAbs();
   AddAdd();
   AddAddN();
@@ -28,7 +27,10 @@ AllOpsResolver::AllOpsResolver() {
   AddArgMin();
   AddAssignVariable();
   AddAveragePool2D();
+  AddBatchMatMul();
   AddBatchToSpaceNd();
+  AddBroadcastArgs();
+  AddBroadcastTo();
   AddCallOnce();
   AddCast();
   AddCeil();
@@ -41,7 +43,10 @@ AllOpsResolver::AllOpsResolver() {
   AddDepthwiseConv2D();
   AddDequantize();
   AddDetectionPostprocess();
+  AddDiv();
+  AddDynamicUpdateSlice();
   AddElu();
+  AddEmbeddingLookup();
   AddEqual();
   AddEthosU();
   AddExp();
@@ -63,6 +68,7 @@ AllOpsResolver::AllOpsResolver() {
   AddLess();
   AddLessEqual();
   AddLog();
+  AddLogSoftmax();
   AddLogicalAnd();
   AddLogicalNot();
   AddLogicalOr();
@@ -87,8 +93,10 @@ AllOpsResolver::AllOpsResolver() {
   AddReshape();
   AddResizeBilinear();
   AddResizeNearestNeighbor();
+  AddReverseV2();
   AddRound();
   AddRsqrt();
+  AddSelectV2();
   AddShape();
   AddSin();
   AddSlice();
@@ -99,15 +107,19 @@ AllOpsResolver::AllOpsResolver() {
   AddSplitV();
   AddSqrt();
   AddSquare();
+  AddSquaredDifference();
   AddSqueeze();
   AddStridedSlice();
   AddSub();
+  AddSum();
   AddSvdf();
   AddTanh();
   AddTranspose();
   AddTransposeConv();
+  AddUnidirectionalSequenceLSTM();
   AddUnpack();
   AddVarHandle();
+  AddWhile();
   AddZerosLike();
 }
 

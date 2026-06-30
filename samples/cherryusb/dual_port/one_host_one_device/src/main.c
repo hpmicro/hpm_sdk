@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -30,7 +30,7 @@ int main(void)
     intc_set_irq_priority(IRQn_USB1, 2);
 
     /* usb host init */
-    usbh_initialize(0, HPM_USB0_BASE);
+    usbh_initialize(0, HPM_USB0_BASE, NULL);
 
     /* usb device init */
     msc_ram_init(0, HPM_USB1_BASE);

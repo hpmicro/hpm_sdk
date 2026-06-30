@@ -28,9 +28,9 @@
 #endif
 
 /* DMA configuration definitions */
-#define TEST_DMA             BOARD_APP_XDMA
+#define TEST_DMA             BOARD_APP_DMA1
 #define TEST_DMA_CHANNEL     (2U)
-#define TEST_I2S_DMA_IRQ     BOARD_APP_XDMA_IRQ
+#define TEST_I2S_DMA_IRQ     BOARD_APP_DMA1_IRQ
 #define TEST_DMA_SRC_REQ     BOARD_DAO_I2S_DMA_REQ
 #define TEST_DMAMUX_CH       DMA_SOC_CHN_TO_DMAMUX_CHN(TEST_DMA, TEST_DMA_CHANNEL)
 
@@ -242,7 +242,7 @@ hpm_stat_t dao_i2s_dma_play(audio_data_t *audio_data)
     dmamux_config(BOARD_APP_DMAMUX, TEST_DMAMUX_CH, TEST_DMA_SRC_REQ, true);
 
     /* DMA interrupt enable */
-    intc_m_enable_irq_with_priority(BOARD_APP_XDMA_IRQ, 1);
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, 1);
 
     printf("DAO_I2S with DMA play test start, press button can pause/resume audio play.\n");
 

@@ -67,7 +67,12 @@
       {%- endif %}
       {%- if target["cplusplus"] %}
       gcc_cplusplus_language_standard="c++{{target["cplusplus"]}}"
-      libcxx="Yes (No Exceptions)"
+      {#- SES 8.28's default libcxx (source/libcxx/) requires clang or
+          GCC >= 14, but the Andes GCC bundled with SES 8.28 is 13.2.
+          Pin to the legacy libcxx-12.0.1 variant that is still shipped
+          alongside it. -#}
+      libcxx="No"
+      libcxx-12-0-1="Yes (No Exceptions)"
       {%- endif %}
       {%- else %}
       rv_arch_ext=""
@@ -124,7 +129,7 @@
   <configuration
     Name="Debug"
     c_preprocessor_definitions="DEBUG"
-    gcc_debugging_level="Level 3"
+    gcc_debugging_level="Level 2"
     gdb_server_allow_memory_access_during_execution="Yes"
     gdb_server_ignore_checksum_errors="No"
     gdb_server_register_access="General and Individual"

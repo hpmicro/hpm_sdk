@@ -1596,8 +1596,8 @@ static void r8153_teredo_off(struct usbh_rtl8152 *tp)
         case RTL_VER_15:
         default:
             /* The bit 0 ~ 7 are relative with teredo settings. They are
-		 * W1C (write 1 to clear), so set all 1 to disable it.
-		 */
+             * W1C (write 1 to clear), so set all 1 to disable it.
+             */
             ocp_write_byte(tp, MCU_TYPE_PLA, PLA_TEREDO_CFG, 0xff);
             break;
     }
@@ -2249,16 +2249,6 @@ int usbh_rtl8152_eth_output(uint32_t buflen)
 
     usbh_bulk_urb_fill(&g_rtl8152_class.bulkout_urb, g_rtl8152_class.hport, g_rtl8152_class.bulkout, g_rtl8152_tx_buffer, buflen + sizeof(struct tx_desc), USB_OSAL_WAITING_FOREVER, NULL, NULL);
     return usbh_submit_urb(&g_rtl8152_class.bulkout_urb);
-}
-
-__WEAK void usbh_rtl8152_run(struct usbh_rtl8152 *rtl8152_class)
-{
-    (void)rtl8152_class;
-}
-
-__WEAK void usbh_rtl8152_stop(struct usbh_rtl8152 *rtl8152_class)
-{
-    (void)rtl8152_class;
 }
 
 static const uint16_t rtl_id_table[][2] = {

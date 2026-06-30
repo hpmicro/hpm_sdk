@@ -1,4 +1,4 @@
-# Copyright 2023-2025 hpmicro
+# Copyright 2023-2026 hpmicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Summary of file content:
@@ -78,7 +78,7 @@ endfunction()
 # @public
 function(sdk_iar_link_libraries)
     foreach(lib ${ARGN})
-        set_property(TARGET ${HPM_SDK_IAR_LIB_ITF} APPEND PROPERTY INTERFACE_IAR_LD_INPUTS ${opt})
+        set_property(TARGET ${HPM_SDK_IAR_LIB_ITF} APPEND PROPERTY INTERFACE_IAR_LD_INPUTS ${lib})
     endforeach()
 endfunction()
 
@@ -109,7 +109,7 @@ endfunction()
 # Example:
 #   sdk_iar_ld_lib(libm)
 #
-# :param libm: Libraries to be linked with INTERFACE visibility.
+# :param libs: Libraries to be linked with INTERFACE visibility.
 # @private
 function(sdk_iar_ld_lib)
     foreach(opt ${ARGN})

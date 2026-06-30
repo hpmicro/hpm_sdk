@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -396,6 +396,7 @@ void clock_remove_from_group(clock_name_t clock_name, uint32_t group);
 /**
  * @brief Check IP in specified group
  * @param[in] clock_name IP clock name
+ * @param[in] group resource group index, valid value: 0/1/2/3
  * @return true if in group, false if not in group
  */
 bool clock_check_in_group(clock_name_t clock_name, uint32_t group);

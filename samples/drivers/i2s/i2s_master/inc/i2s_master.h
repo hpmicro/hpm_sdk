@@ -14,7 +14,7 @@
 #define ISR_PRIORITY_LEVEL (1U)
 
 /* DMA */
-#define APP_DMA           BOARD_APP_XDMA
+#define APP_DMA           BOARD_APP_DMA1
 #define DMA_TRANSFER_SIZE (96U)
 #define DMA_CHANNEL       (2U)
 #define DMA_MUX_CHANNEL   DMA_SOC_CHN_TO_DMAMUX_CHN(APP_DMA, DMA_CHANNEL)

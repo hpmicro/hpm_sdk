@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -27,64 +27,17 @@ enum {
 #define USBD_WEBUSB_VENDOR_CODE  (0x01)
 #define USBD_WINUSB_VENDOR_CODE  (0x02)
 
-#define USBD_WINUSB_DESC_SET_LEN (0xB2)
+#define USBD_WINUSB_DESC_SET_LEN (10 + USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_MULTI_DESCRIPTOR_LEN)
 
 #define WEBUSB_URL_STRINGS 'e', 'x', 'a', 'm', 'p', 'l', 'e', '.', 't', 'i', 'n', 'y', 'u', 's', 'b', '.', 'o', 'r', 'g', '/',\
                            'w', 'e', 'b', 'u', 's', 'b', '-', 's', 'e', 'r', 'i', 'a', 'l', '/', 'i', 'n', 'd', 'e', 'x', '.', 'h', 't', 'm', 'l'
 #define URL_DESCRIPTOR_LENGTH  (3 + 44)
+#define USBD_BOS_WTOTALLENGTH (5 + USB_BOS_CAP_PLATFORM_WEBUSB_DESCRIPTOR_LEN + USB_BOS_CAP_PLATFORM_WINUSB_DESCRIPTOR_LEN)
+#define LANDING_PAGE          0x01
 
 const uint8_t USBD_WinUSBDescriptorSetDescriptor[USBD_WINUSB_DESC_SET_LEN] = {
-    /*
-     * WCID20 descriptor set descriptor
-     */
-    0x0A, 0x00,                     /* Descriptor size (10 bytes) */
-    0x00, 0x00,                     /* MS OS 2.0 descriptor set header */
-    0x00, 0x00, 0x03, 0x06,         /* Windows version (8.1) (0x06030000) */
-    USBD_WINUSB_DESC_SET_LEN, 0x00, /* Size, MS OS 2.0 descriptor set */
-
-    /*
-     * WCID20 configuration subset descriptor
-     */
-    0x08, 0x00, /* wLength */
-    0x01, 0x00, /* wDescriptorType */
-    0x00,       /* configuration No.0 */
-    0x00,       /* bReserved */
-    0XA8, 0X00, /* Size, MS OS 2.0 configuration subset */
-
-    /*
-     * WCID20 function subset descriptor
-     */
-    0x08, 0x00,           /* Descriptor size (8 bytes) */
-    0x02, 0x00,           /* MS OS 2.0 function subset header  */
-    ITF_NUM_VENDOR,       /* bFirstInterface */
-    0x00,                 /* bReserved */
-    0xA0, 0x00,           /* wSubsetLength */
-
-    /*
-     * WCID20 compatible ID descriptor
-     */
-    0x14, 0x00, /* wLength  20 */
-    0x03, 0x00, /* MS_OS_20_FEATURE_COMPATIBLE_ID */
-    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,       /* cCID_8 */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* cSubCID_8 */
-
-    /*
-     * WCID20 registry property descriptor
-     */
-    0x84, 0x00, /* wLength: 132 */
-    0x04, 0x00, /*  wDescriptorType: MS_OS_20_FEATURE_REG_PROPERTY: 0x04 (Table 9) */
-    0x07, 0x00, /* wPropertyDataType: REG_MULTI_SZ (Table 15) */
-    0x2a, 0x00, /* wPropertyNameLength: */
-    /* bPropertyName: “DeviceInterfaceGUID”  */
-    'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
-    'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00,
-    0x00, 0x00,
-    0x50, 0x00, /* wPropertyDataLength  */
-    /* bPropertyData: “{975F44D9-0D08-43FD-8B3E-127CA8AFFF9D}” */
-    '{', 0x00, '9', 0x00, 'd', 0x00, '7', 0x00, 'd', 0x00, 'e', 0x00, 'b', 0x00, 'b', 0x00, 'c', 0x00, '-', 0x00,
-    'c', 0x00, '8', 0x00, '5', 0x00, 'd', 0x00, '-', 0x00, '1', 0x00, '1', 0x00, 'd', 0x00, '1', 0x00, '-', 0x00,
-    '9', 0x00, 'e', 0x00, 'b', 0x00, '4', 0x00, '-', 0x00, '0', 0x00, '0', 0x00, '6', 0x00, '0', 0x00, '0', 0x00,
-    '8', 0x00, 'c', 0x00, '3', 0x00, 'a', 0x00, '1', 0x00, '9', 0x00, 'a', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
+    USB_MSOSV2_COMP_ID_SET_HEADER_DESCRIPTOR_INIT(USBD_WINUSB_DESC_SET_LEN),
+    USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_MULTI_DESCRIPTOR_INIT(ITF_NUM_VENDOR),
 };
 
 const uint8_t USBD_WebUSBURLDescriptor[URL_DESCRIPTOR_LENGTH] = {
@@ -94,56 +47,10 @@ const uint8_t USBD_WebUSBURLDescriptor[URL_DESCRIPTOR_LENGTH] = {
     WEBUSB_URL_STRINGS
 };
 
-#define USBD_BOS_WTOTALLENGTH 0x39
-
-#define LANDING_PAGE          0x01
-uint8_t USBD_BinaryObjectStoreDescriptor[USBD_BOS_WTOTALLENGTH] = {
-    /*
-     * WCID20 BOS descriptor
-     */
-    0x05,                        /* bLength */
-    0x0F,                        /* bDescriptorType */
-    USBD_BOS_WTOTALLENGTH, 0x00, /* wTotalLength */
-    0x02,                        /* bNumDeviceCaps */
-
-    /*
-     * WCID20 WebUSB Platform capability descriptor
-     */
-    0x18, /* Descriptor size (24 bytes) */
-    0x10, /* Descriptor type (Device Capability) */
-    0x05, /* Capability type (Platform) */
-    0x00, /* Reserved */
-
-    /* WebUSB Platform Capability ID (3408b638-09a9-47a0-8bfd-a0768815b665) */
-    0x38, 0xB6, 0x08, 0x34,
-    0xA9, 0x09,
-    0xA0, 0x47,
-    0x8B, 0xFD,
-    0xA0, 0x76, 0x88, 0x15, 0xB6, 0x65,
-
-    0x00, 0x01,              /* WebUSB version 1.0 */
-    USBD_WEBUSB_VENDOR_CODE, /* Vendor-assigned WebUSB request code */
-    LANDING_PAGE,            /* Landing page */
-
-    /*
-     *WCID20 device capability descriptor
-     */
-    0x1C, /* Descriptor size (28 bytes) */
-    0x10, /* Descriptor type (Device Capability) */
-    0x05, /* Capability type (Platform) */
-    0x00, /* Reserved */
-
-    0xDF, 0x60, 0xDD, 0xD8, /* PlatformCapabilityUUID */
-    0x89, 0x45, 0xC7, 0x4C,
-    0x9C, 0xD2, 0x65, 0x9D,
-    0x9E, 0x64, 0x8A, 0x9F,
-
-    0x00, 0x00, 0x03, 0x06, /* >= Win 8.1 * dwWindowsVersion */
-
-    USBD_WINUSB_DESC_SET_LEN, 0X00, /* wDescriptorSetTotalLength */
-
-    USBD_WINUSB_VENDOR_CODE, /* bVendorCode */
-    0X00                     /* bAltEnumCode */
+__ALIGN_BEGIN uint8_t USBD_BinaryObjectStoreDescriptor[USBD_BOS_WTOTALLENGTH] = {
+    USB_BOS_HEADER_DESCRIPTOR_INIT(USBD_BOS_WTOTALLENGTH, 0x02),
+    USB_BOS_CAP_PLATFORM_WEBUSB_DESCRIPTOR_INIT(USBD_WEBUSB_VENDOR_CODE, LANDING_PAGE),
+    USB_BOS_CAP_PLATFORM_WINUSB_DESCRIPTOR_INIT(USBD_WINUSB_VENDOR_CODE, USBD_WINUSB_DESC_SET_LEN),
 };
 
 struct usb_webusb_descriptor webusb_url_desc = {

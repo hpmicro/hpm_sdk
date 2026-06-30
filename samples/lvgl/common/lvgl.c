@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,7 +20,6 @@ static demo_info_t demo_infos[] = {
     {"benchmark", lv_demo_benchmark},
     {"music", lv_demo_music},
     {"widgets", lv_demo_widgets},
-    {"flex_layout", lv_demo_flex_layout},
 };
 
 static lv_color_t def_color;
@@ -72,7 +71,7 @@ static void hpm_lvgl_add_button(void)
     lv_obj_t *obj_button;
     lv_obj_t *obj_text;
     lv_obj_t *obj_grid;
-    static int32_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+    static int32_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static int32_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static lv_style_t style_btn;
 
@@ -90,7 +89,7 @@ static void hpm_lvgl_add_button(void)
     lv_obj_center(obj_grid);
     lv_obj_set_grid_dsc_array(obj_grid, col_dsc, row_dsc);
 
-    for (int i = 0; i < sizeof(demo_infos) / sizeof(demo_infos[0]); i++) {
+    for (uint32_t i = 0; i < sizeof(demo_infos) / sizeof(demo_infos[0]); i++) {
         obj_button = lv_button_create(obj_grid);
         lv_obj_set_user_data(obj_button, &demo_infos[i]);
         lv_obj_add_style(obj_button, &style_btn, 0);
@@ -109,4 +108,11 @@ void hpm_lvgl_demos(void)
 {
     hpm_lvgl_add_logo();
     hpm_lvgl_add_button();
+}
+
+void lv_demo_args_init(lv_demo_args_t *args)
+{
+    LV_ASSERT_NULL(args);
+    lv_memzero(args, sizeof(lv_demo_args_t));
+    args->parent = lv_screen_active();
 }

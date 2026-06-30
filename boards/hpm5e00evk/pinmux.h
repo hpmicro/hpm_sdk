@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -49,6 +49,7 @@ void init_enet0_pins_rmii(void);
 void init_enet0_pins_mii(void);
 void init_enet_pps_pins(void);
 void init_adc16_pins(void);
+void init_adc16_diff_pins(void);
 void init_owr_pins_without_param(void);
 void init_adc_bldc_pins(void);
 void init_adc_qeiv2_pins(void);
@@ -77,6 +78,7 @@ void init_gptmr1_channel3_pin_as_capture(void);
 void init_clk_ref_pins(void);
 void init_brownout_indicate_pin(void);
 void board_init_i2c_eeprom_pin(void);
+void init_trgm_gptmr0_cap2_invert_pins(void);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,6 +16,7 @@
 
 #include "pinmux.h"
 #include "board.h"
+#include "hpm_trgm_drv.h"
 
 
 void init_uart0_pins(void)
@@ -552,8 +553,16 @@ void init_enet_pps_capture_pins(void)
 
 void init_adc16_pins(void)
 {
-    /* ADC_B: ADC2/3.IN10 */
+    /* ADC2/3.IN10 */
     HPM_IOC->PAD[IOC_PAD_PD26].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
+}
+
+void init_adc16_diff_pins(void)
+{
+    /* PD24: ADC2.IN08 (J4[14] ADC_IV); PD25: ADC3.IN09 (J4[15] ADC_IW) */
+    HPM_IOC->PAD[IOC_PAD_PD24].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
+
+    HPM_IOC->PAD[IOC_PAD_PD25].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
 }
 
 void init_adc_bldc_pins(void)
@@ -674,4 +683,16 @@ void init_brownout_indicate_pin(void)
 {
     HPM_IOC->PAD[IOC_PAD_PY07].FUNC_CTL = IOC_PY07_FUNC_CTL_GPIO_Y_07;
     HPM_PIOC->PAD[IOC_PAD_PY07].FUNC_CTL = PIOC_PY07_FUNC_CTL_SOC_PY_07;
+}
+
+void init_trgm_gptmr3_cap2_invert_pins(void)
+{
+    HPM_IOC->PAD[IOC_PAD_PY01].FUNC_CTL = IOC_PY01_FUNC_CTL_TRGM_P_17;
+    HPM_PIOC->PAD[IOC_PAD_PY01].FUNC_CTL = PIOC_PY01_FUNC_CTL_SOC_PY_01;
+
+    trgm_output_t trgm0_io_config0 = {0};
+    trgm0_io_config0.invert = 1;
+    trgm0_io_config0.type = trgm_output_same_as_input;
+    trgm0_io_config0.input = HPM_TRGM0_INPUT_SRC_TRGM0_P17;
+    trgm_output_config(HPM_TRGM0, HPM_TRGM0_OUTPUT_SRC_GPTMR3_IN2, &trgm0_io_config0);
 }

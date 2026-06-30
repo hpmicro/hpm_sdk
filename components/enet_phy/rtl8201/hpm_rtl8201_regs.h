@@ -14,6 +14,8 @@ typedef enum {
     RTL8201_BMSR                        = 1,   /* 0x1: Basic Mode Status Register */
     RTL8201_PHYID1                      = 2,   /* 0x2: PHY Identifier Register 1 */
     RTL8201_PHYID2                      = 3,   /* 0x3: PHY Identifier Register 2 */
+    RTL8201_ANAR                        = 4,   /* 0x4: Auto-Negotiation Advertisement Register */
+    RTL8201_ANLPAR                      = 5,   /* 0x5: Auto-Negotiation Link Partner Ability Register */
     RTL8201_RMSR_P7                     = 16,  /* 0x10: RMII Mode Setting Register */
     RTL8201_PAGESEL                     = 31,  /* 0x1F: Page Select Register */
 } RTL8201_REG_Type;
@@ -401,7 +403,22 @@ typedef enum {
 #define RTL8201_PAGESEL_PAGE_SEL_SET(x) (((uint16_t)(x) << RTL8201_PAGESEL_PAGE_SEL_SHIFT) & RTL8201_PAGESEL_PAGE_SEL_MASK)
 #define RTL8201_PAGESEL_PAGE_SEL_GET(x) (((uint16_t)(x) & RTL8201_PAGESEL_PAGE_SEL_MASK) >> RTL8201_PAGESEL_PAGE_SEL_SHIFT)
 
+/* Bitfield definition for register: ANAR / ANLPAR (IEEE technology ability field) */
+#define RTL8201_ANAR_100BASE_TX_FD_MASK (0x100U)
+#define RTL8201_ANAR_100BASE_TX_FD_SHIFT (8U)
+#define RTL8201_ANAR_100BASE_TX_FD_GET(x) (((uint16_t)(x) & RTL8201_ANAR_100BASE_TX_FD_MASK) >> RTL8201_ANAR_100BASE_TX_FD_SHIFT)
 
+#define RTL8201_ANAR_100BASE_TX_MASK (0x80U)
+#define RTL8201_ANAR_100BASE_TX_SHIFT (7U)
+#define RTL8201_ANAR_100BASE_TX_GET(x) (((uint16_t)(x) & RTL8201_ANAR_100BASE_TX_MASK) >> RTL8201_ANAR_100BASE_TX_SHIFT)
+
+#define RTL8201_ANAR_10BASE_T_FD_MASK (0x40U)
+#define RTL8201_ANAR_10BASE_T_FD_SHIFT (6U)
+#define RTL8201_ANAR_10BASE_T_FD_GET(x) (((uint16_t)(x) & RTL8201_ANAR_10BASE_T_FD_MASK) >> RTL8201_ANAR_10BASE_T_FD_SHIFT)
+
+#define RTL8201_ANAR_10BASE_T_MASK (0x20U)
+#define RTL8201_ANAR_10BASE_T_SHIFT (5U)
+#define RTL8201_ANAR_10BASE_T_GET(x) (((uint16_t)(x) & RTL8201_ANAR_10BASE_T_MASK) >> RTL8201_ANAR_10BASE_T_SHIFT)
 
 
 #endif /* HPM_RTL8201_REGS_H */

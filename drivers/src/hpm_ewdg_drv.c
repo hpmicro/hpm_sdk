@@ -63,7 +63,7 @@ void ewdg_get_default_config(EWDG_Type *ptr, ewdg_config_t *config)
 
         (void) memset(config, 0, sizeof(ewdg_config_t));
 
-        config->ctrl_config.cnt_clk_sel = ewdg_cnt_clk_src_ext_osc_clk;
+        config->ctrl_config.cnt_clk_sel = ewdg_cnt_src_clk_32k;
         config->ctrl_config.use_lowlevel_timeout = true;
 
         config->ctrl_config.refresh_unlock_method = ewdg_refresh_unlock_method_password;
@@ -142,7 +142,7 @@ hpm_stat_t ewdg_init_ctrl_func(EWDG_Type *ptr, ewdg_func_ctrl_config_t *config, 
             }
         }
 
-        if (config->cnt_clk_sel == ewdg_cnt_clk_src_ext_osc_clk) {
+        if (config->cnt_clk_sel == ewdg_cnt_src_clk_32k) {
             ctrl0 |= EWDG_CTRL0_CLK_SEL_MASK;
         }
         ctrl0 |= EWDG_CTRL0_DIV_VALUE_SET(clock_div_by_pwr_2);
@@ -454,7 +454,7 @@ void ewdg_switch_clock_source(EWDG_Type *ptr, ewdg_cnt_clk_sel_t clk_sel)
     if (ptr != NULL) {
         uint32_t ctrl0 = ptr->CTRL0 & ~EWDG_CTRL0_CLK_SEL_MASK;
         /* Set Parity bit if necessary */
-        if (clk_sel == ewdg_cnt_clk_src_ext_osc_clk) {
+        if (clk_sel == ewdg_cnt_src_clk_32k) {
             ctrl0 |= EWDG_CTRL0_CLK_SEL_MASK;
         }
         if (ewdg_need_set_parity_bit(ctrl0)) {

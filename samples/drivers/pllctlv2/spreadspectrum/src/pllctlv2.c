@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -52,7 +52,7 @@ void test_pll_spread_spectrum(void)
     pllctlv2_init_pll_with_freq(TEST_PLLCTL, TEST_PLL, TEST_PLL_FREQ);
     pllctlv2_set_postdiv(TEST_PLLCTL, TEST_PLL, TEST_PLL_CLK, pllctlv2_div_1p0);
     pllctlv2_setup_spread_spectrum(TEST_PLLCTL, TEST_PLL, SS_RANGE, MOD_FREQ);
-    printf("PLL%dCLK%d @ %dMhz spread spectrum has been enabled with range 0.%d%% @ %dHz, which can be observed on \"%s\" pin by the oscilloscope\n",
+    printf("PLL%dCLK%d @ %dHz spread spectrum has been enabled with range 0.%d%% @ %dHz, which can be observed on \"%s\" pin by the oscilloscope\n",
                 TEST_PLL, TEST_PLL_CLK, TEST_PLL_FREQ / TEST_PLL_DIV,
                 SS_RANGE, MOD_FREQ, BOARD_APP_CLK_REF_PIN_NAME);
 }

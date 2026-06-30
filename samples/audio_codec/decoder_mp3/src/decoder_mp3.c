@@ -35,12 +35,12 @@ static bool is_i2s_buff_full(void);
 static bool is_i2s_buff_empty(void);
 
 /* Function Definition */
-SDK_DECLARE_EXT_ISR_M(BOARD_APP_XDMA_IRQ, isr_dma)
+SDK_DECLARE_EXT_ISR_M(BOARD_APP_DMA1_IRQ, isr_dma)
 void isr_dma(void)
 {
     volatile hpm_stat_t stat;
 
-    stat = dma_check_transfer_status(BOARD_APP_XDMA, TARGET_I2S_TX_DMA_CH);
+    stat = dma_check_transfer_status(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
 
     if (0 != (stat & DMA_CHANNEL_STATUS_TC)) {
         if (!is_i2s_buff_empty()) {

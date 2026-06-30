@@ -6,7 +6,7 @@ CAN
 Overview
 --------
 
-The can_demo provides the following features:
+The CAN sample is organized as a shared application core plus one source file per feature area. It provides the following features:
 
 - loopback test for all SoC supported CAN controllers, focusing on the CAN and CAN-FD test
 
@@ -20,6 +20,27 @@ The can_demo provides the following features:
 
 - CAN Filter
 
+- CAN timestamp demo
+
+Source Organization
+-------------------
+
+The sample follows the same split-demo structure used by the MCAN sample:
+
+- ``src/can_app_common.c`` and ``src/can_app_common.h`` hold the shared entry point, menu, CAN instance table, shared display helpers, and ISR callback dispatch.
+
+- ``src/can_loopback_demo.c`` contains the blocking loopback coverage for all CAN instances and the interrupt-driven loopback demo for the board CAN instance.
+
+- ``src/can_echo_demo.c`` contains the dual-board echo initiator and responder flows.
+
+- ``src/can_txrx_demo.c`` contains the classic CAN and CAN FD bulk transmit demos used for bus connectivity checks.
+
+- ``src/can_error_demo.c`` contains the error-detection demos, including the variant with retransmission disabled.
+
+- ``src/can_filter_demo.c`` contains the acceptance-filter examples.
+
+- ``src/can_timestamp_demo.c`` contains the PTPC-backed transmit/receive timestamp demos for both classic CAN and CAN FD.
+
 Board Setting
 -------------
 
@@ -27,6 +48,13 @@ No special settings are required
 
 Running the example
 -------------------
+
+For a standalone build from this sample directory, use the bundled preset:
+
+.. code-block:: console
+
+   cmake --preset hpm6750evk2-ram-ninja
+   cmake --build --preset hpm6750evk2-ram-ninja
 
 When the example runs successfully, the board shows the following menu:
 
@@ -63,3 +91,5 @@ Note
 - For option 7, users must ensure that the board is attached to a valid CAN bus and the bus now supports 5Mbits/s CANFD baudrate. If the board is connected
 
 to a CANFD monitor, users will see multiple CANFD messages are sent out after this option is chosen.
+
+- Driver-focused regression and runtime coverage lives in ``unit_test/drivers/can``. Use that target when validating helper APIs, loopback behavior, CAN FD coverage, timestamps, and boundary handling after driver changes.

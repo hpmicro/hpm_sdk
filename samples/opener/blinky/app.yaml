@@ -11,3 +11,7 @@ excluded_targets:
   - flash_sdram_uf2_release
   - flash_uf2
   - flash_uf2_release
+  - flash_dfu
+  - flash_dfu_release
+  - flash_sdram_dfu
+  - flash_sdram_dfu_release

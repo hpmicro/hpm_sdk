@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
 #ifndef HPM_SOC_IP_FEATURE_H
 #define HPM_SOC_IP_FEATURE_H
+
+/* PLIC related feature */
+#define HPM_IP_FEATURE_PLIC_HIGHEST_PRIORITY 31
+#define HPM_IP_FEATURE_PLIC_HAS_TRIGGER_TYPE 1
 
 /* GPTMR related feature */
 #define HPM_IP_FEATURE_GPTMR_MONITOR 1
@@ -44,6 +48,10 @@
 /* ADC16 related feature */
 #define HPM_IP_FEATURE_ADC16_HAS_MOT_EN 1
 #define HPM_IP_FEATURE_ADC16_SEQ_HCFG_EN 1
+#define HPM_IP_FEATURE_ADC16_HAS_BUS_MODE_EN 1
+
+/* OPAMP related feature */
+#define HPM_IP_FEATURE_OPAMP_NO_OUTPUT_SEL 1
 
 /* ACMP related feature */
 #define HPM_IP_FEATURE_ACMP_DAC_MATRIX 1

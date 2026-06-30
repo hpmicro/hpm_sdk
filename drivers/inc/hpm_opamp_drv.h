@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -378,6 +378,40 @@ static inline void opamp_inp_pad_select(OPAMP_Type *opamp, opamp_inp_pad_t selec
     opamp->CTRL0 = (opamp->CTRL0 & (~OPAMP_CTRL0_VIP_SEL_MASK)) | OPAMP_CTRL0_VIP_SEL_SET(select);
 }
 
+#if !defined(HPM_IP_FEATURE_OPAMP_NO_OUTPUT_SEL) || (HPM_IP_FEATURE_OPAMP_NO_OUTPUT_SEL == 0)
+/**
+ * @brief OPAMP output path (OPAOUT_SEL in CTRL0): VOUT0/VOUT1 to OUT0/OUT1 and whether sense is on that pin
+ */
+typedef enum {
+    opamp_out0_sense_on = 0,
+    opamp_out0_sense_off = 1,
+    opamp_out1_sense_on = 2,
+    opamp_out1_sense_off = 3,
+} opamp_output_sel_t;
+
+/**
+ * @brief Select OPAMP output path and sense connection
+ *
+ * @param opamp @ref OPAMP_Type
+ * @param sel @ref opamp_output_sel_t
+ */
+static inline void opamp_output_path_select(OPAMP_Type *opamp, opamp_output_sel_t sel)
+{
+    opamp->CTRL0 = (opamp->CTRL0 & (~OPAMP_CTRL0_OPAOUT_SEL_MASK)) | OPAMP_CTRL0_OPAOUT_SEL_SET((uint32_t)sel);
+}
+
+/**
+ * @brief Get current OPAOUT_SEL field in CTRL0
+ *
+ * @param opamp @ref OPAMP_Type
+ * @return OPAOUT_SEL value (0-3)
+ */
+static inline uint32_t opamp_output_path_get(OPAMP_Type *opamp)
+{
+    return OPAMP_CTRL0_OPAOUT_SEL_GET(opamp->CTRL0);
+}
+#endif /* OPAOUT_SEL API */
+
 /**
  * @brief opamp inp select preset
  *
@@ -543,4 +577,4 @@ static inline void opamp_preset_mode_set(OPAMP_Type *opamp, uint8_t preset_chn, 
 }
 #endif
 
-#endif /* HPM_ACMP_DRV_H */
+#endif /* HPM_OPAMP_DRV_H */

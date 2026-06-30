@@ -222,7 +222,7 @@ static hpm_stat_t init(void *ops)
             HPM_CHECK_RET(dma_mgr_setup_channel(resource, &chg_config));
             HPM_CHECK_RET(dma_mgr_disable_chn_irq(resource, DMA_MGR_INTERRUPT_MASK_TC));
         } else {
-            stat = status_fail;
+            return status_fail;
         }
         /* spi tx dma config */
         resource = &host->host_param.param.dma_control.txdma_resource;
@@ -340,7 +340,6 @@ static hpm_stat_t hpm_spi_transfer_via_dma(hpm_serial_nor_host_t *host, spi_cont
                 break;
             }
         }
-        timeout_count = 0;
         spi_disable_data_merge((SPI_Type *)host->host_param.param.host_base);
     }
     /* After the transfer is complete, disable SPI TX DMA and RX DMA to avoid affecting the next transfer. */
@@ -454,7 +453,7 @@ static hpm_stat_t read(void *ops, hpm_serial_nor_transfer_seq_t *cmd_seq)
         if (l1c_dc_is_enabled()) {
             /* cache invalidate for receive buff */
             aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN((uint32_t)dst_8);
-            aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(read_size);
+            aligned_end = HPM_L1C_CACHELINE_ALIGN_UP((uint32_t)dst_8 + read_size);
             aligned_size = aligned_end - aligned_start;
             l1c_dc_invalidate(aligned_start, aligned_size);
         }

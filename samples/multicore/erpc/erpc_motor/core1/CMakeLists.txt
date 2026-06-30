@@ -1,4 +1,4 @@
-# Copyright (c) 2022 HPMicro
+# Copyright (c) 2022,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -12,7 +12,7 @@ set(CONFIG_ERPC_RPMSG_REMOTE 1)
 set(CONFIG_IPC_EVENT_MGR 1)
 set(CONFIG_IPC_EVENT_MGR_MBX 1)
 set(CONFIG_MOTORCTRL_V2 1)
-set(CONFIG_HPM_ADC 1)
+set(CONFIG_HPM_ADC_V2 1)
 
 set(RV_ABI "ilp32f")
 set(RV_ARCH "rv32imafc")
