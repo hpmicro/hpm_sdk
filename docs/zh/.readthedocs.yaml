@@ -25,9 +25,14 @@ build:
         # RTD flattens sphinx to the site root and renames doxygen html/ to api_doc/, so the link must
         # be rewritten to api_doc/index.html here. DO NOT REMOVE: without this rewrite the api_doc page
         # 404s on RTD and no linkcheck CI catches it (Makefile has no linkcheck target).
+        # RTD wraps each build.jobs command in an unescaped single-quote wrapper
+        # (f"/bin/bash -c '{command}'" -- readthedocs.org issue #9397), so a single quote
+        # anywhere in these commands breaks the build. Double quotes (including \" and \.
+        # inside them) survive intact: the sed/grep lines keep their original escaped
+        # patterns under double quoting. Do not switch them back to single quotes.
         - test -f docs/output/zh/html/api_doc.html || { echo "ERROR:zh api_doc.html missing before rewrite"; exit 1; }
-        - sed -i 's|\.\./\.\./api_doc/html/index\.html|api_doc/index.html|g' docs/output/zh/html/api_doc.html
-        - grep -q 'href="api_doc/index\.html"' docs/output/zh/html/api_doc.html || { echo 'ERROR:zh api_doc link rewrite failed'; exit 1; }
+        - sed -i "s|\.\./\.\./api_doc/html/index\.html|api_doc/index.html|g" docs/output/zh/html/api_doc.html
+        - grep -q "href=\"api_doc/index\.html\"" docs/output/zh/html/api_doc.html || { echo "ERROR:zh api_doc link rewrite failed"; exit 1; }
         - cp -r docs/output/zh/html/* $READTHEDOCS_OUTPUT/html/
         - test -d docs/output/api_doc/html || { echo "api_doc/html missing; output tree:"; ls -R docs/output 2>/dev/null | head -40; exit 1; }
         - cp -r docs/output/api_doc/html $READTHEDOCS_OUTPUT/html/api_doc
