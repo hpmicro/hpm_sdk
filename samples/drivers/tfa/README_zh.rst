@@ -24,6 +24,9 @@ TFA 是一种硬件三角函数加速器，用于提升数学运算的性能。
 .. note::
    ATAN2和CORDIC函数仅在部分 SoC 上支持。
    在其他 SoC 上，选择这些函数将打印"not supported"提示信息。
+   TFA支持最高4层嵌套计算，超过4层嵌套时，最外层计算将丢失结果，会在回到最外层时重新计算。
+   该工程默认打开中断嵌套保护。
+   如用户确认当前环境已经屏蔽中断，不会发生中断嵌套，导致正在计算的数据被新的中断中可能发生的数据计算打断并破坏，可在 cmakelist 中使能宏 CONFIG_TFA_NOT_USE_IRQ_NEST_PROTECTION 关闭嵌套保护以获得更高性能。
 
 硬件设置
 ------------
@@ -73,30 +76,35 @@ TFA 是一种硬件三角函数加速器，用于提升数学运算的性能。
 .. code-block:: console
 
    0
-   tfa and math diff value:-0.000000, math calculation time:33 ticks, tfa calculation time:62 ticks.
+   tfa and math diff value:0.000000, math calculation time:24 ticks, tfa calculation time:57 ticks.
    1
-   tfa and math diff value:0.000000, math calculation time:363 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:25 ticks, tfa calculation time:58 ticks.
    2
-   tfa and math diff value:0.000000, math calculation time:1755 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:307 ticks, tfa calculation time:58 ticks.
    3
-   tfa and math diff value:0.000000, math calculation time:1826 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:309 ticks, tfa calculation time:58 ticks.
    4
-   tfa and math diff value:0.000000, math calculation time:3031 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:358 ticks, tfa calculation time:58 ticks.
    5
-   tfa and math diff value:-0.000000, math calculation time:2875 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:-0.000000, math calculation time:291 ticks, tfa calculation time:58 ticks.
    6
-   tfa and math diff value:-0.000000, math calculation time:1959 ticks, tfa calculation time:180 ticks.
+   tfa and math diff value:-0.000000, math calculation time:535 ticks, tfa calculation time:58 ticks.
    7
-   tfa and math diff value:-0.000000, math calculation time:552 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:43 ticks, tfa calculation time:58 ticks.
    8
-   tfa and math diff value:0.000000, math calculation time:2108 ticks, tfa calculation time:150 ticks.
+   tfa and math diff value:0.000000, math calculation time:513 ticks, tfa calculation time:121 ticks.
    9
-   math angle value:6.981058, tfa angle value:6.980525, tfa and math angle diff value:-0.000533, math mode value:98.731964, tfa mode value:98.000000, tfa and math mode diff value:-0.731960, math calculation time:2901 ticks, tfa calculation time:93 ticks.
+   math angle value:6.981057, tfa angle value:6.980525, tfa and math angle diff value:-0.000533,math mode value:98.731964, tfa mode value:98.000000, tfa and math mode diff value:-0.731964,math calculation time:401 ticks, tfa calculation time:80 ticks.
 
 菜单 A 测试基于前 7 种运算的复杂计算，对比库函数的结果误差与周期，结果如下：
 
 .. code-block:: console
 
    A
-   tfa and math diff value:-0.000000, math calculation time:9088 ticks, tfa calculation time:290 ticks.
+   tfa and math diff value:-0.000000, math calculation time:1269 ticks, tfa calculation time:288 ticks.
+
+Note: 菜单 4 POW2 TEST 中用到的数学函数库计算函数 powf 在 zcc 4.1.5 工具链下，无法计算出正确值; 该问题已经在 zcc 4.1.8 fix，用户可以升级到 4.1.8 进行计算。
+
+
+
 

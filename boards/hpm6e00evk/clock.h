@@ -41,14 +41,6 @@ void init_spi7_clock(void);
 void init_usb0_clock(void);
 void init_dao_clock(void);
 void init_pdm_clock(void);
-void init_i2s0_clock_group(void);
-void init_i2s0_clock_source_22050(void);
-void init_i2s0_clock_source_default(void);
-void init_i2s0_clock_i2s_source(void);
-void init_i2s1_clock_group(void);
-void init_i2s1_clock_source_22050(void);
-void init_i2s1_clock_source_default(void);
-void init_i2s1_clock_i2s_source(void);
 void init_adc0_bus_clock(void);
 void init_adc0_analog_clock(void);
 void init_adc1_bus_clock(void);
@@ -93,6 +85,10 @@ void init_esc0_clock(void);
 void init_tsw_smi_clock(void);
 void init_tsw_smi_clock_group1(void);
 void init_tsw_clock(void);
+void init_i2s0_clock_22050(void);
+void init_i2s0_clock_default(void);
+void init_i2s1_clock_22050(void);
+void init_i2s1_clock_default(void);
 
 #ifdef __cplusplus
 }

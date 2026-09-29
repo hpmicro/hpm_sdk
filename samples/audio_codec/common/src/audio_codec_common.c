@@ -57,7 +57,9 @@ hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t 
 #if defined(USING_CODEC) && USING_CODEC
     i2s_config.enable_mclk_out = true;
 #endif
-    i2s_init(TARGET_I2S, &i2s_config);
+    if (i2s_init(TARGET_I2S, &i2s_config) != status_success) {
+        return status_fail;
+    }
 
     i2s_enable_tx_dma_request(TARGET_I2S);
     dmamux_config(BOARD_APP_DMAMUX, TARGET_I2S_TX_DMAMUX_CH, TARGET_I2S_TX_DMAMUX_SRC, true);
@@ -97,7 +99,7 @@ hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t 
             printf("Init Audio Codec failed\n");
             return status_fail;
         }
-        wm8960_set_volume(&codec_control, wm8960_module_dac, 200);
+        wm8960_set_volume_db(&codec_control, wm8960_module_dac, -20.0f);
 
     #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
         sgtl_config_t sgtl5000_config;
@@ -114,7 +116,7 @@ hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t 
             printf("Init Audio Codec failed\n");
             return status_fail;
         }
-        sgtl_set_volume(&codec_control, sgtl_module_dac, SGTL5000_DAC_MIN_VOLUME_VALUE);
+        sgtl_set_volume_db(&codec_control, sgtl_module_dac, -20.0f);
 
     #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
         es8389_config_t es8389_config;
@@ -130,6 +132,8 @@ hpm_stat_t init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t 
             return status_fail;
         }
 
+        es8389_set_volume_db(&codec_control, es8389_dac1, -20.0f);
+        es8389_set_volume_db(&codec_control, es8389_dac2, -20.0f);
     #else
         #error no specified Audio Codec!!!
     #endif
@@ -157,7 +161,7 @@ void i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.size_in_byte = size;
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
-    ch_config.src_burst_size = 0;
+    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_2T; /* 2 transfers per burst: each burst fetches one stereo audio frame (2 channels) */
 
     if (status_success != dma_setup_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH, &ch_config, true)) {
         printf(" dma setup channel failed\n");

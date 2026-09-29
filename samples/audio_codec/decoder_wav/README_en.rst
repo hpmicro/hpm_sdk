@@ -13,9 +13,14 @@ MCU send back the received data to codec component, then codec component decodes
 Project Configuration
 -----------------------
 
-- In the `CMakeLists.txt` file, configure the type of audio playback device according to requirements. The default playback uses DAO.
+- The audio output device is auto-detected when this sample's ``app.yaml`` declares a ``board_audio_codec`` dependency and the board declares both ``board_audio_codec`` and a ``board_codec_*`` feature. Otherwise DAO is used.
 
-- If using the onboard Audio Codec chip, the Audio Codec type is automatically matched with the hardware based on the feature settings in `boards/<board_name>/<board_name>.yaml` (feature: board_codec_xxxx) by default. To specify an audio codec type, set the following in `CMakeLists.txt`: set(CONFIG_CODEC_NAME "wm8960").
+- To override the auto-detection, set ``CONFIG_CODEC`` before ``find_package`` in ``CMakeLists.txt``:
+
+  - ``set(CONFIG_CODEC 1)`` — force Codec output
+  - ``set(CONFIG_CODEC 0)`` — force DAO output
+
+- The Audio Codec type is automatically matched with the hardware based on the board feature (e.g., ``board_codec_es8389``). To specify an audio codec type manually, set the following in ``CMakeLists.txt``: ``set(CONFIG_CODEC_NAME "wm8960")``.
 
 Board Setting
 -------------
@@ -64,4 +69,3 @@ When the project runs correctly, select the music name and the headset will play
    8: on_phone.wav
 
    9: calling.wav
-

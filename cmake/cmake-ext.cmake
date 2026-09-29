@@ -1250,6 +1250,22 @@ function(get_app_excluded_ides app_yaml result)
     set(${result} ${r} PARENT_SCOPE)
 endfunction()
 
+# Get application dependencies from app.yaml
+#
+# The dependencies are returned as a semicolon-separated CMake list.
+function(get_app_dependencies app_yaml result)
+    execute_process(
+        COMMAND
+        ${PYTHON_EXECUTABLE}
+        ${HPM_SDK_BASE}/scripts/get_app_info.py
+        ${app_yaml}
+        "dependency"
+        OUTPUT_VARIABLE r
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    set(${result} ${r} PARENT_SCOPE)
+endfunction()
+
 # Add source files (glob pattern) to the SDK core (HPM_SDK_LIB)
 #
 # This function adds source files to the HPM SDK core library (HPM_SDK_LIB) using a glob pattern.

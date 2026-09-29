@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,30 +9,7 @@
 #include "hpm_clock_drv.h"
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
-#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
-#include "hpm_gptmrv2_drv.h"
-#else
-#include "hpm_gptmr_drv.h"
-#endif
 #include "hpm_interrupt.h"
-
-#define DISCONNECT_TIMEOUT_MS (1000)
-
-static void encoder_disconnect_timer_config(uint32_t time_ms)
-{
-    uint32_t gptmr_freq;
-    gptmr_channel_config_t config;
-
-    clock_add_to_group(BOARD_GPTMR_CLK_NAME, 0);
-    gptmr_channel_get_default_config(BOARD_GPTMR, &config);
-    gptmr_freq = clock_get_frequency(BOARD_GPTMR_CLK_NAME);
-    config.reload = gptmr_freq / 1000 * time_ms;
-    gptmr_channel_config(BOARD_GPTMR, BOARD_GPTMR_CHANNEL, &config, false);
-    gptmr_start_counter(BOARD_GPTMR, BOARD_GPTMR_CHANNEL);
-
-    gptmr_enable_irq(BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(BOARD_GPTMR_CHANNEL));
-    intc_m_enable_irq_with_priority(BOARD_GPTMR_IRQ, 1);
-}
 
 int main(void)
 {
@@ -134,52 +111,6 @@ int main(void)
     data_format_config.gold_value = 0x42;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_6, &data_format_config);
 
-    /* Depending on the soc, there are different numbers of DAT registers available */
-#if defined(HPM_IP_FEATURE_SEI_HAVE_DAT10_31) && HPM_IP_FEATURE_SEI_HAVE_DAT10_31
-    /* data register 9: recv pos */
-    data_format_config.mode = sei_data_mode;
-    data_format_config.signed_flag = false;
-    data_format_config.bit_order = sei_bit_lsb_first;
-    data_format_config.word_order = sei_word_reverse;
-    data_format_config.word_len = 8;
-    data_format_config.last_bit = 7;
-    data_format_config.first_bit = 0;
-    data_format_config.max_bit = 7;
-    data_format_config.min_bit = 0;
-    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_9, &data_format_config);
-    /* data register 11: recv pos */
-    data_format_config.mode = sei_data_mode;
-    data_format_config.signed_flag = false;
-    data_format_config.bit_order = sei_bit_lsb_first;
-    data_format_config.word_order = sei_word_reverse;
-    data_format_config.word_len = 8;
-    data_format_config.last_bit = 3;
-    data_format_config.first_bit = 4;
-    data_format_config.max_bit = 11;
-    data_format_config.min_bit = 0;
-    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_11, &data_format_config);
-    /* data register 10: recv pos */
-    data_format_config.mode = sei_data_mode;
-    data_format_config.signed_flag = false;
-    data_format_config.bit_order = sei_bit_lsb_first;
-    data_format_config.word_order = sei_word_reverse;
-    data_format_config.word_len = 8;
-    data_format_config.last_bit = 27;
-    data_format_config.first_bit = 28;
-    data_format_config.max_bit = 31;
-    data_format_config.min_bit = 20;
-    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_10, &data_format_config);
-    data_format_config.mode = sei_data_mode;
-    data_format_config.signed_flag = false;
-    data_format_config.bit_order = sei_bit_lsb_first;
-    data_format_config.word_order = sei_word_reverse;
-    data_format_config.word_len = 8;
-    data_format_config.last_bit = 7;
-    data_format_config.first_bit = 0;
-    data_format_config.max_bit = 7;
-    data_format_config.min_bit = 0;
-    sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_12, &data_format_config);
-#else
     /* data register 7: recv pos */
     data_format_config.mode = sei_data_mode;
     data_format_config.signed_flag = false;
@@ -191,7 +122,6 @@ int main(void)
     data_format_config.max_bit = 31;
     data_format_config.min_bit = 0;
     sei_cmd_data_format_config_init(BOARD_SEI, SEI_SELECT_DATA, SEI_DAT_7, &data_format_config);
-#endif
     /* data register 8: check crc */
     data_format_config.mode = sei_crc_mode;
     data_format_config.signed_flag = false;
@@ -218,16 +148,7 @@ int main(void)
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_5, 1);  /* recv addr */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_5, 7);  /* recv addr */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_6, 8);  /* recv cmd */
-    /* Depending on the soc, there are different numbers of DAT registers available */
-#if defined(HPM_IP_FEATURE_SEI_HAVE_DAT10_31) && HPM_IP_FEATURE_SEI_HAVE_DAT10_31
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_9, 8); /* recv null */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_11, 8); /* recv rev */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_10, 4); /* recv pos */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_11, 4); /* recv rev */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_10, 8); /* recv pos */
-#else
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_8, SEI_DAT_7, 32); /* recv pos */
-#endif
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_8, 8);  /* check crc */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_HALT, 0, SEI_DAT_0, SEI_DAT_0, 0);
 
@@ -245,7 +166,7 @@ int main(void)
 
     /* [6] state transition config */
     /* latch0 */
-#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+#if !defined(HPM_IP_FEATURE_SEI_ERRATA_E00047) || !HPM_IP_FEATURE_SEI_ERRATA_E00047
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;
     state_transition_config.disable_rxd_check = false;
@@ -332,24 +253,21 @@ int main(void)
     engine_config.wdg_enable = true;
     engine_config.wdg_action = sei_wdg_exec_exception_instr;
     engine_config.wdg_instr_idx = (instr_idx - 1);
-    engine_config.wdg_time = 500;    /* 500 bits time */
+    engine_config.wdg_time = 2400;    /* 2400 bit-times, at 9600bps: 2400 / 9600 = 250 ms */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
     /* [8] interrupt config */
-    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event);
-    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event, true);
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event | sei_irq_wdog_event);
+    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event | sei_irq_wdog_event, true);
     intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
 
     /* [9] trigger config */
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;
-    trigger_input_conifg.trig_period_time = (200 * (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000));    /* unit: 1ms, 200ms */
+    trigger_input_conifg.trig_period_time = (200 * (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000));    /* unit: 1ms, 200ms. Should be less than wdg_time */
     sei_trigger_input_config_init(BOARD_SEI, BOARD_SEI_CTRL, &trigger_input_conifg);
-
-    /* [10] encoder disconnect timer config */
-    encoder_disconnect_timer_config(DISCONNECT_TIMEOUT_MS);
 
     while (1) {
         ;
@@ -369,25 +287,31 @@ void isr_sei(void)
     irq_flag &= sei_get_irq_enable_status(BOARD_SEI, BOARD_SEI_CTRL);
 
     if ((irq_flag & sei_irq_latch1_event) != 0) {
-        gptmr_channel_reset_count(BOARD_GPTMR, BOARD_GPTMR_CHANNEL);    /* reset disconnect timer */
         sample_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         update_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1);
         delta = (update_latch_tm > sample_latch_tm) ? (update_latch_tm - sample_latch_tm) : (update_latch_tm - sample_latch_tm + 0xFFFFFFFFu);
-#if defined(HPM_IP_FEATURE_SEI_HAVE_DAT10_31) && HPM_IP_FEATURE_SEI_HAVE_DAT10_31
-        printf("rev:%#x, pos:%#x, addr:%#x, CRC:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d us\n",
-                sei_get_data_value(BOARD_SEI, SEI_DAT_11),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_10),
-                sei_get_data_value(BOARD_SEI, SEI_DAT_5),
-#else
-        printf("rev:%#x, pos:%#x, addr:%#x, CRC:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d us\n",
+        printf("rev:%#x, pos:%#x, addr:%#x, CRC:%#x, TimeDelta:%d us\n",
                 sei_get_data_value(BOARD_SEI, SEI_DAT_7) >> 12,
                 (sei_get_data_value(BOARD_SEI, SEI_DAT_7) & 0xFFF) << 20,
                 sei_get_data_value(BOARD_SEI, SEI_DAT_5),
-#endif
                 sei_get_crc_value(BOARD_SEI, SEI_DAT_8),
-                sample_latch_tm,
-                update_latch_tm,
                 delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
+    }
+
+    if ((irq_flag & sei_irq_wdog_event) != 0) {
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_4);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_5);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_6);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_7);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_8);
+        sei_restart_asynchronous_xcvr(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+        printf("WDG Active!\n");
     }
 
     if ((irq_flag & sei_irq_trx_err_event) != 0) {
@@ -395,11 +319,3 @@ void isr_sei(void)
     }
 }
 
-SDK_DECLARE_EXT_ISR_M(BOARD_GPTMR_IRQ, disconnect_tmr_isr)
-void disconnect_tmr_isr(void)
-{
-    if (gptmr_check_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL))) {
-        gptmr_clear_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL));
-        printf("Encoder Disconnect Error!\n");
-    }
-}

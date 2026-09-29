@@ -13,9 +13,14 @@ MCU会通过I2S接口将解码的数据发送给音频编解码器，音频编�
 工程配置
 ------------
 
-- 在文件`CMakeLists.txt`中, 根据需求设置音频播放器件的类型，默认使用DAO播放。
+- 当本示例的 ``app.yaml`` 声明依赖 ``board_audio_codec``，且开发板同时声明 ``board_audio_codec`` 和 ``board_codec_*`` feature 时，自动使用 Audio Codec；否则使用 DAO。
 
-- 如使用板载Audio Codec芯片， Audio Codec类型缺省条件下依据`boards/<board_name>/<board_name>.yaml`自动匹配(feature: board_codec_xxxx)，如需指定audio codec类型，可在`CMakeLists.txt`中设置："set(CONFIG_CODEC_NAME "wm8960")"。
+- 如需手动覆盖自动检测，在 ``CMakeLists.txt`` 的 ``find_package`` 之前设置：
+
+  - ``set(CONFIG_CODEC 1)`` — 强制使用 Codec 播放
+  - ``set(CONFIG_CODEC 0)`` — 强制使用 DAO 播放
+
+- Audio Codec 类型缺省条件下依据 ``boards/<board_name>/<board_name>.yaml`` 中的 board feature 自动匹配（如 ``board_codec_es8389``）。如需手动指定，可在 ``CMakeLists.txt`` 中设置：``set(CONFIG_CODEC_NAME "wm8960")``。
 
 硬件设置
 ------------
@@ -63,4 +68,3 @@ MCU会通过I2S接口将解码的数据发送给音频编解码器，音频编�
    8: on_phone.wav
 
    9: calling.wav
-

@@ -38,6 +38,14 @@
 #define APP_ADC12_TRIG_SRC_FREQUENCY         (20000U)
 #endif
 
+#ifndef APP_ADC12_PERIOD_NS
+#define APP_ADC12_PERIOD_NS                  (500000000ULL) /* 500 ms */
+#endif
+
+#ifndef APP_ADC12_CONV_CLK_HZ
+#define APP_ADC12_CONV_CLK_HZ                ADC12_SOC_CONV_CLK_FREQ_MAX
+#endif
+
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t seq_buff[APP_ADC12_SEQ_DMA_BUFF_LEN_IN_4BYTES];
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ADC_SOC_DMA_ADDR_ALIGNMENT) uint32_t pmt_buff[APP_ADC12_PMT_DMA_BUFF_LEN_IN_4BYTES];
 
@@ -47,6 +55,33 @@ uint8_t trig_adc_channel[] = {BOARD_APP_ADC12_CH_1};
 __IO uint8_t seq_complete_flag;
 __IO uint8_t trig_complete_flag;
 __IO uint32_t res_out_of_thr_flag;
+
+static uint32_t s_adc12_input_hz;
+static uint32_t s_adc12_clk_div;
+static uint32_t s_adc12_conv_hz;
+
+static hpm_stat_t app_adc12_setup_clock(void)
+{
+    uint32_t input_hz;
+    uint32_t div;
+    uint32_t convert_cycles;
+    uint32_t fs_hz;
+
+    input_hz = board_init_adc_clock(BOARD_APP_ADC12_BASE, true);
+    if (adc12_calc_clock_divider(input_hz, APP_ADC12_CONV_CLK_HZ, &div) != status_success) {
+        printf("ADC12 conv clock cannot meet %u Hz from input %u Hz (div 1-16)\n", (unsigned int)APP_ADC12_CONV_CLK_HZ, (unsigned int)input_hz);
+        return status_invalid_argument;
+    }
+    s_adc12_input_hz = input_hz;
+    s_adc12_clk_div = div;
+    s_adc12_conv_hz = input_hz / div;
+    convert_cycles = adc12_get_convert_cycles(adc12_res_12_bits);
+    printf("ADC12 clock: input=%u Hz, div=%u, conv=%u Hz\n", (unsigned int)s_adc12_input_hz, (unsigned int)s_adc12_clk_div, (unsigned int)s_adc12_conv_hz);
+    if (adc12_calc_sample_rate(s_adc12_conv_hz, APP_ADC12_CH_SAMPLE_CYCLE, convert_cycles, &fs_hz) == status_success) {
+        printf("ADC12 sample: cycle=%u, convert=%u, fs=%u Hz\n", (unsigned int)APP_ADC12_CH_SAMPLE_CYCLE, (unsigned int)convert_cycles, (unsigned int)fs_hz);
+    }
+    return status_success;
+}
 
 static uint8_t get_adc_conv_mode(void)
 {
@@ -211,7 +246,7 @@ hpm_stat_t init_common_config(adc12_conversion_mode_t conv_mode)
     cfg.res            = adc12_res_12_bits;
     cfg.conv_mode      = conv_mode;
     cfg.diff_sel       = adc12_sample_signal_single_ended;
-    cfg.adc_clk_div    = adc12_clock_divider_3;
+    cfg.adc_clk_div    = s_adc12_clk_div;
     cfg.sel_sync_ahb   = (clk_adc_src_ahb0 == clock_get_source(BOARD_APP_ADC12_CLK_NAME)) ? true : false;
 
     /* adc12 initialization */
@@ -276,6 +311,12 @@ void init_period_config(void)
 {
     adc12_channel_config_t ch_cfg;
     adc12_prd_config_t prd_cfg;
+    uint64_t ticks;
+    uint64_t actual_ns;
+    uint64_t target_ns;
+    uint64_t min_ns;
+    uint32_t convert_cycles;
+    uint32_t conv_cycles;
 
     /* get a default channel config */
     adc12_get_channel_default_config(&ch_cfg);
@@ -287,9 +328,29 @@ void init_period_config(void)
 
     adc12_init_channel(BOARD_APP_ADC12_BASE, &ch_cfg);
 
+    convert_cycles = adc12_get_convert_cycles(adc12_res_12_bits);
+    conv_cycles = APP_ADC12_CH_SAMPLE_CYCLE + convert_cycles;
+    target_ns = APP_ADC12_PERIOD_NS;
+    min_ns = ((uint64_t)conv_cycles / s_adc12_conv_hz) * 1000000000ULL + (((uint64_t)conv_cycles % s_adc12_conv_hz) * 1000000000ULL) / s_adc12_conv_hz;
+    if (target_ns < min_ns) {
+        printf("ADC12 period %u ns is shorter than one sample (%u ns) at conv %u Hz\n", (unsigned int)target_ns, (unsigned int)min_ns, (unsigned int)s_adc12_conv_hz);
+        return;
+    }
     prd_cfg.ch           = BOARD_APP_ADC12_CH_1;
-    prd_cfg.prescale     = 22;    /* Set divider: 2^22 clocks */
-    prd_cfg.period_count = 5;     /* 6 periods */
+    if (adc12_calc_prd_config(s_adc12_conv_hz, target_ns, &prd_cfg) != status_success) {
+        printf("ADC12 period cannot meet %u ns from conv %u Hz\n", (unsigned int)target_ns, (unsigned int)s_adc12_conv_hz);
+        return;
+    }
+    ticks = (1ULL << prd_cfg.prescale) * (prd_cfg.period_count + 1U);
+    if (ticks < conv_cycles) {
+        printf("ADC12 period actual ticks shorter than one sample\n");
+        return;
+    }
+    /* period timer only hits 2^prescale*prd steps, so actual may differ from target */
+    actual_ns = (ticks / s_adc12_conv_hz) * 1000000000ULL + ((ticks % s_adc12_conv_hz) * 1000000000ULL) / s_adc12_conv_hz;
+    printf("ADC12 period: target=%u ns, actual=%u ns (prescale=%u prd=%u)\n",
+           (unsigned int)target_ns, (unsigned int)actual_ns,
+           (unsigned int)prd_cfg.prescale, (unsigned int)(prd_cfg.period_count + 1U));
 
     adc12_set_prd_config(BOARD_APP_ADC12_BASE, &prd_cfg);
 }
@@ -445,10 +506,12 @@ int main(void)
     /* ADC pin initialization */
     board_init_adc12_pins();
 
-    /* ADC clock initialization */
-    board_init_adc_clock(BOARD_APP_ADC12_BASE, true);
-
     printf("This is an ADC12 demo:\n");
+
+    /* ADC clock initialization: consume returned freq, do not retune CPU/AHB */
+    if (app_adc12_setup_clock() != status_success) {
+        return 0;
+    }
 
     while (1) {
         /* Get a conversion mode from a console window */

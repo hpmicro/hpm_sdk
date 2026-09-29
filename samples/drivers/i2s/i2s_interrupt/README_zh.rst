@@ -31,7 +31,7 @@ I2S Interrupt
 工程配置
 ------------
 
-- Audio Codec类型缺省条件下依据`boards/<board_name>/<board_name>.yaml`自动匹配(feature: board_codec_xxxx)，如需指定audio codec类型，可在`CMakeLists.txt`中设置："set(CONFIG_CODEC_NAME "wm8960")"。
+- Audio Codec类型缺省条件下依据 `boards/<board_name>/<board_name>.yaml` 自动匹配(feature: board_codec_xxxx)，如需指定audio codec类型，可在 `CMakeLists.txt` 中设置："set(CONFIG_CODEC_NAME "wm8960")"。
 
 硬件设置
 ------------

@@ -12,6 +12,20 @@
 #define ADC12_RETRY_TO_GET_RESULT_COUNT (100U)
 #endif
 
+#ifndef ADC12_PRD_PERIOD_TOL_PERCENT
+#define ADC12_PRD_PERIOD_TOL_PERCENT (5U)
+#endif
+
+static uint64_t adc12_prd_ticks_to_ns(uint64_t ticks, uint32_t adc_clk_hz)
+{
+    uint64_t sec;
+    uint64_t rem;
+
+    sec = ticks / adc_clk_hz;
+    rem = ticks % adc_clk_hz;
+    return (sec * 1000000000ULL) + ((rem * 1000000000ULL) / adc_clk_hz);
+}
+
 void adc12_get_default_config(adc12_config_t *config)
 {
     config->res                = adc12_res_12_bits;
@@ -148,9 +162,10 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
 
     adc_clk_div = config->adc_clk_div;
 
-    if (adc_clk_div == ADC12_SOC_CLOCK_CLK_DIV) {
+    /* calibration uses a fixed 1:4; restore the app divider after if it differs */
+    if (adc_clk_div != adc12_clock_divider_4) {
         ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC12_CONV_CFG1_CLOCK_DIVIDER_MASK)
-                         | ADC12_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div + 1);
+                         | ADC12_CONV_CFG1_CLOCK_DIVIDER_SET(adc12_clock_divider_4 - 1);
     }
 
     /* Set enadc */
@@ -160,9 +175,9 @@ hpm_stat_t adc12_init(ADC12_Type *ptr, adc12_config_t *config)
     adc12_do_calibration(ptr, config->diff_sel);
 
     /* Set ADC clock divider */
-    if (adc_clk_div == ADC12_SOC_CLOCK_CLK_DIV) {
+    if (adc_clk_div != adc12_clock_divider_4) {
         ptr->CONV_CFG1 = (ptr->CONV_CFG1 & ~ADC12_CONV_CFG1_CLOCK_DIVIDER_MASK)
-                       | ADC12_CONV_CFG1_CLOCK_DIVIDER_SET(config->adc_clk_div);
+                       | ADC12_CONV_CFG1_CLOCK_DIVIDER_SET(adc_clk_div - 1);
     }
 
     /*-------------------------------------------------------------------------------
@@ -405,5 +420,91 @@ hpm_stat_t adc12_get_prd_result(ADC12_Type *ptr, uint8_t ch, uint16_t *result)
 
     *result = ADC12_PRD_CFG_PRD_RESULT_CHAN_RESULT_GET(ptr->PRD_CFG[ch].PRD_RESULT);
 
+    return status_success;
+}
+
+hpm_stat_t adc12_calc_clock_divider(uint32_t input_hz, uint32_t target_conv_hz, uint32_t *div)
+{
+    uint32_t d;
+
+    if ((input_hz == 0) || (target_conv_hz == 0) || (div == NULL)) {
+        return status_invalid_argument;
+    }
+
+    d = (input_hz + target_conv_hz - 1U) / target_conv_hz;
+    if (d < adc12_clock_divider_1) {
+        d = adc12_clock_divider_1;
+    }
+    if ((d > adc12_clock_divider_16) || ((input_hz / d) > target_conv_hz)) {
+        return status_invalid_argument;
+    }
+
+    *div = d;
+    return status_success;
+}
+
+hpm_stat_t adc12_calc_prd_config(uint32_t adc_clk_hz, uint64_t target_period_ns, adc12_prd_config_t *cfg)
+{
+    uint8_t prescale;
+    uint8_t prescale_max;
+    uint8_t best_prescale;
+    uint8_t best_period_count;
+    uint16_t reload;
+    uint64_t ticks;
+    uint64_t actual_ns;
+    uint64_t diff;
+    uint64_t best_diff;
+
+    if ((adc_clk_hz == 0) || (target_period_ns == 0) || (cfg == NULL)) {
+        return status_invalid_argument;
+    }
+
+    prescale_max = (uint8_t)(ADC12_PRD_CFG_PRD_CFG_PRESCALE_MASK >> ADC12_PRD_CFG_PRD_CFG_PRESCALE_SHIFT);
+    best_diff = UINT64_MAX;
+    best_prescale = 0;
+    best_period_count = 1;
+
+    /* nearest discrete 2^prescale*prd step; period timer resolution is coarse at long periods */
+    for (prescale = 0; prescale <= prescale_max; prescale++) {
+        for (reload = 2; reload <= 256; reload++) {
+            ticks = (1ULL << prescale) * reload;
+            actual_ns = adc12_prd_ticks_to_ns(ticks, adc_clk_hz);
+            if (actual_ns > target_period_ns) {
+                diff = actual_ns - target_period_ns;
+            } else {
+                diff = target_period_ns - actual_ns;
+            }
+            if (diff < best_diff) {
+                best_diff = diff;
+                best_prescale = prescale;
+                best_period_count = (uint8_t)(reload - 1U);
+            }
+        }
+    }
+
+    if ((best_diff * 100ULL) > (target_period_ns * ADC12_PRD_PERIOD_TOL_PERCENT)) {
+        return status_invalid_argument;
+    }
+
+    cfg->prescale = best_prescale;
+    cfg->period_count = best_period_count;
+    return status_success;
+}
+
+uint32_t adc12_get_convert_cycles(uint8_t res)
+{
+    return (2U * (uint32_t)res) + 8U;
+}
+
+hpm_stat_t adc12_calc_sample_rate(uint32_t conv_hz, uint32_t sample_cycle, uint32_t convert_cycles, uint32_t *fs_hz)
+{
+    uint32_t cycles;
+
+    if ((conv_hz == 0) || (sample_cycle == 0) || (convert_cycles == 0) || (fs_hz == NULL)) {
+        return status_invalid_argument;
+    }
+
+    cycles = sample_cycle + convert_cycles;
+    *fs_hz = conv_hz / cycles;
     return status_success;
 }

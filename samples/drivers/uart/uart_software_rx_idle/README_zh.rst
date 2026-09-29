@@ -24,7 +24,7 @@ UART软件接收空闲检测
 
 - 将开发板的UART RX引脚与板上TRGMUX的输入IO引脚相连。
 
-- 请参考:ref:`引脚描述 <board_resource>`。
+- 请参考 :ref:`引脚描述 <board_resource>`。
 
 运行现象
 ------------

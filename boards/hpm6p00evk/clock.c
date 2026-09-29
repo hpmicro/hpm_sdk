@@ -380,7 +380,7 @@ void init_pdm_clock(void)
     clock_add_to_group(clock_pdm, 0);
 }
 
-void init_i2s0_clock(void)
+void init_i2s0_clock_default(void)
 {
     /*
      * Generate clk_top_i2s0 code
@@ -399,12 +399,12 @@ void init_i2s0_clock_22050(void)
      * Generate clk_top_aud0 code
      */
     clock_set_i2s_source(clock_i2s0, clk_i2s_src_aud0);
-    clock_set_source_divider(clock_aud0, clk_src_pll1_clk0, 71);
+    clock_set_source_divider(clock_aud0, clk_src_pll2_clk1, 20);
 
     clock_add_to_group(clock_i2s0, 0);
 }
 
-void init_i2s1_clock(void)
+void init_i2s1_clock_default(void)
 {
     /*
      * Generate clk_top_i2s1 code
@@ -423,7 +423,7 @@ void init_i2s1_clock_22050(void)
      * Generate clk_top_aud1 code
      */
     clock_set_i2s_source(clock_i2s1, clk_i2s_src_aud1);
-    clock_set_source_divider(clock_aud1, clk_src_pll1_clk0, 71);
+    clock_set_source_divider(clock_aud1, clk_src_pll2_clk1, 20);
 
     clock_add_to_group(clock_i2s1, 0);
 }

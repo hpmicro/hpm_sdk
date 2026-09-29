@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -247,6 +247,12 @@ void disconnect_tmr_isr(void)
 {
     if (gptmr_check_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL))) {
         gptmr_clear_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL));
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
         printf("Encoder Disconnect Error!\n");
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -76,10 +76,10 @@ int main(void)
 
     /* [3] sei instructions */
     instr_idx = 0;
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_1, 1);  /* 1 */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_2, 12);  /* MT */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_3, 12);  /* ST */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_0, 10); /* timeout */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DATA_CONST_1, 1);  /* 1 */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_2, 12);  /* MT */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_3, 12);  /* ST */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_0, 10); /* timeout */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_JUMP, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, SEI_JUMP_INIT_INSTR_IDX);
 
     /* [4] sample config*/
@@ -97,7 +97,7 @@ int main(void)
 
     /* [5] state transition config */
     /* latch0 */
-#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+#if !defined(HPM_IP_FEATURE_SEI_ERRATA_E00047) || !HPM_IP_FEATURE_SEI_ERRATA_E00047
     state_transition_config.disable_clk_check = false;
     state_transition_config.clk_cfg = sei_state_tran_condition_fall_leave;
     state_transition_config.disable_txd_check = true;
@@ -147,13 +147,16 @@ int main(void)
     engine_config.data_cdm_idx = SEI_DAT_0;
     engine_config.data_base_idx = SEI_DAT_0;
     engine_config.init_instr_idx = 0;
-    engine_config.wdg_enable = false;
+    engine_config.wdg_enable = true;
+    engine_config.wdg_action = sei_wdg_exec_exception_instr;
+    engine_config.wdg_instr_idx = 0;
+    engine_config.wdg_time = 5000; /* 5000 max_baud bits time, ~500us */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
     /* [7] interrupt config */
-    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_trx_err_event);
-    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_trx_err_event, true);
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_wdog_event | sei_irq_trx_err_event);
+    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_wdog_event | sei_irq_trx_err_event, true);
     intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
 
     while (1) {
@@ -186,6 +189,16 @@ void isr_sei(void)
                 sei_get_data_value(BOARD_SEI, SEI_DAT_3),
                 sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
         sample_latch_tm2 = sample_latch_tm1;
+    }
+
+    if ((irq_flag & sei_irq_wdog_event) != 0) {
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+        printf("WDG Active!\n");
     }
 
     if ((irq_flag & sei_irq_trx_err_event) != 0) {

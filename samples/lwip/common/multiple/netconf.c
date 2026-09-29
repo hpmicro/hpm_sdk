@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -28,20 +28,18 @@
 #endif
 
 #if defined(NO_SYS) && !NO_SYS
-sys_mbox_t netif_status_mbox[BOARD_ENET_COUNT];
+sys_mbox_t netif_status_mbox[LWIP_NETIF_COUNT];
 #endif
 
-ip_init_t ip_init[BOARD_ENET_COUNT] = {
+ip_init_t ip_init[LWIP_NETIF_COUNT] = {
     {HPM_STRINGIFY(IP0_CONFIG), HPM_STRINGIFY(NETMASK0_CONFIG), HPM_STRINGIFY(GW0_CONFIG)},
     {HPM_STRINGIFY(IP1_CONFIG), HPM_STRINGIFY(NETMASK1_CONFIG), HPM_STRINGIFY(GW1_CONFIG)}
 };
 
-mac_init_t mac_init[BOARD_ENET_COUNT] = {
+mac_init_t mac_init[LWIP_NETIF_COUNT] = {
     {HPM_STRINGIFY(MAC0_CONFIG)},
     {HPM_STRINGIFY(MAC1_CONFIG)}
 };
-
-enet_frame_pointer_t frame_pointer[BOARD_ENET_COUNT];
 
 #if defined(LWIP_DHCP) && LWIP_DHCP
 /**
@@ -83,16 +81,17 @@ void netif_config(struct netif *netif, uint8_t i)
     ip4addr_aton(ip_init[i].netmask, &netmask);
     ip4addr_aton(ip_init[i].gw, &gw);
 
+    enet_netif_state_bind(i, (ENET_Type *)board_get_enet_base(i));
+
 #if defined(NO_SYS) && NO_SYS
-    netif_add(netif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &ethernet_input);
+    netif_add(netif, &ipaddr, &netmask, &gw, &enet_netif_state[i], &ethernetif_init, &ethernet_input);
     netif_set_up(netif);
     netif_set_default(netif);
 #else
-    netifapi_netif_add(netif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
+    netifapi_netif_add(netif, &ipaddr, &netmask, &gw, &enet_netif_state[i], &ethernetif_init, &tcpip_input);
     netifapi_netif_set_up(netif);
     netifapi_netif_set_default(netif);
 #endif
-    netif->state = &frame_pointer[i];
     netif_set_link_callback(netif, netif_update_status);
 }
 

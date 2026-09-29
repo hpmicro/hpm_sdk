@@ -13,7 +13,9 @@ sdk_inc(src)
 
 sdk_app_src(src/freertos_tickless.c)
 
-if("${HPM_SOC}" MATCHES "^HPM53")
+if("${HPM_SOC}" STREQUAL "HPM5151")
+    sdk_app_src(src/hpm51xx/low_power_example.c)
+elseif("${HPM_SOC}" MATCHES "^HPM53")
     sdk_app_src(src/hpm53xx/low_power_example.c)
 elseif("${HPM_SOC}" STREQUAL "HPM5E31")
     sdk_app_src(src/hpm5exx/low_power_example.c)

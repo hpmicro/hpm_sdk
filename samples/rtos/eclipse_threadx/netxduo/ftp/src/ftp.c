@@ -96,7 +96,7 @@ UINT server_logout(struct NX_FTP_SERVER_STRUCT *ftp_server_ptr, ULONG client_ip_
 #define PACKET_POOL_SIZE ((PACKET_SIZE + sizeof(NX_PACKET)) * PACKET_COUNT)
 
 /* Define IP stack size.   */
-#define IP_STACK_SIZE 2048
+#define IP_STACK_SIZE 4096
 
 /* Define IP thread priority.  */
 #define IP_THREAD_PRIORITY 1

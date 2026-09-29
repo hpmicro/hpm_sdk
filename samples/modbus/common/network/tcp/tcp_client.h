@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -48,6 +48,7 @@ void network_tcp_c_flush(void);
 int network_tcp_c_send(uint8_t *data, uint32_t len);
 
 bool tcp_client_connect_state(void);
+bool tcp_client_is_connecting(void);
 
 #if defined(__cplusplus)
 }

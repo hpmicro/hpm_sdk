@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,14 +10,23 @@
 #include <stdio.h>
 #include "common.h"
 #include "hpm_common.h"
+#include "hpm_interrupt.h"
 #include "hpm_otp_drv.h"
 #include "ethernetif.h"
 #include "netconf.h"
 #include "lwip/timeouts.h"
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
+#include "lwip/pbuf.h"
+#include "lwip/err.h"
+#include "lwip/sys.h"
 #include "osal.h"
 #include "enet_phy_adaptive_lwip.h"
+#include "netinfo.h"
+#include "lwipopts.h"
+#if defined(LWIP_PTP) && LWIP_PTP
+#include "lwip_ptp_tx_ts.h"
+#endif
 
 #ifndef DHCP_TASK_PRIO
   #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
@@ -38,7 +47,7 @@
 #define LOG_QUEUE_SIZE   (10U)
 #define LOG_MESSAGE_MAX_LEN  (128U)
 
-static enet_phy_status_t last_status[BOARD_ENET_COUNT] = {{.enet_phy_link = enet_phy_link_unknown}, {.enet_phy_link = enet_phy_link_unknown}};
+static enet_phy_status_t last_status[LWIP_NETIF_COUNT] = {{.enet_phy_link = enet_phy_link_unknown}, {.enet_phy_link = enet_phy_link_unknown}};
 
 /* Log message structure */
 typedef struct {
@@ -58,22 +67,33 @@ typedef struct {
     enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT];
     enet_tx_desc_t dma_tx_desc_tab[ENET_TX_BUFF_COUNT];
     uint8_t        rx_buff[ENET_RX_BUFF_COUNT][ENET_RX_BUFF_SIZE];
-    uint8_t        tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE];
+    /* No dedicated TX ring buffer: zero-copy TX points buffer1 at pbuf payload */
 } enet_desc_init_t;
 
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
-enet_desc_init_t desc_init[BOARD_ENET_COUNT];
-enet_desc_t desc[BOARD_ENET_COUNT];
-uint8_t mac[BOARD_ENET_COUNT][ENET_MAC_SIZE];
+enet_desc_init_t desc_init[LWIP_NETIF_COUNT];
+enet_desc_t desc[LWIP_NETIF_COUNT];
+enet_netif_state_t enet_netif_state[LWIP_NETIF_COUNT];
+uint8_t mac[LWIP_NETIF_COUNT][ENET_MAC_SIZE];
 
-struct netif gnetif[BOARD_ENET_COUNT];
+struct netif gnetif[LWIP_NETIF_COUNT];
+
+void enet_netif_state_bind(uint8_t idx, ENET_Type *base)
+{
+    if (idx >= LWIP_NETIF_COUNT) {
+        return;
+    }
+    enet_netif_state[idx].desc = &desc[idx];
+    enet_netif_state[idx].base = base;
+}
+
 
 #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT
-volatile bool rx_flag[BOARD_ENET_COUNT];
+volatile bool rx_flag[LWIP_NETIF_COUNT];
 #endif
 
 #if defined(NO_SYS) && !NO_SYS
-uint32_t msg[BOARD_ENET_COUNT];
+uint32_t msg[LWIP_NETIF_COUNT];
 extern osSemaphoreId_t s_xSemaphore[];
 #endif
 
@@ -85,7 +105,8 @@ static void enet_desc_init(enet_desc_t *pdesc, enet_desc_init_t *pdesc_init)
     pdesc->tx_desc_list_head = (enet_tx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)pdesc_init->dma_tx_desc_tab);
     pdesc->rx_desc_list_head = (enet_rx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)pdesc_init->dma_rx_desc_tab);
 
-    pdesc->tx_buff_cfg.buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)pdesc_init->tx_buff);
+    /* buffer=0: no TX ring; size is max bytes per TX desc (see ENET_TX_BUFF_SIZE) */
+    pdesc->tx_buff_cfg.buffer = 0;
     pdesc->tx_buff_cfg.count  = ENET_TX_BUFF_COUNT;
     pdesc->tx_buff_cfg.size   = ENET_TX_BUFF_SIZE;
 
@@ -97,12 +118,13 @@ static void enet_desc_init(enet_desc_t *pdesc, enet_desc_init_t *pdesc_init)
 hpm_stat_t enet_init(uint8_t idx)
 {
     enet_mac_config_t        enet_config;
-    enet_tx_control_config_t enet_tx_control_config;
+    enet_hw_checksum_config_t hw_checksum_cfg;
     enet_int_config_t        int_config = {0};
     enet_base_t              *base;
     enet_inf_type_t          itf;
+    hpm_stat_t               stat;
 
-    if (idx > BOARD_ENET_COUNT) {
+    if (idx > LWIP_NETIF_COUNT) {
         return status_invalid_argument;
     }
 
@@ -112,14 +134,11 @@ hpm_stat_t enet_init(uint8_t idx)
     /* Initialize td, rd and the corresponding buffers */
     enet_desc_init(&desc[idx], &desc_init[idx]);
 
-    /* Get a default control config for tx descriptor */
-    enet_get_default_tx_control_config(base, &enet_tx_control_config);
-
-    /* Set the control config for tx descriptor */
-    memcpy(&desc[idx].tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
-
     /* Get a default MAC address */
-    enet_get_mac_address(idx, mac[idx]);
+    if (ENET_MAC_ADDR_PARA_ERROR == enet_get_mac_address(idx, mac[idx])) {
+        printf("Enet%d MAC address init failed!\n", idx);
+        return status_fail;
+    }
 
     /* Set MAC0 address */
     enet_set_mac_address(&enet_config, mac[idx]);
@@ -142,6 +161,22 @@ hpm_stat_t enet_init(uint8_t idx)
     if (enet_controller_init(base, itf, &desc[idx], &enet_config, &int_config) != status_success) {
         printf("Enet%d MAC init failed!\n", idx);
         return status_fail;
+    }
+
+    /* Get a default control config for tx descriptor */
+    enet_get_default_tx_control_config(base, &desc[idx].tx_control_config);
+
+    /* Set TX HW CRC mode (append / replace / off) */
+    enet_tx_control_set_hw_crc_mode(base, &desc[idx].tx_control_config, ENET_TX_HW_CRC_MODE);
+
+#if defined(CHECKSUM_BY_HARDWARE)
+    enet_get_default_hw_checksum_config(&hw_checksum_cfg, true);
+#else
+    enet_get_default_hw_checksum_config(&hw_checksum_cfg, false);
+#endif
+    stat = enet_set_hw_checksum_config(base, &desc[idx].tx_control_config, &hw_checksum_cfg);
+    if (stat != status_success) {
+        return stat;
     }
 
     /* Initialize Enet PHY */
@@ -237,7 +272,7 @@ void log_send_message(const char *format, ...)
 #if defined(LWIP_DHCP) && LWIP_DHCP
 void enet_update_dhcp_state(struct netif *netif)
 {
-    static uint8_t dhcp_last_state[BOARD_ENET_COUNT] = {DHCP_STATE_OFF};
+    static uint8_t dhcp_last_state[LWIP_NETIF_COUNT] = {DHCP_STATE_OFF};
     struct dhcp *dhcp = netif_dhcp_data(netif);
     char state_str[32] = {0};
 
@@ -305,7 +340,7 @@ void enet_update_dhcp_state(struct netif *netif)
 }
 #endif
 
-ATTR_WEAK uint8_t enet_get_mac_address(uint8_t i, uint8_t *mac)
+ATTR_WEAK int8_t enet_get_mac_address(uint8_t i, uint8_t *mac)
 {
     uint32_t macl, mach;
     uint8_t idx = 0;
@@ -376,7 +411,7 @@ bool enet_get_link_status(uint8_t i)
 
 void enet_self_adaptive_port_speed(void)
 {
-    for (uint8_t i = 0; i < BOARD_ENET_COUNT; i++) {
+    for (uint8_t i = 0; i < LWIP_NETIF_COUNT; i++) {
         lwip_enet_phy_adaptive_binding_t binding = {
             .last = &last_status[i],
             .enet_base = board_get_enet_base(netif_get_by_index(i + 1)->num),
@@ -449,6 +484,340 @@ void enet_common_handler(struct netif *netif)
     #endif
 }
 #endif
+
+#ifndef ENET_LWIP_TX_DESC_WAIT_MS
+#define ENET_LWIP_TX_DESC_WAIT_MS (50U)
+#endif
+
+typedef struct {
+    struct pbuf *pbuf;
+    enet_tx_desc_t *last;
+    uint8_t desc_cnt;
+} enet_lwip_tx_hold_t;
+
+typedef struct {
+    enet_lwip_tx_hold_t entry[ENET_TX_BUFF_COUNT];
+    uint32_t head;
+    uint32_t in_flight;
+} enet_lwip_tx_hold_ctx_t;
+
+static enet_lwip_tx_hold_ctx_t s_enet_tx_hold[LWIP_NETIF_COUNT];
+
+static enet_lwip_tx_hold_ctx_t *enet_lwip_hold_for_desc(enet_desc_t *d)
+{
+    uint8_t i;
+
+    for (i = 0; i < LWIP_NETIF_COUNT; i++) {
+        if (d == &desc[i]) {
+            return &s_enet_tx_hold[i];
+        }
+    }
+    return NULL;
+}
+
+static void enet_lwip_dc_writeback(uint32_t addr, uint32_t len)
+{
+    uint32_t aligned_start;
+    uint32_t aligned_end;
+
+    if (len == 0) {
+        return;
+    }
+    aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(addr);
+    aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(addr + len);
+    l1c_dc_writeback(aligned_start, aligned_end - aligned_start);
+}
+
+void enet_lwip_dc_invalidate(uint32_t addr, uint32_t len)
+{
+    uint32_t aligned_start;
+    uint32_t aligned_end;
+
+    if (len == 0) {
+        return;
+    }
+    aligned_start = HPM_L1C_CACHELINE_ALIGN_DOWN(addr);
+    aligned_end = HPM_L1C_CACHELINE_ALIGN_UP(addr + len);
+    l1c_dc_invalidate(aligned_start, aligned_end - aligned_start);
+}
+
+static uint32_t enet_lwip_tx_desc_index(enet_desc_t *desc, enet_tx_desc_t *dma_tx_desc)
+{
+    return (uint32_t)(dma_tx_desc - desc->tx_desc_list_head);
+}
+
+static uint32_t enet_lwip_count_tx_descs(struct pbuf *p, uint16_t max_seg_size)
+{
+    struct pbuf *q;
+    uint32_t count = 0;
+    uint16_t left;
+    uint16_t chunk;
+
+    for (q = p; q != NULL; q = q->next) {
+        left = q->len;
+        while (left > 0) {
+            chunk = (left > max_seg_size) ? max_seg_size : left;
+            count++;
+            left = (uint16_t)(left - chunk);
+        }
+    }
+    return count;
+}
+
+static bool enet_lwip_tx_descs_ready(enet_desc_t *desc, enet_lwip_tx_hold_ctx_t *hold_ctx,
+                                     enet_tx_desc_t *start, uint32_t need)
+{
+    enet_tx_desc_t *dma_tx_desc = start;
+    uint32_t i;
+    uint32_t hold_idx;
+
+    hold_idx = enet_lwip_tx_desc_index(desc, start);
+    if (hold_ctx->entry[hold_idx].pbuf != NULL) {
+        return false;
+    }
+
+    for (i = 0; i < need; i++) {
+        if (dma_tx_desc->tdes0_bm.own != 0) {
+            return false;
+        }
+        dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
+    }
+    return true;
+}
+
+static bool enet_lwip_wait_tx_descs(enet_desc_t *desc, enet_lwip_tx_hold_ctx_t *hold_ctx, uint32_t need)
+{
+    uint32_t start_ms;
+    uint32_t waited;
+
+    start_ms = sys_now();
+    waited = 0;
+    while (!enet_lwip_tx_descs_ready(desc, hold_ctx, desc->tx_desc_list_cur, need)) {
+        enet_lwip_tx_release(desc);
+        waited = sys_now() - start_ms;
+        if (waited >= ENET_LWIP_TX_DESC_WAIT_MS) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void enet_lwip_tx_release(enet_desc_t *desc)
+{
+    enet_lwip_tx_hold_ctx_t *hold_ctx;
+    enet_lwip_tx_hold_t *hold;
+    struct pbuf *done;
+    uint32_t head;
+    uint32_t next;
+    uint32_t level;
+
+    if (desc == NULL) {
+        return;
+    }
+    hold_ctx = enet_lwip_hold_for_desc(desc);
+    if (hold_ctx == NULL) {
+        return;
+    }
+
+    for (;;) {
+        level = disable_global_irq(CSR_MSTATUS_MIE_MASK);
+        if (hold_ctx->in_flight == 0) {
+            restore_global_irq(level);
+            break;
+        }
+
+        head = hold_ctx->head;
+        hold = &hold_ctx->entry[head];
+        if (hold->last->tdes0_bm.own != 0) {
+            restore_global_irq(level);
+            break;
+        }
+
+        next = head + hold->desc_cnt;
+        done = hold->pbuf;
+        hold->pbuf = NULL;
+        hold->last = NULL;
+        hold->desc_cnt = 0;
+        hold_ctx->head = (next < ENET_TX_BUFF_COUNT) ? next : (next - ENET_TX_BUFF_COUNT);
+        hold_ctx->in_flight--;
+        restore_global_irq(level);
+
+        pbuf_free(done);
+    }
+}
+
+err_t enet_lwip_output(ENET_Type *ptr, enet_desc_t *desc, struct pbuf *p)
+{
+    enet_lwip_tx_hold_ctx_t *hold_ctx;
+    struct pbuf *q;
+    enet_tx_desc_t *tx_desc_list_cur;
+    enet_tx_desc_t *first_desc;
+    enet_tx_desc_t *desc_list[ENET_TX_BUFF_COUNT];
+    enet_tx_control_config_t tx_cfg;
+    uint32_t need;
+    uint32_t seg;
+    uint32_t hold_idx;
+    uint32_t level;
+    uint16_t max_seg_size;
+    uint16_t left;
+    uint16_t chunk;
+    uint16_t tbs1_len;
+    uint16_t payload_offset;
+    uint32_t payload_addr;
+#if defined(LWIP_PTP) && LWIP_PTP
+    enet_ptp_ts_system_t timestamp;
+#endif
+
+    if ((ptr == NULL) || (desc == NULL) || (p == NULL) || (p->tot_len == 0)) {
+        return ERR_VAL;
+    }
+    hold_ctx = enet_lwip_hold_for_desc(desc);
+    if (hold_ctx == NULL) {
+        return ERR_VAL;
+    }
+
+    enet_lwip_tx_release(desc);
+
+    max_seg_size = desc->tx_buff_cfg.size;
+    if (max_seg_size == 0) {
+        return ERR_VAL;
+    }
+
+    need = enet_lwip_count_tx_descs(p, max_seg_size);
+    if ((need == 0) || (need > ENET_TX_BUFF_COUNT)) {
+        return ERR_MEM;
+    }
+
+    if (!enet_lwip_wait_tx_descs(desc, hold_ctx, need)) {
+        return ERR_MEM;
+    }
+
+    tx_cfg = desc->tx_control_config;
+#if defined(LWIP_PTP) && LWIP_PTP
+    tx_cfg.enable_ttse = lwip_ptp_frame_needs_tx_hw_timestamp(p);
+#endif
+
+    tx_desc_list_cur = desc->tx_desc_list_cur;
+    first_desc = tx_desc_list_cur;
+    seg = 0;
+
+    for (q = p; q != NULL; q = q->next) {
+        left = q->len;
+        payload_offset = 0;
+        while (left > 0) {
+            chunk = (left > max_seg_size) ? max_seg_size : left;
+            payload_addr = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)q->payload + payload_offset);
+            desc_list[seg] = tx_desc_list_cur;
+            /* last segment adds 4 for FCS only in CRC replace mode */
+            tbs1_len = chunk;
+            if ((seg == (need - 1)) && (ENET_TX_HW_CRC_MODE == enet_tx_hw_crc_replace)) {
+                tbs1_len = (uint16_t)(chunk + 4U);
+            }
+            enet_tx_desc_fill_segment(tx_desc_list_cur, &tx_cfg, payload_addr, tbs1_len, (seg == 0), (seg == (need - 1)));
+            enet_lwip_dc_writeback((uint32_t)q->payload + payload_offset, chunk);
+
+            payload_offset = (uint16_t)(payload_offset + chunk);
+            left = (uint16_t)(left - chunk);
+            seg++;
+            tx_desc_list_cur = (enet_tx_desc_t *)(tx_desc_list_cur->tdes3_bm.next_desc);
+        }
+    }
+
+    pbuf_ref(p);
+    hold_idx = enet_lwip_tx_desc_index(desc, first_desc);
+    level = disable_global_irq(CSR_MSTATUS_MIE_MASK);
+    if (hold_ctx->entry[hold_idx].pbuf != NULL) {
+        restore_global_irq(level);
+        pbuf_free(p);
+        return ERR_MEM;
+    }
+    if (hold_ctx->in_flight == 0) {
+        hold_ctx->head = hold_idx;
+    }
+    hold_ctx->entry[hold_idx].pbuf = p;
+    hold_ctx->entry[hold_idx].last = desc_list[seg - 1];
+    hold_ctx->entry[hold_idx].desc_cnt = (uint8_t)seg;
+    hold_ctx->in_flight++;
+    restore_global_irq(level);
+
+    enet_tx_desc_handoff_segments(ptr, desc_list, seg);
+
+#if defined(LWIP_PTP) && LWIP_PTP
+    if (tx_cfg.enable_ttse) {
+        if (enet_get_tx_timestamp(desc_list[seg - 1], &timestamp) != ENET_SUCCESS) {
+            return ERR_TIMEOUT;
+        }
+        p->time_sec = timestamp.sec;
+        p->time_nsec = timestamp.nsec;
+    }
+#endif
+
+    desc->tx_desc_list_cur = tx_desc_list_cur;
+    return ERR_OK;
+}
+
+struct pbuf *enet_lwip_input(enet_frame_t *frame, uint16_t rx_buff_size,
+                                          enet_lwip_rx_custom_alloc_fn alloc_fn,
+                                          enet_lwip_rx_custom_free_fn free_fn)
+{
+    struct pbuf *p;
+    struct pbuf *q;
+    enet_lwip_rx_custom_pbuf_t *my_pbuf;
+    enet_rx_desc_t *dma_rx_desc;
+    uint8_t *buffer;
+    uint32_t remaining;
+    uint32_t chunk;
+    uint32_t i;
+    uint32_t seg_count;
+
+    p = NULL;
+    if ((frame == NULL) || (rx_buff_size == 0) || (alloc_fn == NULL) || (free_fn == NULL)) {
+        return NULL;
+    }
+    if ((frame->length == 0) || (frame->seg == 0) || (frame->rx_desc == NULL)) {
+        return NULL;
+    }
+
+    remaining = frame->length;
+    seg_count = frame->seg;
+    dma_rx_desc = frame->rx_desc;
+
+    for (i = 0; i < seg_count; i++) {
+        if (remaining == 0) {
+            break;
+        }
+        chunk = (remaining > rx_buff_size) ? rx_buff_size : remaining;
+        my_pbuf = (enet_lwip_rx_custom_pbuf_t *)alloc_fn();
+        if (my_pbuf == NULL) {
+            if (p != NULL) {
+                pbuf_free(p);
+            }
+            return NULL;
+        }
+        my_pbuf->p.custom_free_function = free_fn;
+        /* only the head custom pbuf returns the whole FS..LS chain to DMA */
+        my_pbuf->dma_descriptor = (i == 0) ? (void *)frame : NULL;
+        buffer = (uint8_t *)(uintptr_t)dma_rx_desc->rdes2_bm.buffer1;
+        q = pbuf_alloced_custom(PBUF_RAW, (u16_t)chunk, PBUF_REF, &my_pbuf->p, buffer, rx_buff_size);
+        if (q == NULL) {
+            free_fn((struct pbuf *)my_pbuf);
+            if (p != NULL) {
+                pbuf_free(p);
+            }
+            return NULL;
+        }
+        enet_lwip_dc_invalidate((uint32_t)buffer, chunk);
+        if (p == NULL) {
+            p = q;
+        } else {
+            pbuf_cat(p, q);
+        }
+        remaining -= chunk;
+        dma_rx_desc = (enet_rx_desc_t *)dma_rx_desc->rdes3_bm.next_desc;
+    }
+
+    return p;
+}
 
 #if defined(__ENABLE_ENET_RECEIVE_INTERRUPT) && __ENABLE_ENET_RECEIVE_INTERRUPT || defined(NO_SYS) && !NO_SYS
 static void isr_enet(uint8_t idx)

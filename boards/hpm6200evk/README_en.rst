@@ -16,17 +16,17 @@ DIP Switch SW1
 
 - Bit 1 and 2 control the boot mode
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - bit[2:1]
-     - Description
-   * - OFF, OFF
-     - Boot from Quad SPI NOR flash
-   * - OFF, ON
-     - Serial boot
-   * - ON, OFF
-     - ISP
+     * - bit[2:1]
+       - Description
+     * - OFF, OFF
+       - Boot from Quad SPI NOR flash
+     * - OFF, ON
+       - Serial boot
+     * - ON, OFF
+       - ISP
 
 .. _hpm6200evk_buttons:
 
@@ -282,31 +282,31 @@ Pin Description
 
 - ESP-HOSTED Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - PB06
-     - P1[35]
-     - RESET Pin
-   * - PB07
-     - P1[31]
-     - HANDSHAKE Pin
-   * - PB08
-     - P1[32]
-     - DATA_READY Pin
+     * - Function
+       - Position
+       - Note
+     * - PB06
+       - P1[35]
+       - RESET Pin
+     * - PB07
+       - P1[31]
+       - HANDSHAKE Pin
+     * - PB08
+       - P1[32]
+       - DATA_READY Pin
 
 - BROWNOUT Interrupt Indicator Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PB31
-     - P1[7]
+     * - Function
+       - Position
+     * - PB31
+       - P1[7]
 
 
 .. _hpm6200evk_known_issues:

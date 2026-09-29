@@ -173,7 +173,7 @@ API 调用流程介绍
 
     - ``status_dma_mgr_no_resource``：所有 DMA 通道已被占用。
 
-- 如果需要从**指定**的 DMA 实例（如 HPM_HDMA 或 HPM_XDMA）请求通道，使用：
+- 如果需要从 **指定** 的 DMA 实例（如 HPM_HDMA 或 HPM_XDMA）请求通道，使用：
 
     .. code-block:: c
 

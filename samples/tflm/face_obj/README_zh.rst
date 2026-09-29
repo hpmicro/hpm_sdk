@@ -29,7 +29,7 @@ TFLM示例工程展示了使用摄像头采集图像信息，通过集成的TFLM
 代码选项
 ------------
 
-- 请在该工程的CMakeLists.txt的`find_package`前添加如下代码，获得更高性能
+- 请在该工程的CMakeLists.txt的 `find_package` 前添加如下代码，获得更高性能
 
 
 .. code-block:: cmake

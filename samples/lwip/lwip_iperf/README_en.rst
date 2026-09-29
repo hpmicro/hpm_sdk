@@ -41,7 +41,8 @@ Project Configurations
 - Build Configurations (CMAKE)
 
   - set HPM_BUILD_TYPE to flash_xip
-  - set CMAKE_BUILD_TYPE to release
+  - this sample forces ``sdk_compile_options(-O3)`` in CMakeLists (GCC ``-O3`` / SES Level 3 for both Debug and Release)
+  - keep that optimization for throughput tests; do not measure with an unoptimized build
 
 - Compilation configurations
 

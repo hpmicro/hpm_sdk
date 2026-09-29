@@ -61,7 +61,7 @@ QEO_ABZ_OUT示例工程展示了QEO (Quadrature Encoder Output) 外设根据位�
 
 2. QEO输出ABZ信号的位置同步功能
 
-   - 当QEO的当前位置和要同步位置的落在相同的1/4线，会造成同步错误， 需要调整当前位置或者要同步的位置，错开1/4线，参考`qeo_abz_position_sync`函数
+   - 当QEO的当前位置和要同步位置的落在相同的1/4线，会造成同步错误， 需要调整当前位置或者要同步的位置，错开1/4线，参考 `qeo_abz_position_sync` 函数
 
 运行现象
 -----------

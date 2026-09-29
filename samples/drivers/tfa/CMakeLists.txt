@@ -8,7 +8,11 @@ set(RV_ARCH "rv32imafc")
 set(RV_ABI "ilp32f")
 
 set(CONFIG_HPM_MATH 1)
+set(CONFIG_TFA_NOT_USE_IRQ_NEST_PROTECTION 0)
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
+if(CONFIG_TFA_NOT_USE_IRQ_NEST_PROTECTION)
+    sdk_compile_definitions(CONFIG_TFA_NOT_USE_IRQ_NEST_PROTECTION)
+endif()
 
 project(tfa_example)
 

@@ -83,7 +83,7 @@ API调用流程介绍
 缺省I2C实例变量
 ^^^^^^^^^^^^^^^
 
-- 使用 ``hpm_i2c_get_default_init_context`` API 对 ``i2c_context`` 实例变量赋值到API的``context``参数中，进行初始化。
+- 使用 ``hpm_i2c_get_default_init_context`` API 对 ``i2c_context`` 实例变量赋值到API的 ``context`` 参数中，进行初始化。
 
   - ``hpm_i2c_get_default_init_context`` API原型：
 
@@ -100,7 +100,7 @@ API调用流程介绍
 I2C初始化
 ^^^^^^^^^
 
-- 调用 ``hpm_i2c_initialize`` API 来初始化 I2C。在此过程中，``i2c_context`` 实例变量的参数会被赋值到API的``context``并生效。
+- 调用 ``hpm_i2c_initialize`` API 来初始化 I2C。在此过程中，``i2c_context`` 实例变量的参数会被赋值到API的 ``context`` 并生效。
 
 - ``hpm_i2c_initialize`` API原型：
 
@@ -727,7 +727,7 @@ DMA配置
 ^^^^^^^^^^^^^^^^^
 
 - 用于I2C主从模式下的非阻塞读写操作。它允许在操作完成之前继续执行其他任务，而不需要等待操作完成
-- 在使用非阻塞读写接口之前，需要进行上述的**DMA配置**流程
+- 在使用非阻塞读写接口之前，需要进行上述的 **DMA配置** 流程
 
 主机模式，分为直接读写操作和带地址寄存器读写操作
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1198,7 +1198,7 @@ DMA配置
 ----
 
 - 由于I2C组件使用了DMA管理器组件，DMA的通道等配置由DMA管理器分配，在使用DMA时分配的DMA通道避免与I2C组件使用的DMA通道冲突。
-- I2C组件使用的DMA通道可以调用``hpm_i2c_get_dma_mgr_resource``API 获取。
+- I2C组件使用的DMA通道可以调用 ``hpm_i2c_get_dma_mgr_resource`` API 获取。
 
   - ``hpm_i2c_get_dma_mgr_resource`` API函数原型:
 

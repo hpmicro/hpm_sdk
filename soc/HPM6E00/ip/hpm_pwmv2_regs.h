@@ -576,8 +576,16 @@ typedef struct {
 /*
  * CAPTURE_SELGPIO (RW)
  *
- * 0: result from CAP[  7:0],  from trgm
- * 1: result from CAP[15:8],  from gpio
+ * When PWM.P[n] pins are present:
+ * - 0: CAP[7:0] is sourced from the PWM.P[n] pin
+ * - 1: CAP[7:0] is sourced from the TRGM.P[n] pin, as detailed below:
+ *   - PWM0 input capture CAP[7:0] is sourced from TRGM.P[7:0]
+ *   - PWM1 input capture CAP[7:0] is sourced from TRGM.P[15:8]
+ *   - PWM2 input capture CAP[7:0] is sourced from TRGM.P[23:16]
+ *   - PWM3 input capture CAP[7:0] is sourced from TRGM.P[31:24]
+ * When PWM.P[n] pins are absent:
+ * - 0: CAP[7:0] is sourced from the PWMx_CAP[7:0] signal of TRGM_OUT
+ * - 1: CAP[7:0] is sourced from the PWMx_CAP[15:8] signal of TRGM_OUT
  */
 #define PWMV2_CAPTURE_POS_CAPTURE_SELGPIO_MASK (0x10U)
 #define PWMV2_CAPTURE_POS_CAPTURE_SELGPIO_SHIFT (4U)

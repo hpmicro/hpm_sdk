@@ -18,7 +18,7 @@ Note
 Board Setting
 -------------
 
-- Please refer to the description in the specific development board {ref}` pin description <board_resource>` section.
+- Please refer to the description in the specific development board :ref:`pin description <board_resource>` section.
 
 - Connect the modbus uart pins of the two boards.
 

@@ -3,7 +3,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2012, Willow Garage, Inc.
-# Copyright (c) 2024-2025 HPMicro
+# Copyright (c) 2024-2026 HPMicro
 #
 # All rights reserved.
 #
@@ -73,7 +73,7 @@ def generate_rst(files, skip_private=False, skip_undocumented=False, headline=No
     for (fullpath, relpath) in files:
         last_block = []
         last_block_public = False
-        with open(fullpath, 'r') as f:
+        with open(fullpath, 'r', encoding='utf-8') as f:
             lines = f.readlines()
         for line in lines:
             if line.startswith('#'):
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     excluded_files = []
     if os.path.exists(exclusions):
         try:
-            with open(exclusions, 'r') as f:
+            with open(exclusions, 'r', encoding='utf-8') as f:
                 excluded_files = json.load(f)
         except (TypeError, ValueError) as err:
             print('unable to load exclusions\nerr={}\n'
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     auto_label = not args.no_auto_label
     lines = generate_rst(cmake_files, args.skip_private, args.skip_undocumented, args.headline, auto_label, args.custom_label, args.output)
     if args.output:
-        with open(args.output, 'w') as f:
+        with open(args.output, 'w', encoding='utf-8') as f:
             f.write('\n'.join(lines))
     else:
         for line in lines:

@@ -6,7 +6,7 @@ MIPI_CSI
 概述
 ------
 
-示例工程展示了使用`MIPI_CSI`接口获取摄像头的视频数据，并通过`CAM`接收视频数据到缓冲区，然后通过屏幕进行显示。
+示例工程展示了使用 `MIPI_CSI` 接口获取摄像头的视频数据，并通过 `CAM` 接收视频数据到缓冲区，然后通过屏幕进行显示。
 
 硬件设置
 ------------
@@ -17,7 +17,7 @@ MIPI_CSI
 工程设置
 ------------
 
-- 该例子由于板载RGB和mipi csi引脚硬件设计冲突，不支持RGB LCD屏，需要修改`board/xxx/CMakeLists.txt`,选择对应的屏幕(lvds或者mipi)
+- 该例子由于板载RGB和mipi csi引脚硬件设计冲突，不支持RGB LCD屏，需要修改 `board/xxx/CMakeLists.txt`,选择对应的屏幕(lvds或者mipi)
 
 注意事项
 ------------

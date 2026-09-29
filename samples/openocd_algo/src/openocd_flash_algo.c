@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,7 +16,8 @@
 #define XPI_USE_PORT_A_MASK (0)
 #define XPI_USE_PORT_SHIFT (0x8)
 
-#define ROMAPI_SUPPORTS_HYBRIDXPI() (ROM_API_TABLE_ROOT->xpi_nor_driver_if->version >= 0x56010300)
+#define ROMAPI_SUPPORTS_HYBRIDXPI() (((ROM_API_TABLE_ROOT->xpi_nor_driver_if->version >= 0x56010300)) \
+        && (ROM_API_TABLE_ROOT->xpi_nor_driver_if->enable_hybrid_xpi != NULL))
 
 typedef struct {
     uint32_t total_sz_in_bytes;
@@ -51,6 +52,11 @@ __attribute__ ((section(".flash_algo.text"))) uint32_t flash_init(uint32_t flash
     if (xpi_inited) {
         return stat;
     }
+
+    /* enable FPU */
+    __asm volatile("li t0, %0" : : "i"(CSR_MSTATUS_FS_MASK));
+    __asm volatile("csrrs t0, mstatus, t0");
+    __asm volatile("fscsr zero");
 
     l1c_dc_disable();
     for (i = 0; i < sizeof(cfg_option); i++) {

@@ -12,6 +12,20 @@
 #define ADC16_RETRY_TO_GET_RESULT_COUNT (100U)
 #endif
 
+#ifndef ADC16_PRD_PERIOD_TOL_PERCENT
+#define ADC16_PRD_PERIOD_TOL_PERCENT (5U)
+#endif
+
+static uint64_t adc16_prd_ticks_to_ns(uint64_t ticks, uint32_t adc_clk_hz)
+{
+    uint64_t sec;
+    uint64_t rem;
+
+    sec = ticks / adc_clk_hz;
+    rem = ticks % adc_clk_hz;
+    return (sec * 1000000000ULL) + ((rem * 1000000000ULL) / adc_clk_hz);
+}
+
 void adc16_get_default_config(adc16_config_t *config)
 {
     config->res                = adc16_res_16_bits;
@@ -671,3 +685,84 @@ void adc16_disable_diff_mode(ADC16_Type *ptr)
     ptr->CONV_CFG0 &= ~(ADC16_CONV_CFG0_DIFF_MASTER_MASK | ADC16_CONV_CFG0_ADC_DIFF_MODE_MASK);
 }
 #endif
+
+hpm_stat_t adc16_calc_clock_divider(uint32_t input_hz, uint32_t target_conv_hz, uint32_t *div)
+{
+    uint32_t d;
+
+    if ((input_hz == 0) || (target_conv_hz == 0) || (div == NULL)) {
+        return status_invalid_argument;
+    }
+
+    d = (input_hz + target_conv_hz - 1U) / target_conv_hz;
+    if (d < adc16_clock_divider_1) {
+        d = adc16_clock_divider_1;
+    }
+    if ((d > adc16_clock_divider_16) || ((input_hz / d) > target_conv_hz)) {
+        return status_invalid_argument;
+    }
+
+    *div = d;
+    return status_success;
+}
+
+hpm_stat_t adc16_calc_prd_config(uint32_t adc_clk_hz, uint64_t target_period_ns, adc16_prd_config_t *cfg)
+{
+    uint8_t prescale;
+    uint8_t prescale_max;
+    uint8_t best_prescale;
+    uint8_t best_period_count;
+    uint16_t reload;
+    uint64_t ticks;
+    uint64_t actual_ns;
+    uint64_t diff;
+    uint64_t best_diff;
+
+    if ((adc_clk_hz == 0) || (target_period_ns == 0) || (cfg == NULL)) {
+        return status_invalid_argument;
+    }
+
+    prescale_max = (uint8_t)(ADC16_PRD_CFG_PRD_CFG_PRESCALE_MASK >> ADC16_PRD_CFG_PRD_CFG_PRESCALE_SHIFT);
+    best_diff = UINT64_MAX;
+    best_prescale = 0;
+    best_period_count = 1;
+
+    /* nearest discrete 2^prescale*prd step; period timer resolution is coarse at long periods */
+    for (prescale = 0; prescale <= prescale_max; prescale++) {
+        for (reload = 2; reload <= 256; reload++) {
+            ticks = (1ULL << prescale) * reload;
+            actual_ns = adc16_prd_ticks_to_ns(ticks, adc_clk_hz);
+            if (actual_ns > target_period_ns) {
+                diff = actual_ns - target_period_ns;
+            } else {
+                diff = target_period_ns - actual_ns;
+            }
+            if (diff < best_diff) {
+                best_diff = diff;
+                best_prescale = prescale;
+                best_period_count = (uint8_t)(reload - 1U);
+            }
+        }
+    }
+
+    if ((best_diff * 100ULL) > (target_period_ns * ADC16_PRD_PERIOD_TOL_PERCENT)) {
+        return status_invalid_argument;
+    }
+
+    cfg->prescale = best_prescale;
+    cfg->period_count = best_period_count;
+    return status_success;
+}
+
+hpm_stat_t adc16_calc_sample_rate(uint32_t conv_hz, uint32_t sample_cycle, uint32_t convert_cycles, uint32_t *fs_hz)
+{
+    uint32_t cycles;
+
+    if ((conv_hz == 0) || (sample_cycle == 0) || (convert_cycles == 0) || (fs_hz == NULL)) {
+        return status_invalid_argument;
+    }
+
+    cycles = sample_cycle + convert_cycles;
+    *fs_hz = conv_hz / cycles;
+    return status_success;
+}

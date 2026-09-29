@@ -21,7 +21,7 @@ jpeg 解码示例工程展示了如何使用JPEG模块或者软件库解码JPG�
 工程配置
 ------------
 
-- 文件`CMakeLists.txt` :
+- 文件 `CMakeLists.txt` :
 
   - ``set (JPEG_USE_SDCARD 1)``  从SD卡中读取jpeg文件(.jpg); ``set (JPEG_USE_UDISK 1)``  从u盘中读取jpeg文件(.jpg)。这两个为排他选项
 

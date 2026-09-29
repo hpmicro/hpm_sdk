@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -104,20 +104,20 @@ int main(void)
     /* [3] sei instructions */
     instr_idx = 0;
     /* recv cmd */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_0, 1);    /* recv: 1 bit*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_0, 1);    /* recv: 1 bit */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_CMD, 6);  /* recv: mode cmd */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_0, 1);    /* recv: 1 bit */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_0, 1);    /* recv: 1 bit*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, 1);        /* recv: 1 bit*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, 1);    /* recv: 1 bit */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_CMD, 6);  /* recv: mode cmd */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, 1);    /* recv: 1 bit */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, 1);    /* recv: 1 bit*/
     /* jump to cmd */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_JUMP, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, SEI_JUMP_CMD_TABLE_INSTR_IDX0);  /* jump to cmd table instr_idx[0] */
     /* send cmd 0x07 ans */
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_0, 5);   /* send: some bit*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_1, 1);   /* send: start bit*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_4, SEI_DAT_2, 1);    /* send: error bit*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_4, SEI_DAT_3, 25);   /* send: ST data*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DAT_4, 5);    /* send: CRC data*/
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_1, 10);  /* wait timeout */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DATA_CONST_0, 5);   /* send: some bit*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DATA_CONST_1, 1);   /* send: start bit*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_4, SEI_DAT_2, 1);    /* send: error bit*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_4, SEI_DAT_3, 25);   /* send: ST data*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_4, 5);    /* send: CRC data*/
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_SEND_WDG, SEI_INSTR_S_CK_TIMEOUT_EN, SEI_DAT_0, SEI_DATA_CONST_1, 10);  /* wait timeout */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_JUMP, SEI_INSTR_S_CK_DEFAULT, SEI_DAT_0, SEI_DAT_0, SEI_JUMP_INIT_INSTR_IDX);
 
     /* [4] command table */
@@ -139,12 +139,12 @@ int main(void)
 
     /* [6] state transition config */
     /* latch0 */
-#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+#if !defined(HPM_IP_FEATURE_SEI_ERRATA_E00047) || !HPM_IP_FEATURE_SEI_ERRATA_E00047
     state_transition_config.disable_clk_check = false;
     state_transition_config.clk_cfg = sei_state_tran_condition_fall_leave;
     state_transition_config.disable_txd_check = true;
     state_transition_config.disable_rxd_check = true;
-    state_transition_config.disable_timeout_check = false;
+    state_transition_config.disable_timeout_check = true;
     state_transition_config.disable_instr_ptr_check = false;
     state_transition_config.instr_ptr_cfg = sei_state_tran_condition_high_match;
     state_transition_config.instr_ptr_value = 0;
@@ -217,29 +217,22 @@ int main(void)
     state_transition_latch_config.delay = 0;
     sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
 
-    /* [7] rewind command register by latch event */
-#if defined(HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD) && HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD
-    sei_config_command_rewind_by_latch(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0, true);
-#endif
-
-    /* [8] engine config */
+    /* [7] engine config */
     printf("Started sei engine!\n");
     engine_config.arming_mode = sei_arming_direct_exec;
     engine_config.data_cdm_idx = SEI_DAT_0;
     engine_config.data_base_idx = SEI_DAT_0;
     engine_config.init_instr_idx = 0;
-    engine_config.wdg_enable = false;
+    engine_config.wdg_enable = true;
+    engine_config.wdg_action = sei_wdg_exec_exception_instr;
+    engine_config.wdg_instr_idx = 0;
+    engine_config.wdg_time = 5000; /* 5000 max_baud bits time, ~500us */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
-    /* [9] interrupt config */
-#if defined(HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD) && HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD
-    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_trx_err_event);
-    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_trx_err_event, true);
-#else
-    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_timeout_event | sei_irq_trx_err_event);
-    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_timeout_event | sei_irq_trx_err_event, true);
-#endif
+    /* [8] interrupt config */
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_wdog_event | sei_irq_trx_err_event);
+    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch0_event | sei_irq_latch1_event | sei_irq_wdog_event | sei_irq_trx_err_event, true);
     intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
 
     while (1) {
@@ -279,11 +272,16 @@ void isr_sei(void)
 
     }
 
-#if !defined(HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD) || !HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD
-    if ((irq_flag & sei_irq_timeout_event) != 0) {
+    if ((irq_flag & sei_irq_wdog_event) != 0) {
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
         sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_4);
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+        printf("WDG Active!\n");
     }
-#endif
 
     if ((irq_flag & sei_irq_trx_err_event) != 0) {
         printf("TRX Error!\n");

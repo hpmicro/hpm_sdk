@@ -86,10 +86,14 @@ void test_codec_playback_record(void)
     i2s_multiline_transfer_config_t transfer;
     uint32_t i2s_mclk_hz;
 
-    /* Config I2S interface to CODEC */ 
+    /* Config I2S interface to CODEC */
     i2s_get_default_config(CODEC_I2S, &i2s_config);
     i2s_config.enable_mclk_out = true;
-    i2s_init(CODEC_I2S, &i2s_config);
+    if (i2s_init(CODEC_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
 
     i2s_get_default_multiline_transfer_config(&transfer);
     transfer.sample_rate = CODEC_SAMPLE_RATE_HZ;

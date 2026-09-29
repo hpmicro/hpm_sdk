@@ -1296,7 +1296,7 @@ User should set this bit before set CMPEN to 1.</description>
             <fields>
               <field>
                 <name>BURST_CFG</name>
-                <description>No description available</description>
+                <description>Burst configuration register: The counter stops after completing this number of cycles, and can be used to output a specified number of pulses.</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>16</bitWidth>
                 <access>read-write</access>
@@ -1313,7 +1313,7 @@ User should set this bit before set CMPEN to 1.</description>
             <fields>
               <field>
                 <name>BURST_COUNT</name>
-                <description>No description available</description>
+                <description>Current burst count: Increments by 1 every time the counter hits the reload value.</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>16</bitWidth>
                 <access>read-only</access>
@@ -1656,28 +1656,8 @@ User should set this bit before set CMPEN to 1.</description>
           <addressOffset>0x208</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x000F000F</resetMask>
+          <resetMask>0x0000000F</resetMask>
           <fields>
-            <field>
-              <name>QEI_TYPE23</name>
-              <description>define capture_in process for channel 2/3</description>
-              <bitOffset>18</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
-            <field>
-              <name>QEI_TYPE01</name>
-              <description>define capture_in process for channel 0/1, for qei mode only:
-00: ud mode. nothing changed to capture_in.
-01: ab mode, the capture_in will be asserted at posedge when another channel capture_in is high;
-10: pd mode, capture_in[0] as signal,  capture_in[1] as direction.
-if capture_in[1] is high, then capture_in[0] is connected to channel0, 0 is connected to cahnnel1;
-if capture_in[1] is low, then capture_in[0] is connected to channel1, 0 is connected to cahnnel0;
-11: reserved</description>
-              <bitOffset>16</bitOffset>
-              <bitWidth>2</bitWidth>
-              <access>read-write</access>
-            </field>
             <field>
               <name>SWSYNCT</name>
               <description>set this bitfield to trigger software counter sync event</description>
@@ -17623,8 +17603,16 @@ software write dac_value directly if dac_sw_mode is 1</description>
             </field>
             <field>
               <name>CAPTURE_SELGPIO</name>
-              <description>0: result from CAP[  7:0],  from trgm
-1: result from CAP[15:8],  from gpio</description>
+              <description>When PWM.P[n] pins are present:
+- 0: CAP[7:0] is sourced from the PWM.P[n] pin
+- 1: CAP[7:0] is sourced from the TRGM.P[n] pin, as detailed below:
+  - PWM0 input capture CAP[7:0] is sourced from TRGM.P[7:0]
+  - PWM1 input capture CAP[7:0] is sourced from TRGM.P[15:8]
+  - PWM2 input capture CAP[7:0] is sourced from TRGM.P[23:16]
+  - PWM3 input capture CAP[7:0] is sourced from TRGM.P[31:24]
+When PWM.P[n] pins are absent:
+- 0: CAP[7:0] is sourced from the PWMx_CAP[7:0] signal of TRGM_OUT
+- 1: CAP[7:0] is sourced from the PWMx_CAP[15:8] signal of TRGM_OUT</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -25393,7 +25381,7 @@ Only used in device operation mode.</description>
 SOF Received - R/WC.
 When the device controller detects a Start Of (micro) Frame, this bit will be set to a one.
 When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
-Therefore, this bit will be set roughly every 1ms in device FS mode and every 125ms in HS mode and will be synchronized to the actual SOF that is received.
+Therefore, this bit will be set roughly every 1ms in device FS mode and every 125us in HS mode and will be synchronized to the actual SOF that is received.
 Because the device controller is initialized to FS before connect, this bit will be set at an interval of 1ms during the prelude to connect and chirp.
 In host mode, this bit will be set every 125us and can be used by host controller driver as a time base.
 Software writes a 1 to this bit to clear it.</description>
@@ -31376,7 +31364,7 @@ Watchdog PDI (0x0410:0x0411)</description>
           <addressOffset>0x1f010</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x5F808080</resetMask>
+          <resetMask>0x5F838383</resetMask>
           <fields>
             <field>
               <name>MAC_SPEED</name>
@@ -31400,6 +31388,13 @@ Watchdog PDI (0x0410:0x0411)</description>
               <access>read-write</access>
             </field>
             <field>
+              <name>PORT2_TX_SHIFT</name>
+              <description>No description available</description>
+              <bitOffset>16</bitOffset>
+              <bitWidth>2</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>PORT1_RMII_EN</name>
               <description>No description available</description>
               <bitOffset>15</bitOffset>
@@ -31407,10 +31402,24 @@ Watchdog PDI (0x0410:0x0411)</description>
               <access>read-write</access>
             </field>
             <field>
+              <name>PORT1_TX_SHIFT</name>
+              <description>No description available</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>2</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>PORT0_RMII_EN</name>
               <description>No description available</description>
               <bitOffset>7</bitOffset>
               <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>PORT0_TX_SHIFT</name>
+              <description>No description available</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>2</bitWidth>
               <access>read-write</access>
             </field>
           </fields>
@@ -35669,7 +35678,7 @@ Note:  Other registers should be configured before enable this bit.</description
 0: Count up
 1: Count down
 - when Bit[1]:
-0: Oneshot mode
+0: Oneshot mode, counter stops upon reaching the PERIOD value (up-count) or 0 (down-count).
 1: Period Mode
 - when Bit[3:2]:
 00: Count by internal 32KHz clock
@@ -35920,20 +35929,20 @@ If bit0 is 1: Match Z-phase rising edge, forward.</description>
               <field>
                 <name>RESOLUTION</name>
                 <description>Resolution Value
-Note：The Field in this register is the same as COUNTER register, so if target resolution value is TARGET_LINES , it should be shifted according to the current DECODE_MODE, and then decrease 1 because it counts from 0, it means when:
-MODE_AB_4X: RESOLUTION = (TARGET_LINES &lt;&lt; 2) - 1;
-MODE_AB_2X: RESOLUTION = (TARGET_LINES &lt;&lt; 1) - 1;
-MODE_AB_1X: RESOLUTION = (TARGET_LINES &lt;&lt; 0) - 1;
-MODE_PD_1X: RESOLUTION = (TARGET_LINES &lt;&lt; 0) - 1;
-MODE_PDF1X: RESOLUTION = (TARGET_LINES &lt;&lt; 0) - 1;
-MODE_PD_2X: RESOLUTION = (TARGET_LINES &lt;&lt; 1) - 1;
-MODE_PDF2X: RESOLUTION = (TARGET_LINES &lt;&lt; 1) - 1;
-MODE_UD_1X: RESOLUTION = (TARGET_LINES &lt;&lt; 0) - 1;
-MODE_UDF1X: RESOLUTION = (TARGET_LINES &lt;&lt; 0) - 1;
-MODE_UD_2X: RESOLUTION = (TARGET_LINES &lt;&lt; 1) - 1;
-MODE_UDF2X: RESOLUTION = (TARGET_LINES &lt;&lt; 1) - 1;
-MODE_UVW6X: RESOLUTION = (TARGET_LINES &lt;&lt; 3) - 1;
-MODE_UVW6Y: RESOLUTION = (TARGET_LINES &lt;&lt; 3) - 1;</description>
+Note：The Field in this register is the same as COUNTER register, so if total line number of one turn is TOTAL_LINES, it should be shifted according to the current DECODE_MODE, and then decrease 1 because it counts from 0, it means when:
+MODE_AB_4X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 2;
+MODE_AB_2X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 1;
+MODE_AB_1X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 0;
+MODE_PD_1X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 0;
+MODE_PDF1X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 0;
+MODE_PD_2X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 1;
+MODE_PDF2X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 1;
+MODE_UD_1X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 0;
+MODE_UDF1X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 0;
+MODE_UD_2X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 1;
+MODE_UDF2X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 1;
+MODE_UVW6X: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 3;
+MODE_UVW6Y: RESOLUTION = (TOTAL_LINES - 1) &lt;&lt; 3;</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>32</bitWidth>
                 <access>read-write</access>

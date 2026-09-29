@@ -22,6 +22,8 @@ Running the example
   .. code-block:: console
 
    This is an ADC16 temperature acquisition demo:
+   ADC16 clock: input=200000000 Hz, div=4, conv=50000000 Hz
+   ADC16 sample: cycle=511, convert=21, fs=93984 Hz
    Current Soc Temp: 26℃
    Current Soc Temp: 26℃
    Current Soc Temp: 26℃
@@ -40,4 +42,6 @@ Running the example
    Current Soc Temp: 26℃
    Current Soc Temp: 28℃
    Current Soc Temp: 28℃
+
+- The clock lines above are from ``hpm6750evk2`` (AHB 200 MHz). This sample requires ADC16 temperature sensor support.
 

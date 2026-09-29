@@ -13,9 +13,16 @@ This example project shows USB Audio V2 speaker device.
 Project Configuration
 -----------------------
 
-- In the `CMakeLists.txt` file, configure the type of audio playback device according to requirements. The default playback uses DAO.
+- The audio output device is auto-detected when ``app.yaml`` declares a ``board_audio_codec`` dependency and the board declares both ``board_audio_codec`` and a ``board_codec_*`` feature. Otherwise DAO is used.
 
-- If using the onboard Audio Codec chip, the Audio Codec type is automatically matched with the hardware based on the feature settings in `boards/<board_name>/<board_name>.yaml` (feature: board_codec_xxxx) by default. To specify an audio codec type, set the following in `CMakeLists.txt`: set(CONFIG_CODEC_NAME "wm8960").
+- To override the auto-detection, set ``CONFIG_CODEC`` before ``find_package`` in ``CMakeLists.txt``:
+
+  - ``set(CONFIG_CODEC 1)`` — force Codec output
+  - ``set(CONFIG_CODEC 0)`` — force DAO output
+
+- The Audio Codec type is automatically matched with the hardware based on the board feature (e.g., ``board_codec_es8389``). To specify an audio codec type manually, set the following in ``CMakeLists.txt``: ``set(CONFIG_CODEC_NAME "wm8960")``.
+
+- The USB High Speed and Full Speed service intervals are configured by ``EP_INTERVAL_HS`` and ``EP_INTERVAL_FS``. The packets-per-second value and USB maximum packet size are derived automatically from the configured interval.
 
 
 Board Setting
@@ -25,11 +32,11 @@ Board Setting
 
 - Connect a USB port on PC to one of USB port on the development board with a USB Type-C cable
 
-- According to project configuration, connect speaker to  :ref:`DAO <board_resource>`  interface if using DAO as player, connect headphone to  :ref:`headphone <board_resource>`  interface if using audio codec as player.
+- Connect headphone to  :ref:`headphone <board_resource>`  interface (Audio Codec is the default playback device), or connect speaker to  :ref:`DAO <board_resource>`  interface if DAO is configured.
 
 Running the example
 -------------------
 
 - Download the program and run. The computer can automatically recognize and install the USB audio driver and enumerate a device with a speaker device.
 
-- Select the speaker device as the default player, and the PC will play audio through the DAO interface
+- Select the speaker device as the default player, and the PC will play audio through the headphone (Codec) interface or DAO interface depending on the configuration.

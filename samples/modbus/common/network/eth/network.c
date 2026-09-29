@@ -7,63 +7,26 @@
 #include "common_lwip.h"
 #include "netconf.h"
 #include "sys_arch.h"
-#include "lwip.h"
 #include "lwip/init.h"
+#include "lwipopts.h"
 #include "board.h"
-
-static hpm_stat_t enet_init(ENET_Type *ptr);
-
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
-__RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT] ; /* Ethernet Rx DMA Descriptor */
-
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
-__RW enet_tx_desc_t dma_tx_desc_tab[ENET_TX_BUFF_COUNT] ; /* Ethernet Tx DMA Descriptor */
-
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
-__RW uint8_t rx_buff[ENET_RX_BUFF_COUNT][ENET_RX_BUFF_SIZE]; /* Ethernet Receive Buffer */
-
-ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_BUFF_ADDR_ALIGNMENT)
-__RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
-
-enet_desc_t desc;
-uint8_t mac[ENET_MAC_SIZE];
-
-#if __ENABLE_ENET_RECEIVE_INTERRUPT
-volatile bool rx_flag;
-#endif
 
 hpm_stat_t network_init(void)
 {
     hpm_stat_t sta = status_success;
-    /* Initialize GPIOs */
-    board_init_enet_pins(ENET);
 
-    /* Reset an enet PHY */
-    board_reset_enet_phy(ENET);
-
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
+#if __ENABLE_ENET_RECEIVE_INTERRUPT
     printf("This is an ethernet demo: modbus tcp(Interrupt Usage)\n");
-    #else
+#else
     printf("This is an ethernet demo: modbus tcp (Polling Usage)\n");
-    #endif
+#endif
 
     printf("LwIP Version: %s\n", LWIP_VERSION_STRING);
-
-    /* Set RGMII clock delay */
-    #if defined(HPM_ENET_RGMII) && HPM_ENET_RGMII
-    board_init_enet_rgmii_clock_delay(ENET);
-    #elif defined(HPM_ENET_RMII) && HPM_ENET_RMII
-    /* Set RMII reference clock */
-    board_init_enet_rmii_reference_clock(ENET, BOARD_ENET_RMII_INT_REF_CLK);
-    printf("Reference Clock: %s\n", BOARD_ENET_RMII_INT_REF_CLK ? "Internal Clock" : "External Clock");
-    #elif defined(HPM_ENET_MII) && HPM_ENET_MII
-    board_init_enet_mii_clock(ENET);
-    #endif
 
     /* Start a board timer */
     board_timer_create(LWIP_APP_TIMER_INTERVAL, sys_timer_callback);
 
-    /* Initialize MAC and DMA */
+    /* Initialize GPIOs, clock, MAC(DMA) and PHY */
     sta = enet_init(ENET);
     if (sta == status_success) {
         /* Initialize the Lwip stack */
@@ -74,74 +37,4 @@ hpm_stat_t network_init(void)
         enet_services(&gnetif);
     }
     return sta;
-}
-
-static hpm_stat_t enet_init(ENET_Type *ptr)
-{
-    enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
-    enet_mac_config_t enet_config;
-    enet_tx_control_config_t enet_tx_control_config;
-
-    /* Initialize td, rd and the corresponding buffers */
-    memset((uint8_t *)dma_tx_desc_tab, 0x00, sizeof(dma_tx_desc_tab));
-    memset((uint8_t *)dma_rx_desc_tab, 0x00, sizeof(dma_rx_desc_tab));
-    memset((uint8_t *)rx_buff, 0x00, sizeof(rx_buff));
-    memset((uint8_t *)tx_buff, 0x00, sizeof(tx_buff));
-
-    desc.tx_desc_list_head = (enet_tx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)dma_tx_desc_tab);
-    desc.rx_desc_list_head = (enet_rx_desc_t *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)dma_rx_desc_tab);
-
-    desc.tx_buff_cfg.buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)tx_buff);
-    desc.tx_buff_cfg.count = ENET_TX_BUFF_COUNT;
-    desc.tx_buff_cfg.size = ENET_TX_BUFF_SIZE;
-
-    desc.rx_buff_cfg.buffer = core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (uint32_t)rx_buff);
-    desc.rx_buff_cfg.count = ENET_RX_BUFF_COUNT;
-    desc.rx_buff_cfg.size = ENET_RX_BUFF_SIZE;
-
-    /*Get a default control config for tx descriptor */
-    enet_get_default_tx_control_config(ENET, &enet_tx_control_config);
-
-    /* Set the control config for tx descriptor */
-    memcpy(&desc.tx_control_config, &enet_tx_control_config, sizeof(enet_tx_control_config_t));
-
-    /* Get MAC address */
-    enet_get_mac_address(mac);
-
-    /* Set MAC0 address */
-    enet_config.mac_addr_high[0] = mac[5] << 8 | mac[4];
-    enet_config.mac_addr_low[0]  = mac[3] << 24 | mac[2] << 16 | mac[1] << 8 | mac[0];
-    enet_config.valid_max_count  = 1;
-
-    /* Set DMA PBL */
-    enet_config.dma_pbl = board_get_enet_dma_pbl(ENET);
-
-    /* Set SARC */
-    enet_config.sarc = enet_sarc_replace_mac0;
-
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
-    /* Enable Enet IRQ */
-    board_enable_enet_irq(ENET);
-
-    /* Get the default interrupt config */
-    enet_get_default_interrupt_config(ENET, &int_config);
-    #endif
-
-    /* Initialize enet controller */
-    if (enet_controller_init(ptr, ENET_INF_TYPE, &desc, &enet_config, &int_config) != status_success) {
-        return status_fail;
-    }
-
-    #if __ENABLE_ENET_RECEIVE_INTERRUPT
-    /* Disable LPI interrupt */
-    enet_disable_lpi_interrupt(ENET);
-    #endif
-
-    if (board_init_enet_phy(ptr) == status_success) {
-        printf("Enet phy init passed !\n");
-        return status_success;
-    } else {
-        printf("Enet phy init failed !\n");
-        return status_fail;
-    }
 }

@@ -8876,14 +8876,14 @@ if clr, use dac_cfg value</description>
           <fields>
             <field>
               <name>SFTRST_RX</name>
-              <description>software reset the RX module if asserted to be 1'b1. Self-clear.</description>
+              <description>software reset the RX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.</description>
               <bitOffset>18</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SFTRST_TX</name>
-              <description>software reset the TX module if asserted to be 1'b1. Self-clear.</description>
+              <description>software reset the TX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.</description>
               <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -9080,8 +9080,32 @@ This bit controls the generation of an interrupt when an error condition  (UD, O
           <addressOffset>0x10</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
+          <resetMask>0xFFC1FFFF</resetMask>
           <fields>
+            <field>
+              <name>SFTRST_RX_DONE</name>
+              <description>1：indicate that the software reset of CTRL[SFTRST_RX] is finished.
+0: cleared automatically when configuring  CTRL[SFTRST_RX]=1.</description>
+              <bitOffset>24</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>SFTRST_TX_DONE</name>
+              <description>1：indicate that the software reset of CTRL[SFTRST_TX] is finished.
+0: cleared automatically when configuring  CTRL[SFTRST_TX]=1.</description>
+              <bitOffset>23</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>SFTRST_CLKGEN_DONE</name>
+              <description>1：indicate that the software reset of CTRL[SFTRST_CLKGEN] is finished.
+0: cleared automatically when configuring  CTRL[SFTRST_CLKGEN]=1.</description>
+              <bitOffset>22</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
             <field>
               <name>TX_UD</name>
               <description>Asserted when tx fifo is underflow. Should be ANDed with CTRL[tx_en] the for correct value. Write 1 to any of these 4 bits will clear the underflow error.</description>
@@ -16991,8 +17015,16 @@ software write dac_value directly if dac_sw_mode is 1</description>
             </field>
             <field>
               <name>CAPTURE_SELGPIO</name>
-              <description>0: result from CAP[  7:0],  from trgm
-1: result from CAP[15:8],  from gpio</description>
+              <description>When PWM.P[n] pins are present:
+- 0: CAP[7:0] is sourced from the PWM.P[n] pin
+- 1: CAP[7:0] is sourced from the TRGM.P[n] pin, as detailed below:
+  - PWM0 input capture CAP[7:0] is sourced from TRGM.P[7:0]
+  - PWM1 input capture CAP[7:0] is sourced from TRGM.P[15:8]
+  - PWM2 input capture CAP[7:0] is sourced from TRGM.P[23:16]
+  - PWM3 input capture CAP[7:0] is sourced from TRGM.P[31:24]
+When PWM.P[n] pins are absent:
+- 0: CAP[7:0] is sourced from the PWMx_CAP[7:0] signal of TRGM_OUT
+- 1: CAP[7:0] is sourced from the PWMx_CAP[15:8] signal of TRGM_OUT</description>
               <bitOffset>4</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -20450,7 +20482,7 @@ Software need reset timer first to start another one shot</description>
             <fields>
               <field>
                 <name>DAT_CDM</name>
-                <description>Select DATA register to receive CDM bit in BiSSC slave mode
+                <description>Select DATA register to receive CDM bit in BiSSC mode
 0: ignore
 1: command
 2: data register 2
@@ -20501,7 +20533,13 @@ Software need reset timer first to start another one shot</description>
             <fields>
               <field>
                 <name>WDOG_TIME</name>
-                <description>Time out count for each instruction, counter in bit time.</description>
+                <description>Time out count for each instruction, counter in bit time.
+0：1 bit
+1：2 bits
+...
+0xFFFE：65535 bits
+0xFFFF: reserved
+Note：After configuration, the WDG timeout duration shall be longer than the trigger period (including external trigger, periodic trigger, and software trigger/enable).</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>16</bitWidth>
                 <access>read-write</access>
@@ -23308,17 +23346,17 @@ Note: CRC register will be cleared automatically by UPDATE if select the DATA re
             <field>
               <name>CK</name>
               <description>clock state configure
-a. In synchronous master mode:
-0: low
-1: rise-fall
-2: fall-rise
-3: high
-b. In synchronous slave mode:
-0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
-1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
-2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
-3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
-c.  In asynchronous mode: please keep 0.</description>
+- a. In synchronous master mode:
+  - 0: low
+  - 1: rise-fall
+  - 2: fall-rise
+  - 3: high
+- b. In synchronous slave mode:
+  - 0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
+  - 1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
+  - 2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
+  - 3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
+- c.  In asynchronous mode: please keep 0.</description>
               <bitOffset>24</bitOffset>
               <bitWidth>2</bitWidth>
               <access>read-write</access>
@@ -23355,16 +23393,16 @@ c.  In asynchronous mode: please keep 0.</description>
             </field>
             <field>
               <name>OPR</name>
-              <description>a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
-b. When OP is 1, this area is the the pointer to the command table.
-OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
-OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
-OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
-c. When OP is 2-7, this area is the data length as fellow:
-0: 1 bit
-1: 2 bit
- ...
-31: 32 bit</description>
+              <description>- a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
+- b. When OP is 1, this area is the the pointer to the command table.
+  - OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
+  - OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
+  - OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
+- c. When OP is 2-7, this area is the data length as fellow:
+  - 0: 1 bit
+  - 1: 2 bit
+   - ...
+  - 31: 32 bit</description>
               <bitOffset>0</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>
@@ -33196,7 +33234,7 @@ Only used in device operation mode.</description>
 SOF Received - R/WC.
 When the device controller detects a Start Of (micro) Frame, this bit will be set to a one.
 When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
-Therefore, this bit will be set roughly every 1ms in device FS mode and every 125ms in HS mode and will be synchronized to the actual SOF that is received.
+Therefore, this bit will be set roughly every 1ms in device FS mode and every 125us in HS mode and will be synchronized to the actual SOF that is received.
 Because the device controller is initialized to FS before connect, this bit will be set at an interval of 1ms during the prelude to connect and chirp.
 In host mode, this bit will be set every 125us and can be used by host controller driver as a time base.
 Software writes a 1 to this bit to clear it.</description>
@@ -47370,7 +47408,7 @@ Watchdog PDI (0x0410:0x0411)</description>
           <addressOffset>0x1f010</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0x5F808080</resetMask>
+          <resetMask>0x5F838383</resetMask>
           <fields>
             <field>
               <name>MAC_SPEED</name>
@@ -47394,6 +47432,13 @@ Watchdog PDI (0x0410:0x0411)</description>
               <access>read-write</access>
             </field>
             <field>
+              <name>PORT2_TX_SHIFT</name>
+              <description>No description available</description>
+              <bitOffset>16</bitOffset>
+              <bitWidth>2</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>PORT1_RMII_EN</name>
               <description>No description available</description>
               <bitOffset>15</bitOffset>
@@ -47401,10 +47446,24 @@ Watchdog PDI (0x0410:0x0411)</description>
               <access>read-write</access>
             </field>
             <field>
+              <name>PORT1_TX_SHIFT</name>
+              <description>No description available</description>
+              <bitOffset>8</bitOffset>
+              <bitWidth>2</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
               <name>PORT0_RMII_EN</name>
               <description>No description available</description>
               <bitOffset>7</bitOffset>
               <bitWidth>1</bitWidth>
+              <access>read-write</access>
+            </field>
+            <field>
+              <name>PORT0_TX_SHIFT</name>
+              <description>No description available</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>2</bitWidth>
               <access>read-write</access>
             </field>
           </fields>

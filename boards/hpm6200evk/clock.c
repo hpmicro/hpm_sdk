@@ -142,7 +142,6 @@ void init_adc0_bus_clock(void)
 {
     /* Generate clk_top_adc0 code */
     clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
 
     clock_add_to_group(clock_adc0, 0);
 }
@@ -163,7 +162,6 @@ void init_adc1_bus_clock(void)
 {
     /* Generate clk_top_adc1 code */
     clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
 
     clock_add_to_group(clock_adc1, 0);
 }
@@ -184,7 +182,6 @@ void init_adc2_bus_clock(void)
 {
     /* Generate clk_top_adc2 code */
     clock_set_adc_source(clock_adc2, clk_adc_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
 
     clock_add_to_group(clock_adc2, 0);
 }
@@ -205,7 +202,6 @@ void init_dac0_ahb_clock(void)
 {
     /* Generate clk_top_dac0 code */
     clock_set_dac_source(clock_dac0, clk_dac_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
 
     clock_add_to_group(clock_dac0, 0);
 }
@@ -226,7 +222,6 @@ void init_dac1_ahb_clock(void)
 {
     /* Generate clk_top_dac1 code */
     clock_set_dac_source(clock_dac1, clk_dac_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 1);
 
     clock_add_to_group(clock_dac1, 0);
 }

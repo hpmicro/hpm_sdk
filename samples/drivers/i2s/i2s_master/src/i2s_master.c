@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -100,7 +100,11 @@ void i2s_master_config(void)
     i2s_config.tx_fifo_threshold = I2S_MASTER_FIFO_THR;     /* Set TX FIFO threshold */
     i2s_config.rx_fifo_threshold = I2S_MASTER_FIFO_THR;     /* Set RX FIFO threshold */
     i2s_config.enable_mclk_out = true;                      /* Enable master clock output */
-    i2s_init(I2S_MASTER, &i2s_config);
+    if (i2s_init(I2S_MASTER, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
 
     /* Configure I2S transfer parameters */
     i2s_get_default_transfer_config(&transfer);
@@ -142,7 +146,11 @@ void i2s_dao_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_n
     /* Configure I2S for DAO */
     i2s_get_default_config(I2S_DAO, &i2s_config);
     i2s_config.tx_fifo_threshold = 2;                       /* Set TX FIFO threshold */
-    i2s_init(I2S_DAO, &i2s_config);
+    if (i2s_init(I2S_DAO, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
 
     /* Configure transfer parameters for DAO */
     i2s_get_default_transfer_config_for_dao(&transfer);

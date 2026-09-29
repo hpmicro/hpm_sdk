@@ -38,6 +38,6 @@ WinUSB 2.0
 备注
 ------
 
-- 可在CMakeLists.txt中设置宏`DOUBLE_WINUSB=0`，使得USB设备只有1个interface。
+- 可在CMakeLists.txt中设置宏 `DOUBLE_WINUSB=0`，使得USB设备只有1个interface。
 
 - 当windows不识别该设备时，原因可能是设备的VID、PID以及设备版本号已经在Windows注册表中已登记了，不支持WCID。解决方法是删除注册表中相关项或是使用别的VID、PID、设备版本号。

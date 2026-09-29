@@ -13,7 +13,7 @@ MEMORY
     FLASH (rx) : ORIGIN = 0x80000000, LENGTH = _flash_size
     ILM (wx) : ORIGIN = 0x00000000, LENGTH = 128K
     DLM (w) : ORIGIN = 0x00200000, LENGTH = 128K
-    AXI_SRAM (wx) : ORIGIN = 0x01200000, LENGTH = 250K
+    AXI_SRAM (wx) : ORIGIN = 0x01200000, LENGTH = 240k
     SHARE_RAM (w) : ORIGIN = 0x0123C000, LENGTH = 16K
     SDRAM (wx) : ORIGIN = 0x40000000, LENGTH = (_extram_size - _noncacheable_size)
     SDRAM_NONCACHEABLE (wx) : ORIGIN = 0x40000000 + (_extram_size - _noncacheable_size), LENGTH = _noncacheable_size

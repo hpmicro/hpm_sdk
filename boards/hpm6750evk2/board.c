@@ -710,17 +710,39 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
 {
     uint32_t freq = 0;
 
+    /*
+     * The fixed PLL3 clock used by init_i2s*_clock_22050() cannot generate an exact
+     * 44.1kHz-family clock. BOARD_USE_AUDIO_PLL_FOR_EXACT_44100 changes PLL3 to provide
+     * the exact clock, but it also affects the clocks of all I2S instances.
+     * Select the option according to the application's requirements.
+     */
     if (ptr == HPM_I2S0) {
         if ((sample_rate % 22050) == 0) {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(564480000UL);
+            init_i2s0_clock();
+#else
             init_i2s0_clock_22050();
+#endif
         } else {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(614400000UL);
+#endif
             init_i2s0_clock();
         }
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
         if ((sample_rate % 22050) == 0) {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(564480000UL);
+            init_i2s1_clock();
+#else
             init_i2s1_clock_22050();
+#endif
         } else {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(614400000UL);
+#endif
             init_i2s1_clock();
         }
         freq = clock_get_frequency(clock_i2s1);
@@ -1147,6 +1169,7 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 1);
+        board_delay_ms(BOARD_ENET_RGMII_RST_DELAY_MS);
     } else if (ptr == HPM_ENET1) {
         gpio_write_pin(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);

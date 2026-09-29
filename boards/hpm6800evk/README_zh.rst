@@ -44,34 +44,34 @@ HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M�
 
 - Bit 1，2控制启动模式
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Bit[2:1]
-     - 功能描述
-   * - OFF, OFF
-     - Quad SPI NOR flash 启动
-   * - OFF, ON
-     - eMMC启动
-   * - ON, OFF
-     - 在系统编程
+     * - Bit[2:1]
+       - 功能描述
+     * - OFF, OFF
+       - Quad SPI NOR flash 启动
+     * - OFF, ON
+       - eMMC启动
+     * - ON, OFF
+       - 在系统编程
 
 .. _hpm6800evk_buttons:
 
 按键
 ----
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 名称
-     - 功能
-   * - USER BUTTON (KEY1)
-     - GPIO 按键
-   * - WBUTN (KEY2)
-     - WAKE UP 按键
-   * - RESETN (SW1)
-     - Reset 按键
+     * - 名称
+       - 功能
+     * - USER BUTTON (KEY1)
+       - GPIO 按键
+     * - WBUTN (KEY2)
+       - WAKE UP 按键
+     * - RESETN (SW1)
+       - Reset 按键
 
 插件
 ----
@@ -96,9 +96,9 @@ HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M�
      * - J6
        - eMMC电压3.3V和1.8V选择
 
-.. note::
+  .. note::
 
-  在测eMMC示例时需要将跳帽短接VCCQ 和1.8V
+    在测eMMC示例时需要将跳帽短接VCCQ 和1.8V
 
 .. _hpm6800evk_pins:
 
@@ -350,41 +350,41 @@ HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M�
 
 - CLOCK REF引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - PD31
-     - J20[7]
+     * - 功能
+       - 位置
+     * - PD31
+       - J20[7]
 
 - ESP-HOSTED 引脚接口
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-     - 备注
-   * - PE11
-     - P2[13]
-     - RESET引脚
-   * - PE12
-     - P2[3]
-     - HANDSHAKE引脚
-   * - PE13
-     - P2[5]
-     - DATA_READY引脚
+     * - 功能
+       - 位置
+       - 备注
+     * - PE11
+       - P2[13]
+       - RESET引脚
+     * - PE12
+       - P2[3]
+       - HANDSHAKE引脚
+     * - PE13
+       - P2[5]
+       - DATA_READY引脚
 
 - BROWNOUT中断指示引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - PE27
-     - J19[5]
+     * - 功能
+       - 位置
+     * - PE27
+       - J19[5]
 
 .. _hpm6800evk_known_issues:
 
@@ -424,3 +424,4 @@ HPM6800是一款主频达600MHz的单核微控制器。该芯片拥有最大1M�
   - 修正情况
 
     - 暂未修正，`HPM6800EVKRevD` 及之前的版本有这个问题。
+

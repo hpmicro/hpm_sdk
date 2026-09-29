@@ -49,11 +49,6 @@
  */
 
 /**
- * @defgroup dhc_interfaces DHC Interfaces
- * @brief Data Hash Controller driver APIs
- */
-
-/**
  * @defgroup esc_interfaces ESC Interfaces
  * @brief EtherCAT Slave Controller driver APIs
  */

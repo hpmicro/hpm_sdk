@@ -24,6 +24,7 @@ Running the example
   .. code-block:: console
 
    This is a DAC demo:
+   DAC clock: input=166000000 Hz, ana_div=2, analog=83000000 Hz, output target=1000000 Hz
    1. Direct mode
    2. Step   mode
    3. Buffer mode

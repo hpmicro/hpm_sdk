@@ -13,8 +13,27 @@
 static volatile tsw_phy_status_t last_status = {.tsw_phy_link = tsw_phy_link_unknown};
 uint8_t mac[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17};
 uint8_t mac_dst[] = {0x38, 0x14, 0x28, 0x14, 0x90, 0x78};
+
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t send_buff[TSW_SEND_DESC_COUNT][TSW_SEND_BUFF_LEN];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t recv_buff[TSW_RECV_DESC_COUNT][TSW_RECV_BUFF_LEN];
+ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) uint8_t data_buff[] = {
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x38, 0x14, 0x28, 0x14, 0x90, 0x78,
+0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17,
+0x08, 0x06,
+0x00, 0x01,
+0x08, 0x00,
+0x06,
+0x04,
+0x00, 0x01,
+0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17,
+0xc0, 0xa8, 0x64, 0x0a,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0xc0, 0xa8, 0x64, 0x05,
+};
 
 /*---------------------------------------------------------------------*
  * Initialization
@@ -115,17 +134,8 @@ void tsw_self_adaptive_port_speed(void)
  *---------------------------------------------------------------------*/
 int main(void)
 {
-    tsw_cb_stmid_entry_t cb_stmid_entry;
-    tsw_cb_frer_recovery_func_config_t xrfunc_config;
-    tsw_cb_frer_frame_count_egress_t count;
-    hpm_stat_t stat;
-    tsw_frame_t frame;
-    uint8_t stream_valid;
     uint8_t stream_sid;
-    uint16_t stream_seqno;
-    uint32_t rx_sec;
-    uint32_t rx_nsec;
-    uint8_t data[1536];
+    tsw_cb_stmid_entry_t cb_stmid_entry;
 
     /* Initialize BSP */
     board_init();
@@ -149,101 +159,37 @@ int main(void)
 
     /* Initialize MAC and DMA */
     if (tsw_init(BOARD_TSW) == 0) {
+        memcpy(send_buff[0], data_buff, sizeof(data_buff));
 
         cb_stmid_entry.idx = 0;
         cb_stmid_entry.sid = 1;
         cb_stmid_entry.seqnum = 0;
-        cb_stmid_entry.seqgen = false;
+        cb_stmid_entry.seqgen = true;
         cb_stmid_entry.actctl = tsw_stmid_actctl_disabled;
         cb_stmid_entry.smac = tsw_stmid_control_lookup_by_dest_mac;
         cb_stmid_entry.mode = tsw_stmid_lookup_mode_all;
         cb_stmid_entry.enable = true;
         cb_stmid_entry.lookup_mac.mach = MAC_HI(mac_dst);
         cb_stmid_entry.lookup_mac.macl = MAC_LO(mac_dst);
-        tsw_cb_stmid_egress_set_entry(BOARD_TSW, &cb_stmid_entry);
-
-        /* set func 1 */
-        xrfunc_config.fidx = 1;
-        xrfunc_config.freset = true;
-        xrfunc_config.xrfunc = tsw_cb_frer_xfunc_recovery_individual;
-        xrfunc_config.algo = tsw_cb_frer_algo_match_recovery;
-        xrfunc_config.timeout_in_ms = 1000;
-        tsw_cb_frer_egress_set_recovery_func(BOARD_TSW, &xrfunc_config);
-
-        /* set func 2 */
-        #if defined(USE_FUNC_2) && USE_FUNC_2
-        xrfunc_config.fidx = 2;
-        xrfunc_config.freset = true;
-        xrfunc_config.xrfunc = tsw_cb_frer_xfunc_recovery_individual;
-        xrfunc_config.algo = tsw_cb_frer_algo_match_recovery;
-        xrfunc_config.timeout_in_ms = 1000;
-        tsw_cb_frer_egress_set_recovery_func(BOARD_TSW, &xrfunc_config);
-        #endif
-
-        /* set func 3 */
-        xrfunc_config.fidx = 3;
-        xrfunc_config.freset = true;
-        xrfunc_config.xrfunc = tsw_cb_frer_xfunc_recovery_sequence;
-        xrfunc_config.algo = tsw_cb_frer_algo_vector_recovery;
-        xrfunc_config.history_len = 2;
-        xrfunc_config.timeout_in_ms = 1000;
-
-        xrfunc_config.latent_error_dectection_config.enable_detection = true;
-        xrfunc_config.latent_error_dectection_config.reset_period = 5000;
-        xrfunc_config.latent_error_dectection_config.test_period = 100;
-        xrfunc_config.latent_error_dectection_config.threshold = 5;
-        tsw_cb_frer_egress_set_recovery_func(BOARD_TSW, &xrfunc_config);
-
-        /* set stream (SID 1)  */
-        tsw_cb_frer_sid_func_config_t sid_func_config;
-        sid_func_config.sid = 1;
-        sid_func_config.irfunc.fen = true;
-        sid_func_config.irfunc.fidx = 1;
-        sid_func_config.srfunc.fen = true;
-        sid_func_config.srfunc.fidx = 3;
-        tsw_cb_frer_egress_set_sid_func(BOARD_TSW, &sid_func_config);
-
-        /* set stream (SID 2) */
-        #if defined(USE_FUNC_2) && USE_FUNC_2
-        sid_func_config.sid = 2;
-        sid_func_config.irfunc.fen = true;
-        sid_func_config.irfunc.fidx = 1;
-        sid_func_config.srfunc.fen = true;
-        sid_func_config.srfunc.fidx = 3;
-        tsw_cb_frer_egress_set_sid_func(BOARD_TSW, &sid_func_config);
-        #endif
+        tsw_cb_stmid_ingress_set_entry(BOARD_TSW, &cb_stmid_entry);
+        tsw_cb_frer_ingress_enable_rtag(BOARD_TSW);
+        stream_sid = cb_stmid_entry.sid;
 
         while (1) {
             if (tsw_get_link_status()) {
-                stat = tsw_recv_frame(BOARD_TSW, &frame);
-                if (stat == status_success) {
-                    if ((frame.length > TSW_SOC_SWITCH_HEADER_LEN)) {
-                        frame.buffer = recv_buff[frame.id];
-                        memcpy(data, &frame.buffer[TSW_SOC_ETH_PAYLOAD_OFFSET], TSW_FRAME_ETH_LEN(frame.length));
-                        tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
-                        tsw_get_rx_hdr_stream(frame.buffer, &stream_sid, &stream_seqno, &stream_valid);
-                        tsw_get_rx_hdr_timestamp(frame.buffer, &rx_sec, &rx_nsec);
-                        printf("Valid: %d, SID: %d, SeqNo: %d\n", stream_valid, stream_sid, stream_seqno);
-                        printf("RX-Time: %d.%09d\n", rx_sec, rx_nsec);
-                        printf("RX Frame Length: %d\n", TSW_FRAME_ETH_LEN(frame.length));
+                tsw_set_tx_hdr_route((tx_hdr_desc_t *)send_buff[0], TSW_CPU_SEND_TO_PORT(BOARD_TSW_PORT), tsw_traffic_queue_0, 1);
+                tsw_set_tx_hdr_stream((tx_hdr_desc_t *)send_buff[0], stream_sid, 0);
+                tsw_send_frame(BOARD_TSW, send_buff[0], TSW_DMA_FRAME_LEN(data_buff), 0);
+                board_delay_ms(500);
 
-                        for (uint16_t i = 0; i < TSW_FRAME_ETH_LEN(frame.length); i++) {
-                            printf("%02x ", data[i]);
-                        }
-                        printf("\n");
-
-                        tsw_cb_frer_egress_get_count(BOARD_TSW, &count);
-                        printf("Presented Frames: %d\n\n", count.egess_frame_count[presented_frames]);
-                    }
-                } else if (stat == status_fail) {
-                    tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
-                } else {
-
-                }
+                memset(&cb_stmid_entry, 0x00, sizeof(cb_stmid_entry));
+                cb_stmid_entry.idx = 0;
+                tsw_cb_stmid_ingress_get_entry(BOARD_TSW, &cb_stmid_entry);
+                printf("Stream Match Count: %d,  SeqNo: %d\n", cb_stmid_entry.match, cb_stmid_entry.seqnum);
             }
         }
     } else {
-        printf("TSW initialization failed !!!\n");
+        printf("TSW initialization fails !!!\n");
 
         while (1) {
 

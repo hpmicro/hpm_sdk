@@ -30,7 +30,7 @@ tsn_lwip_iperf
 
 - 以太网DHCP配置
 
-  - lwIP sample:  在`CMakeLists.txt`中，支持如下配置:
+  - lwIP sample:  在 `CMakeLists.txt` 中，支持如下配置:
 
     - sdk_compile_definitions(-DLWIP_DHCP=0): 禁用DHCP功能
 

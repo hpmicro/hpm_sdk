@@ -10,6 +10,11 @@ Audio V2 Microphone and Speaker (FreeRTOS)
 
 - PC可以看到一个CherryUSB喇叭设备和一个CherryUSB麦克风设备。
 
+工程配置
+--------
+
+- USB High Speed 和 Full Speed 的服务周期分别由 ``EP_INTERVAL_HS`` 和 ``EP_INTERVAL_FS`` 配置。对应的 packets/s 以及喇叭和麦克风 USB 最大包长会根据 interval 自动计算。
+
 硬件设置
 ------------
 

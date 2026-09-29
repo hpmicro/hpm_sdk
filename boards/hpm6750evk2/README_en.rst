@@ -76,28 +76,28 @@ Plug-in
 
 - The ADC/DAC reference voltage is selected as follows:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Connection
-     - Description
-   * - J108[2, 3]
-     - Reference voltage
+     * - Connection
+       - Description
+     * - J108[2, 3]
+       - Reference voltage
 
 Resistor Switch
 ---------------
 
 - GigE POP `R177-R182`
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Status
-     - Description
-   * - Welding
-     - Network
-   * - Disconnect
-     - Motor
+     * - Status
+       - Description
+     * - Welding
+       - Network
+     * - Disconnect
+       - Motor
 
 .. _hpm6750evk2_pins:
 
@@ -392,31 +392,31 @@ Pin Description
 
 - ESP-HOSTED Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - PZ11
-     - J11[3]
-     - RESET Pin
-   * - PZ10
-     - J11[4]
-     - HANDSHAKE Pin
-   * - PZ09
-     - J11[5]
-     - DATA_READY Pin
+     * - Function
+       - Position
+       - Note
+     * - PZ11
+       - J11[3]
+       - RESET Pin
+     * - PZ10
+       - J11[4]
+       - HANDSHAKE Pin
+     * - PZ09
+       - J11[5]
+       - DATA_READY Pin
 
 - BROWNOUT Interrupt Indicator Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PE30
-     - J11[10]
+     * - Function
+       - Position
+     * - PE30
+       - J11[10]
 
 .. _hpm6750evk2_known_issues:
 
@@ -456,3 +456,4 @@ Board Known Issue
   - Revised Status
 
     - `HPM6750EVK2RevD` has been revised, `HPM6750EVK2RevC` and previous versions have this issue.
+

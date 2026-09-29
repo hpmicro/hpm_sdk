@@ -1,15 +1,15 @@
 {
-  "clientKey": "d6d9cb8305e4c93b73e3c172adaed114",
-  "secretKey": "37cd7816b85d1afecb85b597cc25a06c",
+  "clientKey": "3b1d80c2628275fdbb808591654d292d",
+  "secretKey": "d3ec78dd4e2cc3bd4b990e1b312d7623",
   "content": {
-    "pid": "8d440e7d-b3ce-4bf3-a536-bec6a37bc18c",
+    "pid": "469161ce-fad3-4c0d-b7c3-31f0f2eb52a3",
     "info": {
       "projectName": "tool_config",
       "sdkName": "1.12.0",
       "socName": "HPM5361",
       "packageName": "LQFP100",
       "createTime": 1781446854824,
-      "updateTime": 1781446856746,
+      "updateTime": 1789025755808,
       "vscodePid": "9f354372-ed07-4662-b1a9-a848f2d6dab3"
     },
     "pinmux": {
@@ -761,7 +761,10 @@
             "funcClocks": [
               "clk_top_adc0"
             ],
-            "pllVcoClocks": []
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc0"
+            ]
           },
           "enableClocks": {
             "clk_top_adc0": "0"
@@ -800,7 +803,10 @@
             "funcClocks": [
               "clk_top_adc1"
             ],
-            "pllVcoClocks": []
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc1"
+            ]
           },
           "enableClocks": {
             "clk_top_adc1": "0"
@@ -938,7 +944,10 @@
             "funcClocks": [
               "clk_top_dac0"
             ],
-            "pllVcoClocks": []
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_dac0"
+            ]
           },
           "enableClocks": {
             "clk_top_dac0": "0"
@@ -963,8 +972,8 @@
               "from": "clk_top_ana2"
             },
             "clk_top_ana2": {
-              "from": "clk1_pll0",
-              "divFactor": 2
+              "from": "clk2_pll1",
+              "divFactor": 3
             }
           }
         },
@@ -977,7 +986,10 @@
             "funcClocks": [
               "clk_top_dac1"
             ],
-            "pllVcoClocks": []
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_dac1"
+            ]
           },
           "enableClocks": {
             "clk_top_dac1": "0"
@@ -1002,8 +1014,8 @@
               "from": "clk_top_ana3"
             },
             "clk_top_ana3": {
-              "from": "clk1_pll0",
-              "divFactor": 2
+              "from": "clk2_pll1",
+              "divFactor": 3
             }
           },
           "pllClkConfig": {}

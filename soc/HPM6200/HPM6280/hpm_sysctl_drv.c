@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -307,13 +307,6 @@ hpm_stat_t sysctl_config_cpu0_domain_clock(SYSCTL_Type *ptr,
         return status_invalid_argument;
     }
 
-    uint32_t origin_cpu_div = SYSCTL_CLOCK_CPU_DIV_GET(ptr->CLOCK_CPU[0]) + 1U;
-    if (origin_cpu_div == cpu_div) {
-        ptr->CLOCK_CPU[0] = SYSCTL_CLOCK_CPU_MUX_SET(source) | SYSCTL_CLOCK_CPU_DIV_SET(cpu_div) |
-            SYSCTL_CLOCK_CPU_SUB0_DIV_SET(axi_sub_div - 1) | SYSCTL_CLOCK_CPU_SUB1_DIV_SET(ahb_sub_div - 1);
-        while (sysctl_cpu_clock_any_is_busy(ptr)) {
-        }
-    }
     ptr->CLOCK_CPU[0] = SYSCTL_CLOCK_CPU_MUX_SET(source) | SYSCTL_CLOCK_CPU_DIV_SET(cpu_div - 1) |
         SYSCTL_CLOCK_CPU_SUB0_DIV_SET(axi_sub_div - 1) | SYSCTL_CLOCK_CPU_SUB1_DIV_SET(ahb_sub_div - 1);
 

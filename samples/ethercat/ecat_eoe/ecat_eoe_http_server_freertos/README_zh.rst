@@ -114,7 +114,7 @@ EtherCAT EoE是EtherCAT协议的一项扩展功能，允许在EtherCAT主从设�
 5.5 更新EEPROM
 ~~~~~~~~~~~~~~~~
 
-  请选择**eoe**设备描述文件
+  请选择 **eoe** 设备描述文件
 
   .. image:: ../doc/twincat_eeprom_update_eoe.png
      :alt:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -86,7 +86,11 @@ void test_dao(const uint8_t *audio,  uint32_t length, struct audio_info *info, f
 
     /* Initialize I2S with basic configuration */
     i2s_get_default_config(DAO_I2S, &i2s_config);
-    i2s_init(DAO_I2S, &i2s_config);
+    if (i2s_init(DAO_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
 
     /* Configure I2S transfer parameters for DAO */
     i2s_get_default_transfer_config_for_dao(&transfer);
@@ -163,7 +167,11 @@ void test_pdm(uint8_t *audio, uint32_t length, struct audio_info *info)
 
     /* Initialize I2S for PDM operation */
     i2s_get_default_config(PDM_I2S, &i2s_config);
-    i2s_init(PDM_I2S, &i2s_config);
+    if (i2s_init(PDM_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
 
     /* Configure I2S transfer parameters for PDM */
     i2s_get_default_transfer_config_for_pdm(&transfer);

@@ -5,7 +5,8 @@ gantt
     section Mainline Release
     v1.11.0          :a1, 2025-07-01, 2025-12-31
     v1.12.0          :a2, 2026-01-01, 2026-06-30
-    v1.13.0          :a2, 2026-07-01, 2026-12-31
+    v1.13.0          :a3, 2026-07-01, 2026-09-30
+    v1.14.0          :a4, 2026-10-01, 2026-12-31
 ```
 
 [English](README.md)
@@ -42,6 +43,7 @@ HPM SDK项目是基于HPMicro 公司的MCU编写的软件开发包，支持多�
 ## 代码仓库
 - hpm_sdk github: https://github.com/hpmicro/hpm_sdk
 - sdk_env github: https://github.com/hpmicro/sdk_env
+- hpm_apps: https://github.com/hpmicro/hpm_apps
 - sdk extra demo: https://github.com/hpmicro/hpm_sdk_extra
 - openocd (hpmicro patched): https://github.com/hpmicro/riscv-openocd
 - gnu gcc toolchain: https://github.com/hpmicro/riscv-gnu-toolchain

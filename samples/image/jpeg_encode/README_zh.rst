@@ -21,7 +21,7 @@ JPEG编码示例工程展示了如何将摄像头采集数据通过PEG模块或�
 工程配置
 ------------
 
-- 文件`CMakeLists.txt` :
+- 文件 `CMakeLists.txt` :
 
   - `set (JPEG_USE_SDCARD 1)` 将编码后的jpeg文件(.jpg)存到SD卡中; `set (JPEG_USE_UDISK 1)` 将文件存到u盘中。这两个为排他选项
 
@@ -51,6 +51,6 @@ JPEG编码示例工程展示了如何将摄像头采集数据通过PEG模块或�
 
   - 摄像头预览图像会被显示在LCD屏上
 
-  - 按下GPIO按键(请确认具体开发板 {ref}`按键 <board_resource>` 部分描述)将把当前预览帧编码为jpeg文件存储到介质中
+  - 按下GPIO按键(请确认具体开发板 :ref:`按键 <board_resource>` 部分描述)将把当前预览帧编码为jpeg文件存储到介质中
 
   - 同时编码后的图像会被再次解码并显示到LCD屏，直到GPIO按键再次被按下，将切换回预览模式

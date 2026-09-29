@@ -10,6 +10,11 @@ This example project shows USB Audio V2 speaker and microphone device.
 
 - PC sees a CherryUSB speaker and microphone via Device Manager
 
+Project Configuration
+---------------------
+
+- The USB High Speed and Full Speed service intervals are configured by ``EP_INTERVAL_HS`` and ``EP_INTERVAL_FS``. The packets-per-second values and speaker/microphone USB maximum packet sizes are derived automatically from the configured interval.
+
 Board Setting
 -------------
 

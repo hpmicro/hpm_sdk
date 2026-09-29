@@ -39,3 +39,8 @@ if($ENV{CONFIG_ENET_PHY_JL1111})
     message(STATUS "ENet PHY Enabled: JL1111")
 endif()
 
+if($ENV{CONFIG_ENET_PHY_RTL8211F})
+    add_subdirectory(rtl8211f)
+    message(STATUS "ENet PHY Enabled: RTL8211F")
+endif()
+

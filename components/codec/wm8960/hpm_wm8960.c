@@ -446,6 +446,143 @@ hpm_stat_t wm8960_set_volume(codec_control_t *control, wm8960_module_t module, u
     return stat;
 }
 
+hpm_stat_t wm8960_get_volume_db_range(wm8960_module_t module, float *min_db, float *max_db)
+{
+    assert((min_db != NULL) && (max_db != NULL));
+
+    switch (module) {
+    case wm8960_module_adc:
+        /* LADCVOL: 0x01 = -97dB to 0xFF = +30dB, 0.5dB per step */
+        *min_db = -97.0f;
+        *max_db = 30.0f;
+        return status_success;
+    case wm8960_module_dac:
+        /* LDACVOL: 0x01 = -127dB to 0xFF = 0dB, 0.5dB per step */
+        *min_db = -127.0f;
+        *max_db = 0.0f;
+        return status_success;
+    case wm8960_module_headphone:
+    case wm8960_module_speaker:
+        /* HPVOL/SPKVOL: 0x30 = -73dB to 0x7F = +6dB, 1dB per step; values below 0x30 are analogue mute */
+        *min_db = -73.0f;
+        *max_db = 6.0f;
+        return status_success;
+    case wm8960_module_ana_in:
+        /* LINVOL: 0x00 = -17.25dB to 0x3F = +30dB, 0.75dB per step */
+        *min_db = -17.25f;
+        *max_db = 30.0f;
+        return status_success;
+    default:
+        return status_invalid_argument;
+    }
+}
+
+hpm_stat_t wm8960_set_volume_db(codec_control_t *control, wm8960_module_t module, float volume_db)
+{
+    uint32_t volume;
+    float min_db;
+    float max_db;
+
+    if (wm8960_get_volume_db_range(module, &min_db, &max_db) != status_success) {
+        return status_invalid_argument;
+    }
+    if ((volume_db < min_db) || (volume_db > max_db)) {
+        return status_invalid_argument;
+    }
+
+    switch (module) {
+    case wm8960_module_adc:
+        /* LADCVOL: 0x01 = -97dB, 0.5dB per step, 0xC3 = 0dB, 0xFF = +30dB, rounded to nearest step */
+        volume = (uint32_t) (volume_db * 2.0f + 195.0f + 0.5f);
+        break;
+    case wm8960_module_dac:
+        /* LDACVOL: 0x01 = -127dB, 0.5dB per step, 0xFF = 0dB, rounded to nearest step */
+        volume = (uint32_t) (volume_db * 2.0f + 255.0f + 0.5f);
+        break;
+    case wm8960_module_headphone:
+    case wm8960_module_speaker:
+        /* HPVOL/SPKVOL: 0x30 = -73dB, 1dB per step, 0x7F = +6dB, values below 0x30 are analogue mute */
+        volume = (uint32_t) (volume_db + 121.0f + 0.5f);
+        break;
+    case wm8960_module_ana_in:
+        /* LINVOL: 0x00 = -17.25dB, 0.75dB per step, 0x17 = 0dB, 0x3F = +30dB, rounded to nearest step */
+        volume = (uint32_t) ((volume_db * 4.0f + 69.0f) / 3.0f + 0.5f);
+        break;
+    default:
+        return status_invalid_argument;
+    }
+
+    return wm8960_set_volume(control, module, volume);
+}
+
+hpm_stat_t wm8960_clamp_volume_db(wm8960_module_t module, float volume_db, float *clamped_db)
+{
+    hpm_stat_t stat = status_success;
+    float min_db;
+    float max_db;
+
+    assert(clamped_db != NULL);
+
+    HPM_CHECK_RET(wm8960_get_volume_db_range(module, &min_db, &max_db));
+
+    if (volume_db < min_db) {
+        *clamped_db = min_db;
+    } else if (volume_db > max_db) {
+        *clamped_db = max_db;
+    } else {
+        *clamped_db = volume_db;
+    }
+    return stat;
+}
+
+hpm_stat_t wm8960_set_volume_percent(codec_control_t *control, wm8960_module_t module, int8_t volume_percent)
+{
+    uint32_t volume;
+
+    if ((volume_percent < 0) || (volume_percent > 100)) {
+        return status_invalid_argument;
+    }
+
+    switch (module) {
+    case wm8960_module_adc:
+        /* LADCVOL: 0x01 = -97dB (minimum) to 0xFF = +30dB (maximum), 0.5dB per step */
+        volume = 1U + (254U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    case wm8960_module_dac:
+        /* LDACVOL: 0x01 = -127dB (minimum) to 0xFF = 0dB (maximum), 0.5dB per step */
+        volume = 1U + (254U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    case wm8960_module_headphone:
+    case wm8960_module_speaker:
+        /* HPVOL/SPKVOL: 0x30 = -73dB (minimum) to 0x7F = +6dB (maximum), 1dB per step */
+        volume = 48U + (79U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    case wm8960_module_ana_in:
+        /* LINVOL: 0x00 = -17.25dB (minimum) to 0x3F = +30dB (maximum), 0.75dB per step */
+        volume = (63U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    default:
+        return status_invalid_argument;
+    }
+
+    return wm8960_set_volume(control, module, volume);
+}
+
+hpm_stat_t wm8960_mute(codec_control_t *control, wm8960_module_t module)
+{
+    switch (module) {
+    case wm8960_module_adc:
+    case wm8960_module_dac:
+    case wm8960_module_headphone:
+    case wm8960_module_speaker:
+        /* Volume 0 is mute: digital mute for ADC/DAC, analogue mute for headphone/speaker */
+        return wm8960_set_volume(control, module, 0U);
+    default:
+        /* wm8960_module_ana_in is excluded: its volume 0 (-17.25dB) is a valid volume, not mute */
+        return status_invalid_argument;
+    }
+}
+
 static bool wm8960_check_clock_tolerance(uint32_t source, uint32_t target)
 {
     uint32_t delta = (source >= target) ? (source - target) : (target - source);

@@ -1,4 +1,4 @@
-# Copyright (c) 2024 HPMicro
+# Copyright (c) 2024-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -36,4 +36,5 @@ sdk_app_src(${SRC_LIST_TINY_ENGINE})
 
 sdk_compile_definitions(__HPMICRO__)
 sdk_compile_options("-O3")
+sdk_compile_options("-Wno-incompatible-pointer-types")
 generate_ide_projects()

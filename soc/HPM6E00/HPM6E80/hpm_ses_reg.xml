@@ -22048,6 +22048,9 @@
       <BitField name="RX" start="0" size="8"/>
     </Register>
     <Register name="STA" start="+0x10" size="0x4">
+      <BitField name="SFTRST_RX_DONE" start="24" size="1"/>
+      <BitField name="SFTRST_TX_DONE" start="23" size="1"/>
+      <BitField name="SFTRST_CLKGEN_DONE" start="22" size="1"/>
       <BitField name="TX_UD" start="13" size="4"/>
       <BitField name="RX_OV" start="9" size="4"/>
       <BitField name="TX_DN" start="5" size="4"/>
@@ -22158,6 +22161,9 @@
       <BitField name="RX" start="0" size="8"/>
     </Register>
     <Register name="STA" start="+0x10" size="0x4">
+      <BitField name="SFTRST_RX_DONE" start="24" size="1"/>
+      <BitField name="SFTRST_TX_DONE" start="23" size="1"/>
+      <BitField name="SFTRST_CLKGEN_DONE" start="22" size="1"/>
       <BitField name="TX_UD" start="13" size="4"/>
       <BitField name="RX_OV" start="9" size="4"/>
       <BitField name="TX_DN" start="5" size="4"/>
@@ -60689,8 +60695,11 @@
       <BitField name="MAC_SPEED" start="30" size="1"/>
       <BitField name="PHY_OFFSET_VAL" start="24" size="5"/>
       <BitField name="PORT2_RMII_EN" start="23" size="1"/>
+      <BitField name="PORT2_TX_SHIFT" start="16" size="2"/>
       <BitField name="PORT1_RMII_EN" start="15" size="1"/>
+      <BitField name="PORT1_TX_SHIFT" start="8" size="2"/>
       <BitField name="PORT0_RMII_EN" start="7" size="1"/>
+      <BitField name="PORT0_TX_SHIFT" start="0" size="2"/>
     </Register>
     <Register name="PHY_CFG1" start="+0x1f014" size="0x4">
       <BitField name="RMII_REFCLK_SEL" start="8" size="3"/>

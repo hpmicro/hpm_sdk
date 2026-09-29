@@ -733,17 +733,39 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
 {
     uint32_t freq = 0;
 
+    /*
+     * The fixed PLL3 clock used by init_i2s*_clock_22050() cannot generate an exact
+     * 44.1kHz-family clock. BOARD_USE_AUDIO_PLL_FOR_EXACT_44100 changes PLL3 to provide
+     * the exact clock, but it also affects the clocks of all I2S instances.
+     * Select the option according to the application's requirements.
+     */
     if (ptr == HPM_I2S0) {
         if ((sample_rate % 22050) == 0) {
-            init_i2s0_clock_22050_sample_rate(); /* config clock_aud0 for 22050*n sample rate */
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(564480000UL);
+            init_i2s0_clock_8000_sample_rate();
+#else
+            init_i2s0_clock_22050_sample_rate();
+#endif
         } else {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(614400000UL);
+#endif
             init_i2s0_clock_8000_sample_rate(); /* config clock_aud0 for 8000*n sample rate */
         }
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
         if ((sample_rate % 22050) == 0) {
-            init_i2s1_clock_22050_sample_rate(); /* config clock_aud1 for 22050*n sample rate */
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(564480000UL);
+            init_i2s1_clock_8000_sample_rate();
+#else
+            init_i2s1_clock_22050_sample_rate();
+#endif
         } else {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            board_set_audio_pll_clock(614400000UL);
+#endif
             init_i2s1_clock_8000_sample_rate(); /* config clock_aud1 for 8000*n sample rate */
         }
         freq = clock_get_frequency(clock_i2s1);

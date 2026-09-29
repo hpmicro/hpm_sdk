@@ -197,7 +197,6 @@ void board_init_sdram_pins(void)
 
 uint32_t board_init_femc_clock(void)
 {
-    /* Default FEMC clock is 166MHz */
     init_femc_clock();
 
     return clock_get_frequency(clock_femc);
@@ -585,14 +584,14 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
         if ((sample_rate % 22050) == 0) {
             init_i2s0_clock_22050();
         } else {
-            init_i2s0_clock();
+            init_i2s0_clock_default();
         }
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
         if ((sample_rate % 22050) == 0) {
             init_i2s1_clock_22050();
         } else {
-            init_i2s1_clock();
+            init_i2s1_clock_default();
         }
         freq = clock_get_frequency(clock_i2s1);
     } else {
@@ -740,6 +739,7 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 1);
+        board_delay_ms(BOARD_ENET_RGMII_RST_DELAY_MS);
     } else {
         return status_invalid_argument;
     }
@@ -881,8 +881,10 @@ uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
     (void)clk_src_ahb;
 
     if (ptr == HPM_DAC0) {
+        /* Configure the DAC clock from AHB (@200MHz by default) */
         init_dac0_clock();
     } else if (ptr == HPM_DAC1) {
+        /* Configure the DAC clock from AHB (@200MHz by default) */
         init_dac1_clock();
     } else {
         ;

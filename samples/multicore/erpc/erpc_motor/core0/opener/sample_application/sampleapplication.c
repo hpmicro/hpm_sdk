@@ -1,8 +1,10 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2012, Rockwell Automation, Inc.
- * All rights reserved.
+ * Copyright (c) 2024,2026 HPMicro
  *
- ******************************************************************************/
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -31,6 +33,7 @@ EipUint8 g_assembly_data097[10]; /* Config */
 EipUint8 g_assembly_data09A[32]; /* Explicit */
 extern volatile float target_speed;
 extern volatile float current_speed;
+extern osSemaphoreId_t xMotorSemaphore;
 /* local functions */
 
 /* global functions called by the stack */
@@ -118,6 +121,9 @@ EipStatus AfterAssemblyDataReceived(CipInstance *instance)
             target_speed = *((float *)g_assembly_data096);
         else
             target_speed = 0;
+        if (xMotorSemaphore != NULL) {
+            osSemaphoreRelease(xMotorSemaphore);
+        }
         break;
     case DEMO_APP_EXPLICT_ASSEMBLY_NUM:
         /* do something interesting with the new data from

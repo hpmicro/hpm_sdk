@@ -1,0 +1,2 @@
+dependency:
+  - board_audio_in || board_audio_codec

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -218,7 +218,7 @@ int main(void)
     state_transition_latch_config.delay = 0;
     sei_state_transition_latch_config_init(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1, &state_transition_latch_config);
 
-#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+#if !defined(HPM_IP_FEATURE_SEI_ERRATA_E00047) || !HPM_IP_FEATURE_SEI_ERRATA_E00047
     /* latch2 */
     state_transition_config.disable_clk_check = true;
     state_transition_config.disable_txd_check = true;
@@ -267,7 +267,7 @@ int main(void)
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
     /* [8] interrupt config */
-#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+#if !defined(HPM_IP_FEATURE_SEI_ERRATA_E00047) || !HPM_IP_FEATURE_SEI_ERRATA_E00047
     sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_latch2_event | sei_irq_trx_err_event);
     sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_latch2_event | sei_irq_trx_err_event, true);
 #else
@@ -301,7 +301,7 @@ void isr_sei(void)
     uint32_t sample_latch_tm;
     uint32_t update_latch_tm;
     uint32_t delta;
-#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+#if !defined(HPM_IP_FEATURE_SEI_ERRATA_E00047) || !HPM_IP_FEATURE_SEI_ERRATA_E00047
     uint32_t rxd_rise_tm;
     uint32_t baud_div;
     uint32_t rise_pos;
@@ -313,7 +313,7 @@ void isr_sei(void)
     sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, irq_flag);
     irq_flag &= sei_get_irq_enable_status(BOARD_SEI, BOARD_SEI_CTRL);
 
-#if defined(HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE) && HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE
+#if !defined(HPM_IP_FEATURE_SEI_ERRATA_E00047) || !HPM_IP_FEATURE_SEI_ERRATA_E00047
     if ((irq_flag & sei_irq_latch2_event) != 0) {
         sample_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         rxd_rise_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_2);
@@ -357,6 +357,13 @@ void disconnect_tmr_isr(void)
 {
     if (gptmr_check_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL))) {
         gptmr_clear_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL));
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_4);
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
         printf("Encoder Disconnect Error!\n");
     }
 }

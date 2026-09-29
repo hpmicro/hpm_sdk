@@ -16,17 +16,17 @@ DIP Switch
 
 - Bit 1 and 2 control boot mode
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - bit[2:1]
-     - Description
-   * - OFF, OFF
-     - Boot from Quad SPI NOR flash
-   * - OFF, ON
-     - Serial boot
-   * - ON, OFF
-     - ISP
+     * - bit[2:1]
+       - Description
+     * - OFF, OFF
+       - Boot from Quad SPI NOR flash
+     * - OFF, ON
+       - Serial boot
+     * - ON, OFF
+       - ISP
 
 .. _hpm5300evk_buttons:
 
@@ -54,284 +54,284 @@ Pin Description
 
 - LIN Pin (UART_LIN case):
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - LIN
-     - J9[5]
+     * - Function
+       - Position
+     * - LIN
+       - J9[5]
 
 - UART Pin: modbus_rtu sample
 
   The UART2 is used for some functional testing using UART, such as MICROROS_UART, USB_CDC_ACM_UART, etc.
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - UART2.TXD
-     - P1[8]
-     -
-   * - UART2.RXD
-     - P1[10]
-     -
-   * - UART2.DE
-     - P1[38]
-     -
-   * - UART2.break
-     - P1[24]
-     - generate uart break signal
+     * - Function
+       - Position
+       - Remark
+     * - UART2.TXD
+       - P1[8]
+       -
+     * - UART2.RXD
+       - P1[10]
+       -
+     * - UART2.DE
+       - P1[38]
+       -
+     * - UART2.break
+       - P1[24]
+       - generate uart break signal
 
 - SPI Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - SPI1.CSN
-     - P1[24]
-   * - SPI1.SCLK
-     - P1[23]
-   * - SPI1.MISO
-     - P1[21]
-   * - SPI1.MOSI
-     - P1[19]
+     * - Function
+       - Position
+     * - SPI1.CSN
+       - P1[24]
+     * - SPI1.SCLK
+       - P1[23]
+     * - SPI1.MISO
+       - P1[21]
+     * - SPI1.MOSI
+       - P1[19]
 
 - I2C Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - I2C0.SCL
-     - P1[28]
-   * - I2C0.SDA
-     - P1[27]
+     * - Function
+       - Position
+     * - I2C0.SCL
+       - P1[28]
+     * - I2C0.SDA
+       - P1[27]
 
 - ACMP Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - ACMP.CMP1.INN4
-     - J7[4]
-   * - ACMP.COMP_1
-     - J7[2]
+     * - Function
+       - Position
+     * - ACMP.CMP1.INN4
+       - J7[4]
+     * - ACMP.COMP_1
+       - J7[2]
 
 - GPTMR Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - GPTMR0.CAPT_0
-     - P1[3]
-     - SENT decode input pin (idle high and low levels share the same pin)
-   * - GPTMR0.COMP_0
-     - P1[5]
-     - BLCK of i2s emulation
-   * - GPTMR0.COMP_1
-     - P1[8]
-     - LRCK of i2s emulation
-   * - GPTMR0.COMP_3
-     - J7[18]
-     - MCLK of i2s emulation
+     * - Function
+       - Position
+       - Remark
+     * - GPTMR0.CAPT_0
+       - P1[3]
+       - SENT decode input pin (idle high and low levels share the same pin)
+     * - GPTMR0.COMP_0
+       - P1[5]
+       - BLCK of i2s emulation
+     * - GPTMR0.COMP_1
+       - P1[8]
+       - LRCK of i2s emulation
+     * - GPTMR0.COMP_3
+       - J7[18]
+       - MCLK of i2s emulation
 
 - ADC16 Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - ADC0.INA13
-     - P1[32]
-     - ADC16
+     * - Function
+       - Position
+       - Remark
+     * - ADC0.INA13
+       - P1[32]
+       - ADC16
 
 - DAC Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - DAC0.OUT
-     - J7[20]
-   * - DAC1.OUT
-     - J7[2]
+     * - Function
+       - Position
+     * - DAC0.OUT
+       - J7[20]
+     * - DAC1.OUT
+       - J7[2]
 
 - PWM Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PWM0.P2
-     - J7[11]
-   * - PWM0.P3
-     - J7[12]
+     * - Function
+       - Position
+     * - PWM0.P2
+       - J7[11]
+     * - PWM0.P3
+       - J7[12]
 
 - CAN Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - CAN_L
-     - J9[1]
-   * - CAN_H
-     - J9[3]
+     * - Function
+       - Position
+     * - CAN_L
+       - J9[1]
+     * - CAN_H
+       - J9[3]
 
 - PLB Pulse Output Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PLB.PULSE_OUT
-     - P1[24]
+     * - Function
+       - Position
+     * - PLB.PULSE_OUT
+       - P1[24]
 
 - PLB Filter Output Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PLB.FILTER_IN
-     - J7[9]
-   * - PLB.FILTER_OUT
-     - J7[11]
+     * - Function
+       - Position
+     * - PLB.FILTER_IN
+       - J7[9]
+     * - PLB.FILTER_OUT
+       - J7[11]
 
 - OPAMP Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - OPAMP.OUT
-     - RF1
-   * - OPAMP.IN
-     - P1[31]
+     * - Function
+       - Position
+     * - OPAMP.OUT
+       - RF1
+     * - OPAMP.IN
+       - P1[31]
 
 - RDC Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - evk Position
-     - RDC Position
-   * - RDC.PWM
-     - J7[9]
-     - J2[7]
-   * - RDC.ADC0
-     - J7[13]
-     - J2[13]
-   * - RDC.ADC1
-     - J7[14]
-     - J2[14]
-   * - GND
-     - J7[32]
-     - J2[17]
+     * - Function
+       - evk Position
+       - RDC Position
+     * - RDC.PWM
+       - J7[9]
+       - J2[7]
+     * - RDC.ADC0
+       - J7[13]
+       - J2[13]
+     * - RDC.ADC1
+       - J7[14]
+       - J2[14]
+     * - GND
+       - J7[32]
+       - J2[17]
 
 - QEO ABZ Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - QEO0.A
-     - J7[26]
-   * - QEO0.B
-     - J7[24]
-   * - QEO0.Z
-     - J7[22]
+     * - Function
+       - Position
+     * - QEO0.A
+       - J7[26]
+     * - QEO0.B
+       - J7[24]
+     * - QEO0.Z
+       - J7[22]
 
 - PWM pin with QEO control:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - EVK Position
-     - HPMicro's stepper drive board Position
-   * - PWM0.P2
-     - J7[11]
-     - PWM_A1(J8[9])
-   * - PWM0.P3
-     - J7[12]
-     - PWM_A2(J8[10])
-   * - PWM0.P4
-     - J7[9]
-     - PWM_B1(J8[11])
-   * - PWM0.P5
-     - J7[10]
-     - PWM_B2(J8[12])
+     * - Function
+       - EVK Position
+       - HPMicro's stepper drive board Position
+     * - PWM0.P2
+       - J7[11]
+       - PWM_A1(J8[9])
+     * - PWM0.P3
+       - J7[12]
+       - PWM_A2(J8[10])
+     * - PWM0.P4
+       - J7[9]
+       - PWM_B1(J8[11])
+     * - PWM0.P5
+       - J7[10]
+       - PWM_B2(J8[12])
 
 - SEI Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - SEI1.CLKI_N
-     - J7[31]
-   * - SEI1.CLKI_P
-     - J7[29]
-   * - SEI1.CLKO_P
-     - J7[27]
-   * - SEI1.CLKO_N
-     - J7[25]
-   * - SEI1.DATA_P
-     - J7[23]
-   * - SEI1.DATA_N
-     - J7[21]
+     * - Function
+       - Position
+     * - SEI1.CLKI_N
+       - J7[31]
+     * - SEI1.CLKI_P
+       - J7[29]
+     * - SEI1.CLKO_P
+       - J7[27]
+     * - SEI1.CLKO_N
+       - J7[25]
+     * - SEI1.DATA_P
+       - J7[23]
+     * - SEI1.DATA_N
+       - J7[21]
 
 - SEI CLK Section:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - SEI1.CLK Section
-     - J5
-     - Master side, CLKO active.
+     * - Function
+       - Position
+       - Note
+     * - SEI1.CLK Section
+       - J5
+       - Master side, CLKO active.
 
-       Slave side, CLKI active
+         Slave side, CLKI active
 
 - QEIV2 Sin/Cos Pin:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - ADC0.INA4
-     - J7[15]
-     - ADC_IW (Cos)
-   * - ADC1.INA5
-     - J7[13]
-     - ADC_IU (Sin)
+     * - Function
+       - Position
+       - Remark
+     * - ADC0.INA4
+       - J7[15]
+       - ADC_IW (Cos)
+     * - ADC1.INA5
+       - J7[13]
+       - ADC_IU (Sin)
 
 - Motor Pin:
 
@@ -339,15 +339,15 @@ Pin Description
 
 - CS Pin of i2s emulation:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - PA11
-     - P1[16]
-     - the pin that controls SPI slave CS
+     * - Function
+       - Position
+       - Remark
+     * - PA11
+       - P1[16]
+       - the pin that controls SPI slave CS
 
 - CLOCK REF Pin
 
@@ -361,31 +361,31 @@ Pin Description
 
 - ESP-HOSTED Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - PB06
-     - P1[3]
-     - RESET Pin
-   * - PB12
-     - P1[37]
-     - HANDSHAKE Pin
-   * - PB13
-     - P1[35]
-     - DATA_READY Pin
+     * - Function
+       - Position
+       - Note
+     * - PB06
+       - P1[3]
+       - RESET Pin
+     * - PB12
+       - P1[37]
+       - HANDSHAKE Pin
+     * - PB13
+       - P1[35]
+       - DATA_READY Pin
 
 - BROWNOUT Interrupt Indicator Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PB11
-     - P1[40]
+     * - Function
+       - Position
+     * - PB11
+       - P1[40]
 
 
 .. _hpm5300evk_known_issues:

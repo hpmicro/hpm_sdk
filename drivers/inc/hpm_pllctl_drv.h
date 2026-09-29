@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021,2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -19,7 +19,7 @@
  */
 
 #define PLLCTL_PLL_VCO_FREQ_MIN (375000000U)
-#define PLLCTL_PLL_VCO_FREQ_MAX (2200000000U)
+#define PLLCTL_PLL_VCO_FREQ_MAX (2000000000U)
 
 /*
  * @brief PLL parts with lock
@@ -123,26 +123,6 @@ static inline hpm_stat_t pllctl_pll_poweron(PLLCTL_Type *ptr, uint8_t pll)
      * put back to hardware mode
      */
     ptr->PLL[pll].CFG1 |= PLLCTL_PLL_CFG1_PLLCTRL_HW_EN_MASK;
-    return status_success;
-}
-
-/**
- * @brief Sets the post-divider (postdiv1) for a specified PLL
- * @param [in] ptr Base address of the PLLCTL peripheral
- * @param [in] pll Index of the PLL to configure
- * @param [in] div Post-divider value (1-7)
- * @return status_success if post-divider is set successfully
- * @note The post-divider affects the PLL's output frequency
- */
-static inline hpm_stat_t pllctl_set_postdiv1(PLLCTL_Type *ptr, uint8_t pll, uint8_t div)
-{
-    if ((pll > (PLLCTL_SOC_PLL_MAX_COUNT - 1))
-            || (!div)
-            || ((div) > (PLLCTL_PLL_CFG0_POSTDIV1_MASK >> PLLCTL_PLL_CFG0_POSTDIV1_SHIFT))) {
-        return status_invalid_argument;
-    }
-
-    ptr->PLL[pll].CFG0 = ((ptr->PLL[pll].CFG0 & ~(PLLCTL_PLL_CFG0_POSTDIV1_MASK))) | PLLCTL_PLL_CFG0_POSTDIV1_SET(div);
     return status_success;
 }
 
@@ -352,12 +332,23 @@ hpm_stat_t pllctl_set_pll_work_mode(PLLCTL_Type *ptr, uint8_t pll, bool int_mode
 hpm_stat_t pllctl_set_refdiv(PLLCTL_Type *ptr, uint8_t pll, uint8_t div);
 
 /**
+ * @brief Sets the post-divider (postdiv1) for a specified PLL
+ * @param [in] ptr Base address of the PLLCTL peripheral
+ * @param [in] pll Index of the PLL to configure
+ * @param [in] div Post-divider value (1-7)
+ * @return status_success if post-divider is set successfully
+ * @note The PLL is power-cycled when the post-divider is changed.
+ */
+hpm_stat_t pllctl_set_postdiv1(PLLCTL_Type *ptr, uint8_t pll, uint8_t div);
+
+/**
  * @brief Initializes a PLL in integer mode for a specific frequency
  * @param [in] ptr Base address of the PLLCTL peripheral
  * @param [in] pll Index of the PLL to configure
  * @param [in] freq_in_hz Desired output frequency in Hertz
  * @return status_success if PLL is initialized successfully
- * @note Output frequency must be between 375MHz and 2.2GHz
+ * @note Output frequency must be between 375MHz and 2GHz. The function searches
+ *       legal REFDIV, POSTDIV1, and FBDIV_INT values and selects the closest result.
  */
 hpm_stat_t pllctl_init_int_pll_with_freq(PLLCTL_Type *ptr, uint8_t pll, uint32_t freq_in_hz);
 
@@ -367,7 +358,8 @@ hpm_stat_t pllctl_init_int_pll_with_freq(PLLCTL_Type *ptr, uint8_t pll, uint32_t
  * @param [in] pll Index of the PLL to configure
  * @param [in] freq_in_hz Desired output frequency in Hertz
  * @return status_success if PLL is initialized successfully
- * @note Output frequency must be between 375MHz and 2.2GHz
+ * @note Output frequency must be between 375MHz and 2GHz. The function searches
+ *       legal REFDIV, POSTDIV1, FBDIV_FRAC, and FRAC values and selects the closest result.
  */
 hpm_stat_t pllctl_init_frac_pll_with_freq(PLLCTL_Type *ptr, uint8_t pll, uint32_t freq_in_hz);
 

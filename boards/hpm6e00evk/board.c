@@ -697,22 +697,18 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
     uint32_t freq = 0;
 
     if (ptr == HPM_I2S0) {
-        init_i2s0_clock_group();
         if ((sample_rate % 22050) == 0) {
-            init_i2s0_clock_source_22050(); /* config clock_aud1 for 22050*n sample rate */
+            init_i2s0_clock_22050(); /* config clock for 22050*n sample rate */
         } else {
-            init_i2s0_clock_source_default(); /* default 24576000Hz */
+            init_i2s0_clock_default(); /* default 24576000Hz */
         }
-        init_i2s0_clock_i2s_source();  /* clk_i2s_src_audn is equal to clk_i2s_src_aud0 */
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
-        init_i2s1_clock_group();
         if ((sample_rate % 22050) == 0) {
-            init_i2s1_clock_source_22050(); /* config clock_aud1 for 22050*n sample rate */
+            init_i2s1_clock_22050(); /* config clock for 22050*n sample rate */
         } else {
-            init_i2s1_clock_source_default(); /* default 24576000Hz */
+            init_i2s1_clock_default(); /* default 24576000Hz */
         }
-        init_i2s1_clock_i2s_source();  /* clk_i2s_src_audn is equal to clk_i2s_src_aud1 */
         freq = clock_get_frequency(clock_i2s1);
     } else {
         ;
@@ -880,6 +876,7 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 1);
+        board_delay_ms(BOARD_ENET_RGMII_RST_DELAY_MS);
     } else {
         return status_invalid_argument;
     }

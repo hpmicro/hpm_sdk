@@ -94,7 +94,6 @@ void init_adc0_bus_clock(void)
 {
     /* Generate clk_top_adc0 code */
     clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 2);
 
     clock_add_to_group(clock_adc0, 0);
 }

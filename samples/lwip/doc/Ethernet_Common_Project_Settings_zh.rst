@@ -3,7 +3,7 @@
 **以太网端口配置**
 ======================
 
-- 对于仅支持单网口的sample：开发板上有多网口，在`CMakeLists.txt`中，支持如下配置：
+- 对于仅支持单网口的sample：开发板上有多网口，在 `CMakeLists.txt` 中，支持如下配置：
 
   - set(APP_USE_ENET_PORT_COUNT 1): 使能开发板上ENet0对应的RGMII或RMII端口 <sup> **1/2** </sup>
 
@@ -23,11 +23,11 @@
 
   - set(APP_USE_ENET_PORT_COUNT 1)且set(APP_USE_ENET_PHY_JL1111 1): 使能开发板上MII端口 <sup> **7** </sup>
 
-- 对于仅支持单网口的sample：开发板上只有一个网口，在`CMakeLists.txt`中，仅支持如下配置：
+- 对于仅支持单网口的sample：开发板上只有一个网口，在 `CMakeLists.txt` 中，仅支持如下配置：
 
   - set(APP_USE_ENET_PORT_COUNT 1): 使能开发板上RGMII或RMII端口 <sup> **1/2** </sup>
 
-- 对于支持双网口的sample：开发板上必需有双网口，在`CMakeLists.txt`中，仅支持如下配置：
+- 对于支持双网口的sample：开发板上必需有双网口，在 `CMakeLists.txt` 中，仅支持如下配置：
 
   -  set(APP_USE_ENET_PORT_COUNT 2): 使能开发板上双以太网端口 <sup> **1/2** </sup>
 

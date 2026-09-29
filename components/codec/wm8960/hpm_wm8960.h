@@ -192,6 +192,105 @@ hpm_stat_t wm8960_invert_lrclk_polarity(codec_control_t *control, bool invert);
 hpm_stat_t wm8960_set_volume(codec_control_t *control, wm8960_module_t module, uint32_t volume);
 
 /**
+ * @brief Get the valid volume range in dB for the specified module.
+ *
+ * This function returns the minimum and maximum volume in dB that the specified module accepts.
+ *
+ * Module:wm8960_module_adc, volume range: -97dB to +30dB (0.5dB per step)
+ * Module:wm8960_module_dac, volume range: -127dB to 0dB (0.5dB per step)
+ * Module:wm8960_module_headphone, volume range: -73dB to +6dB (1dB per step)
+ * Module:wm8960_module_speaker, volume range: -73dB to +6dB (1dB per step)
+ * Module:wm8960_module_ana_in, volume range: -17.25dB to +30dB (0.75dB per step)
+ *
+ * @param module Module to get the volume range for, it can be ADC, DAC, Headphone, Speaker and so on.
+ * @param min_db Pointer to store the minimum volume in dB.
+ * @param max_db Pointer to store the maximum volume in dB.
+ * @return status_success if successful, status_invalid_argument if module is invalid.
+ */
+hpm_stat_t wm8960_get_volume_db_range(wm8960_module_t module, float *min_db, float *max_db);
+
+/**
+ * @brief Set the volume of different modules in WM8960, in decibels.
+ *
+ * This function converts the target volume in dB to the register value according
+ * to the datasheet, then sets the volume for the specified module.
+ * The function assumes that left channel and right channel have the same volume.
+ *
+ * Module:wm8960_module_adc, volume range: -97dB to +30dB (0.5dB per step)
+ * Module:wm8960_module_dac, volume range: -127dB to 0dB (0.5dB per step)
+ * Module:wm8960_module_headphone, volume range: -73dB to +6dB (1dB per step)
+ * Module:wm8960_module_speaker, volume range: -73dB to +6dB (1dB per step)
+ * Module:wm8960_module_ana_in, volume range: -17.25dB to +30dB (0.75dB per step)
+ *
+ * @note The input value is rounded to the nearest achievable step (0.5dB for
+ * ADC/DAC, 1dB for Headphone/Speaker, 0.75dB for Analog in). For
+ * wm8960_module_headphone and wm8960_module_speaker, register values below
+ * -73dB are analogue mute, so -73dB is the minimum volume.
+ *
+ * @param control WM8960 control structure.
+ * @param module Module to set volume, it can be ADC, DAC, Headphone, Speaker and so on.
+ * @param volume_db Target volume in dB.
+ * @return status_success if successful, status_invalid_argument if module is invalid or volume_db is out of range.
+ */
+hpm_stat_t wm8960_set_volume_db(codec_control_t *control, wm8960_module_t module, float volume_db);
+
+/**
+ * @brief Clamp the volume in dB to the valid range of the specified module.
+ *
+ * This function limits the input volume in dB to the valid range of the specified
+ * module and stores the clamped value via clamped_db. A typical usage is to clamp
+ * a desired volume before passing it to wm8960_set_volume_db().
+ *
+ * @param module Module to clamp the volume for, it can be ADC, DAC, Headphone, Speaker and so on.
+ * @param volume_db Desired volume in dB.
+ * @param clamped_db Pointer to store the volume in dB clamped to the valid range of the module.
+ * @return status_success if successful, status_invalid_argument if module is invalid.
+ */
+hpm_stat_t wm8960_clamp_volume_db(wm8960_module_t module, float volume_db, float *clamped_db);
+
+/**
+ * @brief Set the volume of different modules in WM8960, in percent of the full volume range.
+ *
+ * This function converts the volume percent to the register value and sets the
+ * volume for the specified module. The percent maps linearly onto the module's
+ * full dB range: 0 percent is the minimum volume (not mute) and 100 percent is
+ * the maximum volume of the module.
+ * The function assumes that left channel and right channel have the same volume.
+ *
+ * Module:wm8960_module_adc, volume range: -97dB to +30dB (0.5dB per step)
+ * Module:wm8960_module_dac, volume range: -127dB to 0dB (0.5dB per step)
+ * Module:wm8960_module_headphone, volume range: -73dB to +6dB (1dB per step)
+ * Module:wm8960_module_speaker, volume range: -73dB to +6dB (1dB per step)
+ * Module:wm8960_module_ana_in, volume range: -17.25dB to +30dB (0.75dB per step)
+ *
+ * @param control WM8960 control structure.
+ * @param module Module to set volume, it can be ADC, DAC, Headphone, Speaker and so on.
+ * @param volume_percent Volume in percent of the full volume range, valid range: 0 to 100.
+ * @return status_success if successful, status_invalid_argument if module is invalid or volume_percent is out of range.
+ */
+hpm_stat_t wm8960_set_volume_percent(codec_control_t *control, wm8960_module_t module, int8_t volume_percent);
+
+/**
+ * @brief Mute the specified module.
+ *
+ * This function mutes both left and right channels of the module by writing 0 to
+ * its volume fields: for ADC and DAC, volume 0 is digital mute; for headphone
+ * and speaker, volume 0 falls in the analogue mute range (0x00 to 0x2F).
+ *
+ * This function only performs mute. To unmute, call one of the volume functions
+ * (wm8960_set_volume(), wm8960_set_volume_db() or wm8960_set_volume_percent())
+ * to set a non-zero volume.
+ *
+ * Note: wm8960_module_ana_in is not supported, because its volume 0 (-17.25dB)
+ * is a valid volume rather than mute.
+ *
+ * @param control WM8960 control structure.
+ * @param module Module to mute, it can be ADC, DAC, Headphone or Speaker.
+ * @return status_success if successful, status_invalid_argument if module is invalid or unsupported.
+ */
+hpm_stat_t wm8960_mute(codec_control_t *control, wm8960_module_t module);
+
+/**
  * @brief Enable/disable expected module.
  *
  * @param control WM8960 control structure.

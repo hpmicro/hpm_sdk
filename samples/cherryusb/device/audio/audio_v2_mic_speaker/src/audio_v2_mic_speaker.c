@@ -27,6 +27,12 @@
 #define EP_INTERVAL_HS 0x02
 #define EP_INTERVAL_FS 0x01
 
+/* bInterval -> packets/sec: HS 8000 / 2^(bInterval-1), FS 1000 / 2^(bInterval-1) */
+#define MIC_SPEAKER_HS_MICROFRAMES_PER_PACKET (1U << (EP_INTERVAL_HS - 1U))
+#define MIC_SPEAKER_HS_PACKETS_PER_SEC        (8000U / MIC_SPEAKER_HS_MICROFRAMES_PER_PACKET)
+#define MIC_SPEAKER_FS_FRAMES_PER_PACKET      (1U << (EP_INTERVAL_FS - 1U))
+#define MIC_SPEAKER_FS_PACKETS_PER_SEC        (1000U / MIC_SPEAKER_FS_FRAMES_PER_PACKET)
+
 #define AUDIO_VERSION 0x0200
 
 #define AUDIO_OUT_EP 0x02
@@ -102,11 +108,28 @@
 #define OUTPUT_CH_ENABLE 0x000000ff
 #endif
 
-/* AudioFreq * DataSize * NumChannels */
-#define AUDIO_OUT_PACKET_HS ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ_HS * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 4000) + (OUT_CHANNEL_NUM * SPEAKER_SLOT_BYTE_SIZE))
-#define AUDIO_OUT_PACKET_FS ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ_FS * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000) + (OUT_CHANNEL_NUM * SPEAKER_SLOT_BYTE_SIZE))
-#define AUDIO_IN_PACKET_HS  ((uint32_t)((MIC_SAMPLE_FREQ * MIC_SLOT_BYTE_SIZE * IN_CHANNEL_NUM) / 4000) + (IN_CHANNEL_NUM * MIC_SLOT_BYTE_SIZE))
-#define AUDIO_IN_PACKET_FS  ((uint32_t)((MIC_SAMPLE_FREQ * MIC_SLOT_BYTE_SIZE * IN_CHANNEL_NUM) / 1000) + (IN_CHANNEL_NUM * MIC_SLOT_BYTE_SIZE))
+/* Buffer geometry */
+#define AUDIO_IN_FRAME_SIZE   (IN_CHANNEL_NUM * MIC_SLOT_BYTE_SIZE)
+#define AUDIO_OUT_FRAME_SIZE  (OUT_CHANNEL_NUM * SPEAKER_SLOT_BYTE_SIZE)
+
+/* I2S DMA slot sizes: 1 audio frame less than descriptor packet */
+#define AUDIO_IN_SLOT_HS      ((uint32_t)((MIC_SAMPLE_FREQ * AUDIO_IN_FRAME_SIZE) / MIC_SPEAKER_HS_PACKETS_PER_SEC))
+#define AUDIO_IN_SLOT_FS      ((uint32_t)((MIC_SAMPLE_FREQ * AUDIO_IN_FRAME_SIZE) / MIC_SPEAKER_FS_PACKETS_PER_SEC))
+#define AUDIO_IN_SLOT_MAX     ((AUDIO_IN_SLOT_HS) > (AUDIO_IN_SLOT_FS) ? (AUDIO_IN_SLOT_HS) : (AUDIO_IN_SLOT_FS))
+
+#define AUDIO_OUT_SLOT_HS     ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ_HS * AUDIO_OUT_FRAME_SIZE) / MIC_SPEAKER_HS_PACKETS_PER_SEC))
+#define AUDIO_OUT_SLOT_FS     ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ_FS * AUDIO_OUT_FRAME_SIZE) / MIC_SPEAKER_FS_PACKETS_PER_SEC))
+#define AUDIO_OUT_SLOT_MAX    ((AUDIO_OUT_SLOT_HS) > (AUDIO_OUT_SLOT_FS) ? (AUDIO_OUT_SLOT_HS) : (AUDIO_OUT_SLOT_FS))
+
+/* USB descriptor packet sizes: slot + 1 extra audio frame */
+#define AUDIO_IN_PACKET_HS    (AUDIO_IN_SLOT_HS + AUDIO_IN_FRAME_SIZE)
+#define AUDIO_IN_PACKET_FS    (AUDIO_IN_SLOT_FS + AUDIO_IN_FRAME_SIZE)
+#define AUDIO_OUT_PACKET_HS   (AUDIO_OUT_SLOT_HS + AUDIO_OUT_FRAME_SIZE)
+#define AUDIO_OUT_PACKET_FS   (AUDIO_OUT_SLOT_FS + AUDIO_OUT_FRAME_SIZE)
+
+/* Speaker OUT buffer: 2D slot-based, each slot sized to max USB packet */
+#define AUDIO_OUT_PACKET_MAX  ((AUDIO_OUT_PACKET_HS) > (AUDIO_OUT_PACKET_FS) ? (AUDIO_OUT_PACKET_HS) : (AUDIO_OUT_PACKET_FS))
+#define AUDIO_IN_PACKET_MAX   ((AUDIO_IN_PACKET_HS) > (AUDIO_IN_PACKET_FS) ? (AUDIO_IN_PACKET_HS) : (AUDIO_IN_PACKET_FS))
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (9 +                                                     \
                                    AUDIO_V2_AC_DESCRIPTOR_LEN +                            \
@@ -219,12 +242,8 @@ static const uint8_t *device_descriptor_callback(uint8_t speed)
 static const uint8_t *config_descriptor_callback(uint8_t speed)
 {
     if (speed == USB_SPEED_HIGH) {
-        s_audio_out_packet_size = AUDIO_OUT_PACKET_HS;
-        s_audio_in_packet_size = AUDIO_IN_PACKET_HS - (IN_CHANNEL_NUM * MIC_SLOT_BYTE_SIZE);
         return config_descriptor_hs;
     } else if (speed == USB_SPEED_FULL) {
-        s_audio_out_packet_size = AUDIO_OUT_PACKET_FS;
-        s_audio_in_packet_size = AUDIO_IN_PACKET_FS - (IN_CHANNEL_NUM * MIC_SLOT_BYTE_SIZE);
         return config_descriptor_fs;
     } else {
         return NULL;
@@ -324,30 +343,38 @@ static const uint8_t mic_default_sampling_freq_table[] = {
 
 /* Static Variables */
 #define AUDIO_BUFFER_COUNT 32
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_out_buffer[AUDIO_BUFFER_COUNT][AUDIO_OUT_PACKET_FS];    /* buffer size: max(AUDIO_OUT_PACKET_HS, AUDIO_OUT_PACKET_FS) */
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_mic_in_buffer[AUDIO_BUFFER_COUNT][AUDIO_IN_PACKET_FS];
-static uint32_t s_speaker_out_buffer_size[AUDIO_BUFFER_COUNT];
+#define AUDIO_PRIME_PACKET_COUNT (AUDIO_BUFFER_COUNT / 2U)
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_out_buffer[AUDIO_BUFFER_COUNT][AUDIO_OUT_PACKET_MAX];
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_mic_in_buffer[AUDIO_BUFFER_COUNT][AUDIO_IN_PACKET_MAX];
+static volatile uint32_t s_speaker_out_buffer_size[AUDIO_BUFFER_COUNT];
 static volatile uint32_t s_speaker_i2s_mclk_hz;
 static volatile bool s_speaker_rx_flag;
 static volatile uint8_t s_speaker_out_buffer_front;
 static volatile uint8_t s_speaker_out_buffer_rear;
 static volatile bool s_speaker_dma_transfer_req;
-static volatile bool s_speaker_dma_transfer_done;
+static volatile bool s_speaker_dma_priming;
 static volatile uint32_t s_speaker_sample_rate;
-static volatile int32_t s_speaker_volume_percent;
+static volatile int32_t s_speaker_volume_db;
 static volatile bool s_speaker_mute;
 static volatile bool s_mic_tx_flag;
-static volatile bool s_mic_ep_tx_busy_flag;
+static volatile bool s_mic_usb_transfer_req;
+/* Hold USB IN until the capture ring has enough startup data to absorb
+ * initial USB/I2S timing jitter. This is only used when opening the stream. */
+static volatile bool s_mic_usb_priming;
 static volatile uint8_t s_mic_in_buffer_front;
 static volatile uint8_t s_mic_in_buffer_rear;
-static volatile bool s_mic_dma_transfer_done;
 static volatile uint32_t s_mic_sample_rate;
-static volatile int32_t s_mic_volume_percent;
+static volatile int32_t s_mic_volume_db;
 static volatile bool s_mic_mute;
+static volatile bool s_speaker_dma_error;
+static volatile bool s_mic_dma_error;
+static volatile bool s_mic_usb_error;
 
 static struct usbd_interface intf0;
 static struct usbd_interface intf1;
 static struct usbd_interface intf2;
+
+static uint8_t s_busid;
 
 static void usbd_audio_iso_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes);
 static struct usbd_endpoint audio_in_ep = {
@@ -384,11 +411,15 @@ static struct audio_entity_info audio_entity_table[] = {
 };
 
 /* Static Functions Declaration */
-static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num);
-static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size);
-static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size);
+static hpm_stat_t speaker_config_i2s_playback(uint32_t sample_rate);
+static hpm_stat_t mic_config_i2s_recording(uint32_t sample_rate);
+static hpm_stat_t speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size);
+static hpm_stat_t mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size);
 static bool speaker_out_buff_is_empty(void);
+static uint32_t speaker_out_buff_get_used(void);
 static bool mic_in_buff_is_empty(void);
+static uint32_t mic_in_buff_get_used(void);
+static uint8_t audio_ring_next(uint8_t index);
 
 /* Extern Functions Definition */
 static void usbd_event_handler(uint8_t busid, uint8_t event)
@@ -420,6 +451,8 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
 
 void audio_v2_init(uint8_t busid, uint32_t reg_base)
 {
+    s_busid = busid;
+
     usbd_desc_register(busid, &audio_v2_descriptor);
     usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf0, AUDIO_VERSION, audio_entity_table, 4));
     usbd_add_interface(busid, usbd_audio_init_intf(busid, &intf1, AUDIO_VERSION, audio_entity_table, 4));
@@ -430,12 +463,19 @@ void audio_v2_init(uint8_t busid, uint32_t reg_base)
     usbd_initialize(busid, reg_base, usbd_event_handler);
 }
 
-void speaker_init_i2s_dao_codec(void)
+void speaker_init_i2s_dao(void)
 {
+    i2s_config_t i2s_config;
     dao_config_t dao_config;
 
     s_speaker_sample_rate = 16000;
-    (void)speaker_init_i2s_playback(s_speaker_sample_rate, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
+
+    i2s_get_default_config(SPEAKER_I2S, &i2s_config);
+    if (i2s_init(SPEAKER_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
 
     dao_get_default_config(HPM_DAO, &dao_config);
     dao_config.enable_mono_output = true;
@@ -445,28 +485,16 @@ void speaker_init_i2s_dao_codec(void)
 void mic_init_i2s_pdm(void)
 {
     i2s_config_t i2s_config;
-    i2s_transfer_config_t transfer;
     pdm_config_t pdm_config;
-    uint32_t i2s_mclk_hz;
 
     i2s_get_default_config(MIC_I2S, &i2s_config);
-    i2s_init(MIC_I2S, &i2s_config);
-
-    i2s_get_default_transfer_config_for_pdm(&transfer);
-    transfer.sample_rate = MIC_SAMPLE_FREQ;
-    transfer.channel_slot_mask = BOARD_PDM_DUAL_CHANNEL_MASK; /* 2 channels */
-
-    s_mic_sample_rate = transfer.sample_rate;
-
-    i2s_mclk_hz = clock_get_frequency(MIC_I2S_CLK_NAME);
-
-    if (status_success != i2s_config_rx(MIC_I2S, i2s_mclk_hz, &transfer)) {
-        printf("MIC I2S1 config failed\n");
+    if (i2s_init(MIC_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
         while (1) {
-            ;
         }
     }
-    i2s_start(MIC_I2S);
+
+    s_mic_sample_rate = MIC_SAMPLE_FREQ;
 
     pdm_get_default_config(HPM_PDM, &pdm_config);
     pdm_init(HPM_PDM, &pdm_config);
@@ -491,94 +519,138 @@ void isr_dma(void)
     speaker_status = dma_check_transfer_status(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL);
     mic_status = dma_check_transfer_status(BOARD_APP_DMA1, MIC_DMA_CHANNEL);
 
-    if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
-        s_speaker_dma_transfer_done = true;
+    if ((speaker_status & DMA_CHANNEL_STATUS_TC) != 0U) {
+        /* A TC is actionable only while a DMA transfer was active. */
+        if (s_speaker_rx_flag) {
+            if (!speaker_out_buff_is_empty()) {
+                uint8_t front = audio_ring_next(s_speaker_out_buffer_front);
+                s_speaker_out_buffer_front = front;
+                if (speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
+                                                   s_speaker_out_buffer_size[front]) != status_success) {
+                    s_speaker_dma_transfer_req = true;
+                    s_speaker_dma_error = true;
+                }
+            } else {
+                /* Let the next USB OUT callback kick DMA after new data arrives. */
+                s_speaker_dma_transfer_req = true;
+            }
+        }
     }
 
-    if (0 != (mic_status & DMA_CHANNEL_STATUS_TC)) {
-        s_mic_dma_transfer_done = true;
+    if (s_mic_tx_flag && ((mic_status & DMA_CHANNEL_STATUS_TC) != 0U)) {
+        uint8_t rear = s_mic_in_buffer_rear;
+        uint8_t next_rear = audio_ring_next(rear);
+
+        /* rear is the DMA write slot. Publish it only when the ready ring has
+         * room; otherwise discard this newest capture and reuse the slot. */
+        if (next_rear != s_mic_in_buffer_front) {
+            rear = next_rear;
+            s_mic_in_buffer_rear = rear;
+        }
+
+        if (mic_i2s_dma_start_transfer((uint32_t)&s_mic_in_buffer[rear][0],
+                                       s_audio_in_packet_size) != status_success) {
+            s_mic_dma_error = true;
+        }
+
+        /* During startup, wait for a half-ring; after startup, send whenever
+         * USB is waiting and at least one capture packet is ready. */
+        if ((!s_mic_usb_priming || (mic_in_buff_get_used() >= AUDIO_PRIME_PACKET_COUNT))
+            && s_mic_usb_transfer_req && !mic_in_buff_is_empty()) {
+            s_mic_usb_priming = false;
+            s_mic_usb_transfer_req = false;
+            if (usbd_ep_start_write(s_busid, AUDIO_IN_EP,
+                                    &s_mic_in_buffer[s_mic_in_buffer_front][0],
+                                    s_audio_in_packet_size) != 0) {
+                s_mic_usb_transfer_req = true;
+                s_mic_usb_error = true;
+            }
+        }
     }
 }
 
 void audio_v2_task(uint8_t busid)
 {
-    uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
-    if (s_speaker_rx_flag) {
-        if (!speaker_out_buff_is_empty()) {
-            if (s_speaker_dma_transfer_req) {
-                s_speaker_dma_transfer_req = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
-                                               s_speaker_out_buffer_size[front]);
+    (void)busid;
 
-                front++;
-                if (front >= AUDIO_BUFFER_COUNT) {
-                    front = 0;
-                }
-            } else if (s_speaker_dma_transfer_done) {
-                s_speaker_dma_transfer_done = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
-                                               s_speaker_out_buffer_size[front]);
-                front++;
-                if (front >= AUDIO_BUFFER_COUNT) {
-                    front = 0;
-                }
-            } else {
-                ;    /* Do Nothing */
-            }
-            s_speaker_out_buffer_front = front;
-        }
+    if (s_speaker_dma_error) {
+        s_speaker_dma_error = false;
+        USB_LOG_ERR("speaker DMA setup failed\r\n");
     }
-
-    if (s_mic_tx_flag) {
-        if (s_mic_dma_transfer_done) {
-            s_mic_dma_transfer_done = false;
-            s_mic_in_buffer_rear++;
-            if (s_mic_in_buffer_rear >= AUDIO_BUFFER_COUNT) {
-                s_mic_in_buffer_rear = 0;
-            }
-            mic_i2s_dma_start_transfer((uint32_t)&s_mic_in_buffer[s_mic_in_buffer_rear][0], s_audio_in_packet_size);
-        }
-
-        if (!mic_in_buff_is_empty()) {
-            if (!s_mic_ep_tx_busy_flag) {
-                s_mic_ep_tx_busy_flag = true;
-                usbd_ep_start_write(busid, AUDIO_IN_EP, &s_mic_in_buffer[s_mic_in_buffer_front][0], s_audio_in_packet_size);
-                s_mic_in_buffer_front++;
-                if (s_mic_in_buffer_front >= AUDIO_BUFFER_COUNT) {
-                    s_mic_in_buffer_front = 0;
-                }
-            }
-        }
+    if (s_mic_dma_error) {
+        s_mic_dma_error = false;
+        USB_LOG_ERR("mic DMA setup failed\r\n");
+    }
+    if (s_mic_usb_error) {
+        s_mic_usb_error = false;
+        USB_LOG_ERR("mic USB IN start failed\r\n");
     }
 }
 
 void usbd_audio_open(uint8_t busid, uint8_t intf)
 {
+    uint32_t packets_per_sec;
+    hpm_stat_t state;
+
+    /* Determine packets/sec from USB speed */
+    if (usbd_get_port_speed(busid) == USB_SPEED_HIGH) {
+        packets_per_sec = MIC_SPEAKER_HS_PACKETS_PER_SEC;
+    } else {
+        packets_per_sec = MIC_SPEAKER_FS_PACKETS_PER_SEC;
+    }
+
     if (intf == 1) {
+        /* OUT: use max buffer size; USB stack reports actual received bytes via nbytes */
+        s_audio_out_packet_size = (packets_per_sec == MIC_SPEAKER_HS_PACKETS_PER_SEC) ? AUDIO_OUT_PACKET_HS : AUDIO_OUT_PACKET_FS;
+        i2s_reset_tx(SPEAKER_I2S);
+        state = speaker_config_i2s_playback(s_speaker_sample_rate);
+        if (state != status_success) {
+            USB_LOG_ERR("SPEAKER I2S config failed\r\n");
+            return;
+        }
         s_speaker_rx_flag = 1;
         s_speaker_out_buffer_front = 0;
         s_speaker_out_buffer_rear = 0;
         s_speaker_dma_transfer_req = true;
-        usbd_ep_start_read(busid, AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], s_audio_out_packet_size);
+        s_speaker_dma_priming = true;
+        s_speaker_dma_error = false;
+        usbd_ep_start_read(busid, AUDIO_OUT_EP,
+                           &s_speaker_out_buffer[s_speaker_out_buffer_rear][0],
+                           s_audio_out_packet_size);
         if (s_speaker_mute) {
             dao_stop(HPM_DAO);
         } else {
             dao_start(HPM_DAO);
         }
-        USB_LOG_RAW("OPEN SPEAKER\r\n");
+        i2s_start(SPEAKER_I2S);
+        USB_LOG_RAW("OPEN SPEAKER, sample rate: %lu Hz\r\n", (unsigned long)s_speaker_sample_rate);
     } else {
+        /* IN: compute exact size from actual mic sample rate and USB speed */
+        s_audio_in_packet_size = (s_mic_sample_rate * AUDIO_IN_FRAME_SIZE) / packets_per_sec;
+        i2s_reset_rx(MIC_I2S);
+        state = mic_config_i2s_recording(s_mic_sample_rate);
+        if (state != status_success) {
+            USB_LOG_ERR("MIC I2S config failed\r\n");
+            return;
+        }
         s_mic_tx_flag = 1;
-        s_mic_ep_tx_busy_flag = false;
+        s_mic_usb_transfer_req = true;
+        s_mic_usb_priming = true;
+        s_mic_dma_error = false;
+        s_mic_usb_error = false;
         s_mic_in_buffer_front = 0;
         s_mic_in_buffer_rear = 0;
-        s_mic_dma_transfer_done = false;
         if (s_mic_mute) {
             pdm_stop(HPM_PDM);
         } else {
             pdm_start(HPM_PDM);
         }
-        mic_i2s_dma_start_transfer((uint32_t)&s_mic_in_buffer[s_mic_in_buffer_rear][0], s_audio_in_packet_size);
-        USB_LOG_RAW("OPEN MIC\r\n");
+        if (mic_i2s_dma_start_transfer((uint32_t)&s_mic_in_buffer[0][0],
+                                       s_audio_in_packet_size) != status_success) {
+            s_mic_dma_error = true;
+        }
+        i2s_start(MIC_I2S);
+        USB_LOG_RAW("OPEN MIC, sample rate: %lu Hz\r\n", (unsigned long)s_mic_sample_rate);
     }
 }
 
@@ -588,10 +660,18 @@ void usbd_audio_close(uint8_t busid, uint8_t intf)
 
     if (intf == 1) {
         s_speaker_rx_flag = 0;
+        s_speaker_dma_transfer_req = false;
+        dma_abort_channel(BOARD_APP_DMA1, 1u << SPEAKER_DMA_CHANNEL);
+        i2s_reset_tx(SPEAKER_I2S);
+        i2s_stop(SPEAKER_I2S);
         dao_stop(HPM_DAO);
         USB_LOG_RAW("CLOSE SPEAKER\r\n");
     } else {
         s_mic_tx_flag = 0;
+        s_mic_usb_transfer_req = false;
+        dma_abort_channel(BOARD_APP_DMA1, 1u << MIC_DMA_CHANNEL);
+        i2s_reset_rx(MIC_I2S);
+        i2s_stop(MIC_I2S);
         pdm_stop(HPM_PDM);
         USB_LOG_RAW("CLOSE MIC\r\n");
     }
@@ -603,10 +683,10 @@ void usbd_audio_set_volume(uint8_t busid, uint8_t ep, uint8_t ch, int volume)
     (void)ch;
 
     if (ep == AUDIO_OUT_EP) {
-        s_speaker_volume_percent = volume;
+        s_speaker_volume_db = volume;
         /* Do Nothing */
     } else if (ep == AUDIO_IN_EP) {
-        s_mic_volume_percent = volume;
+        s_mic_volume_db = volume;
         /* Do Nothing */
     } else {
         ;
@@ -621,9 +701,9 @@ int usbd_audio_get_volume(uint8_t busid, uint8_t ep, uint8_t ch)
     int volume = 0;
 
     if (ep == AUDIO_OUT_EP) {
-        volume = s_speaker_volume_percent;
+        volume = s_speaker_volume_db;
     } else if (ep == AUDIO_IN_EP) {
-        volume = s_mic_volume_percent;
+        volume = s_mic_volume_db;
     } else {
         ;
     }
@@ -677,18 +757,8 @@ void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_f
 {
     (void)busid;
 
-    hpm_stat_t state;
-
     if (ep == AUDIO_OUT_EP) {
         s_speaker_sample_rate = sampling_freq;
-        state = speaker_init_i2s_playback(sampling_freq, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
-        if (state == status_success) {
-            USB_LOG_RAW("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", sampling_freq, s_speaker_i2s_mclk_hz);
-        } else {
-            USB_LOG_RAW("Init I2S Clock Fail!\r\n");
-        }
-        s_speaker_out_buffer_front = s_speaker_out_buffer_rear;
-        s_speaker_dma_transfer_req = true;
     } else if (ep == AUDIO_IN_EP) {
         s_mic_sample_rate = sampling_freq;
     } else {
@@ -734,40 +804,71 @@ void usbd_audio_get_sampling_freq_table(uint8_t busid, uint8_t ep, uint8_t **sam
 static void usbd_audio_iso_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     if (s_speaker_rx_flag) {
-        s_speaker_out_buffer_size[s_speaker_out_buffer_rear] = nbytes;
-        s_speaker_out_buffer_rear++;
-        if (s_speaker_out_buffer_rear >= AUDIO_BUFFER_COUNT) {
-            s_speaker_out_buffer_rear = 0;
+        uint8_t rear = s_speaker_out_buffer_rear;
+        uint8_t next_rear = audio_ring_next(rear);
+
+        /* Keep one slot unused. A full ring drops the newest USB packet and
+         * never overwrites the slot currently consumed by DMA. */
+        if ((nbytes > 0U) && (nbytes <= AUDIO_OUT_PACKET_MAX)
+            && ((nbytes % AUDIO_OUT_FRAME_SIZE) == 0U)
+            && (next_rear != s_speaker_out_buffer_front)) {
+            s_speaker_out_buffer_size[rear] = nbytes;
+            s_speaker_out_buffer_rear = next_rear;
+
+            uint32_t start_threshold = s_speaker_dma_priming ? AUDIO_PRIME_PACKET_COUNT : 1U;
+            if (s_speaker_dma_transfer_req && (speaker_out_buff_get_used() >= start_threshold)) {
+                uint8_t front = s_speaker_out_buffer_front;
+                s_speaker_dma_transfer_req = false;
+                if (speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
+                                                   s_speaker_out_buffer_size[front]) != status_success) {
+                    s_speaker_dma_transfer_req = true;
+                    s_speaker_dma_error = true;
+                } else {
+                    s_speaker_dma_priming = false;
+                }
+            }
         }
-        usbd_ep_start_read(busid, ep, &s_speaker_out_buffer[s_speaker_out_buffer_rear][0], s_audio_out_packet_size);
+        /* When the ring is full, rear still points at the just-completed slot.
+         * Reusing it drops the newest packet until DMA frees a slot. */
+        usbd_ep_start_read(busid, ep,
+                           &s_speaker_out_buffer[s_speaker_out_buffer_rear][0],
+                           s_audio_out_packet_size);
     }
 }
 
 static void usbd_audio_iso_in_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
-    (void)busid;
     (void)ep;
     (void)nbytes;
 
-    s_mic_ep_tx_busy_flag = false;
+    if (s_mic_tx_flag) {
+        s_mic_in_buffer_front = audio_ring_next(s_mic_in_buffer_front);
+        if (!mic_in_buff_is_empty()) {
+            if (usbd_ep_start_write(busid, AUDIO_IN_EP,
+                                    &s_mic_in_buffer[s_mic_in_buffer_front][0],
+                                    s_audio_in_packet_size) != 0) {
+                s_mic_usb_transfer_req = true;
+                s_mic_usb_error = true;
+            }
+        } else {
+            /* FIFO is empty, defer USB IN kick-off to DMA ISR. */
+            s_mic_usb_transfer_req = true;
+        }
+    }
 }
 
-static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
+static hpm_stat_t speaker_config_i2s_playback(uint32_t sample_rate)
 {
-    i2s_config_t i2s_config;
     i2s_transfer_config_t transfer;
 
-    if (channel_num > 2) {
+    if (OUT_CHANNEL_NUM > 2) {
         return status_invalid_argument; /* Currently not support TDM mode */
     }
-
-    i2s_get_default_config(SPEAKER_I2S, &i2s_config);
-    i2s_init(SPEAKER_I2S, &i2s_config);
 
     i2s_get_default_transfer_config_for_dao(&transfer);
     transfer.data_line = SPEAKER_I2S_DATA_LINE;
     transfer.sample_rate = sample_rate;
-    transfer.audio_depth = audio_depth;
+    transfer.audio_depth = SPEAKER_AUDIO_DEPTH;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
     transfer.channel_slot_mask = 0x3;   /* 2 channels */
 
@@ -776,14 +877,29 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
     if (status_success != i2s_config_tx(SPEAKER_I2S, s_speaker_i2s_mclk_hz, &transfer)) {
         return status_fail;
     }
-    i2s_start(SPEAKER_I2S);
 
     return status_success;
 }
 
-static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
+static hpm_stat_t mic_config_i2s_recording(uint32_t sample_rate)
+{
+    i2s_transfer_config_t transfer;
+    uint32_t i2s_mclk_hz;
+
+    i2s_get_default_transfer_config_for_pdm(&transfer);
+    transfer.data_line = MIC_I2S_DATA_LINE;
+    transfer.sample_rate = sample_rate;
+    transfer.channel_slot_mask = BOARD_PDM_DUAL_CHANNEL_MASK; /* 2 channels */
+
+    i2s_mclk_hz = clock_get_frequency(MIC_I2S_CLK_NAME);
+
+    return i2s_config_rx(MIC_I2S, i2s_mclk_hz, &transfer);
+}
+
+static hpm_stat_t speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
+    hpm_stat_t status;
 
     dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
@@ -794,16 +910,19 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
-    ch_config.src_burst_size = 0;
+    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_2T; /* 2 transfers per burst: each burst fetches one stereo audio frame (2 channels) */
 
-    if (status_success != dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
-        printf(" speaker dma setup channel failed\n");
+    status = dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true);
+    if (status == status_success) {
+        i2s_enable_tx(SPEAKER_I2S, 1U << SPEAKER_I2S_DATA_LINE);
     }
+    return status;
 }
 
-static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
+static hpm_stat_t mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
+    hpm_stat_t status;
 
     dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = (uint32_t)(&MIC_I2S->RXD[MIC_I2S_DATA_LINE]);
@@ -815,11 +934,13 @@ static void mic_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
-    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_2T; /* 2 transfers per burst: each burst fetches one stereo audio frame (2 channels) */
 
-    if (status_success != dma_setup_channel(BOARD_APP_DMA1, MIC_DMA_CHANNEL, &ch_config, true)) {
-        printf(" pdm dma setup channel failed\n");
+    status = dma_setup_channel(BOARD_APP_DMA1, MIC_DMA_CHANNEL, &ch_config, true);
+    if (status == status_success) {
+        i2s_enable_rx(MIC_I2S, 1U << MIC_I2S_DATA_LINE);
     }
+    return status;
 }
 
 static bool speaker_out_buff_is_empty(void)
@@ -844,4 +965,26 @@ static bool mic_in_buff_is_empty(void)
     }
 
     return empty;
+}
+
+static uint32_t speaker_out_buff_get_used(void)
+{
+    uint32_t front = s_speaker_out_buffer_front;
+    uint32_t rear = s_speaker_out_buffer_rear;
+
+    return (rear >= front) ? (rear - front) : (AUDIO_BUFFER_COUNT + rear - front);
+}
+
+static uint32_t mic_in_buff_get_used(void)
+{
+    uint32_t front = s_mic_in_buffer_front;
+    uint32_t rear = s_mic_in_buffer_rear;
+
+    return (rear >= front) ? (rear - front) : (AUDIO_BUFFER_COUNT + rear - front);
+}
+
+static uint8_t audio_ring_next(uint8_t index)
+{
+    index++;
+    return (index < AUDIO_BUFFER_COUNT) ? index : 0U;
 }

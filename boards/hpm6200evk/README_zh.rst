@@ -16,32 +16,32 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 
 - Bit 1，2控制启动模式
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Bit[2:1]
-     - 功能描述
-   * - OFF, OFF
-     - Quad SPI NOR flash 启动
-   * - OFF, ON
-     - 串行启动
-   * - ON, OFF
-     - 在系统编程
+     * - Bit[2:1]
+       - 功能描述
+     * - OFF, OFF
+       - Quad SPI NOR flash 启动
+     * - OFF, ON
+       - 串行启动
+     * - ON, OFF
+       - 在系统编程
 
 .. _hpm6200evk_buttons:
 
 按键
 ----
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 名称
-     - 功能
-   * - PBUTN (SW3)
-     - 电源按键, TinyUF2 Boot按键, GPIO 按键
-   * - RESET (SW2)
-     - Reset 按键
+     * - 名称
+       - 功能
+     * - PBUTN (SW3)
+       - 电源按键, TinyUF2 Boot按键, GPIO 按键
+     * - RESET (SW2)
+       - Reset 按键
 
 .. _hpm6200evk_pins:
 
@@ -271,41 +271,41 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
 
 - CLOCK REF引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - PA14
-     - J1[7]
+     * - 功能
+       - 位置
+     * - PA14
+       - J1[7]
 
 - ESP-HOSTED 引脚接口
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-     - 备注
-   * - PB06
-     - P1[35]
-     - RESET引脚
-   * - PB07
-     - P1[31]
-     - HANDSHAKE引脚
-   * - PB08
-     - P1[32]
-     - DATA_READY引脚
+     * - 功能
+       - 位置
+       - 备注
+     * - PB06
+       - P1[35]
+       - RESET引脚
+     * - PB07
+       - P1[31]
+       - HANDSHAKE引脚
+     * - PB08
+       - P1[32]
+       - DATA_READY引脚
 
 - BROWNOUT中断指示引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - PB31
-     - P1[7]
+     * - 功能
+       - 位置
+     * - PB31
+       - P1[7]
 
 .. _hpm6200evk_known_issues:
 
@@ -328,3 +328,4 @@ HPM6200EVK提供了一系列HPM6200系列微控制器特色外设的接口，包
   - 修正情况
 
     - `HPM6200EVKRevC` 已修正，`HPM6200EVKRevB` 及之前的版本有这个问题。
+

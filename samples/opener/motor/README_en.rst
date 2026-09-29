@@ -181,5 +181,14 @@ After the project runs correctly, the serial terminal will output the following 
    IPv4 Address: 192.168.100.10
    IPv4 Netmask: 255.255.255.0
    IPv4 Gateway: 192.168.100.1
-   Mesaage receieved from host!
+   Message received from host!
 
+When the host changes the motor speed, the following information will be printed according to the control information.
+
+.. code-block:: console
+
+   motor speed change to: 10.000000.
+   motor speed change to: 20.000000.
+   motor speed change to: 30.000000.
+   motor speed change to: 35.000000.
+   motor speed change to: 0.000000.

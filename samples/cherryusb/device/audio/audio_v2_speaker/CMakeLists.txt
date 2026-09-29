@@ -6,14 +6,20 @@ cmake_minimum_required(VERSION 3.13)
 set(CONFIG_CHERRYUSB 1)
 set(CONFIG_USB_DEVICE 1)
 set(CONFIG_USB_DEVICE_AUDIO 1)
-#set(CONFIG_CODEC 1) # audio codec
-#set(CONFIG_CODEC_NAME "wm8960") # specify audio codec name, default is auto-detected by board.yaml
+# CONFIG_CODEC is auto-detected when app.yaml declares board_audio_codec and the
+# board declares both board_audio_codec and board_codec_*.
+# User can override by adding one of the following before find_package:
+#   set(CONFIG_CODEC 1)   # force codec
+#   set(CONFIG_CODEC 0)   # force DAO
+
+# specify audio codec name, default is auto-detected by board.yaml
+#   set(CONFIG_CODEC_NAME "wm8960")
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(cherryusb_device_audio_v2_speaker)
 
-if(DEFINED CONFIG_CODEC)
+if(CONFIG_CODEC)
 sdk_compile_definitions(-DUSING_CODEC=1)
 else()
 sdk_compile_definitions(-DUSING_DAO=1)

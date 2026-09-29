@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -411,67 +411,54 @@ static inline void i2s_reset_clock_gen(I2S_Type *ptr)
 /**
  * @brief I2S reset tx function
  *
- * @note This API will disable I2S, reset tx function
- * Please ensure that there is a valid BCLK when calling this function
+ * @note This API will disable I2S TX module and reset TX function(including clearing the TX FIFO).
+ *       The software reset relies on a valid BCLK, if the current BCLK is not
+ *       valid (external BCLK source, gated off, or zero divider), this API
+ *       switches to the internal BCLK automatically and restores the previous
+ *       clock configuration after the reset is done.
  *
  * @param [in] ptr I2S base address
+ * @retval hpm_stat_t status_success or status_timeout
  */
-static inline void i2s_reset_tx(I2S_Type *ptr)
-{
-    /* disable I2S */
-    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
-
-    /* reset tx and clear fifo */
-    ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK);
-    ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK);
-}
+hpm_stat_t i2s_reset_tx(I2S_Type *ptr);
 
 /**
  * @brief I2S reset rx function
  *
- * @note This API will disable I2S, reset rx function
- * Please ensure that there is a valid BCLK when calling this function
+ * @note This API will disable I2S RX module and reset RX function(including clearing the RX FIFO).
+ *       The software reset relies on a valid BCLK, if the current BCLK is not
+ *       valid (external BCLK source, gated off, or zero divider), this API
+ *       switches to the internal BCLK automatically and restores the previous
+ *       clock configuration after the reset is done.
  *
  * @param [in] ptr I2S base address
+ * @retval hpm_stat_t status_success or status_timeout
  */
-static inline void i2s_reset_rx(I2S_Type *ptr)
-{
-    /* disable I2S */
-    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
-
-    /* reset rx and clear fifo */
-    ptr->CTRL |= (I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_RX_MASK);
-    ptr->CTRL &= ~(I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_RX_MASK);
-}
+hpm_stat_t i2s_reset_rx(I2S_Type *ptr);
 
 /**
  * @brief I2S reset tx and rx function
  *
- * @note This API will disable I2S, reset tx/rx function
- * Please ensure that there is a valid BCLK when calling this function
+ * @note The function of this API is equivalent to that of i2s_reset_all.
  *
  * @param [in] ptr I2S base address
+ * @retval hpm_stat_t status_success or status_timeout
  */
-static inline void i2s_reset_tx_rx(I2S_Type *ptr)
-{
-    /* disable I2S */
-    ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
-
-    /* reset tx/rx and clear fifo */
-    ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
-    ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
-}
+hpm_stat_t i2s_reset_tx_rx(I2S_Type *ptr);
 
 /**
  * @brief I2S reset tx/rx and clock generator module
  *
- * @note This API will disable I2S, reset tx/rx and clock generator module
- * This function uses an internal clock to generate BCLK, then do reset operation,
- * and finally restores the previous clock settings
+ * @note This API will disable I2S and reset TX/RX(including clearing the FIFO) and clock generator module.
+ *       The software reset relies on a valid BCLK, if the current BCLK is not
+ *       valid (external BCLK source, gated off, or zero divider), this API
+ *       switches to the internal BCLK automatically and restores the previous
+ *       clock configuration after the reset is done.
  *
  * @param [in] ptr I2S base address
+ * @retval hpm_stat_t status_success or status_timeout
  */
-void i2s_reset_all(I2S_Type *ptr);
+hpm_stat_t i2s_reset_all(I2S_Type *ptr);
 
 /**
  * @brief I2S get tx fifo level
@@ -595,13 +582,13 @@ static inline void i2s_clear_irq_status(I2S_Type *ptr, uint32_t mask)
  */
 static inline void i2s_stop_transfer(I2S_Type *ptr)
 {
-    i2s_disable(ptr);
+    i2s_stop(ptr);
 }
 
 /**
  * @brief I2S config tx
  *
- * @note This API will disable I2S and configure parameters, could call i2s_enable() to enable I2S
+ * @note This API will stop I2S and configure parameters, could call i2s_start() to start I2S
  *
  * @param [in] ptr I2S base address
  * @param [in] mclk_in_hz mclk frequency in Hz
@@ -613,7 +600,7 @@ hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
 /**
  * @brief I2S config tx for slave
  *
- * @note This API will disable I2S and configure parameters, could call i2s_enable() to enable I2S
+ * @note This API will stop I2S and configure parameters, could call i2s_start() to start I2S
  *
  * @param [in] ptr I2S base address
  * @param [in] config i2s_transfer_config_t
@@ -623,7 +610,7 @@ hpm_stat_t i2s_config_tx_slave(I2S_Type *ptr, i2s_transfer_config_t *config);
 /**
  * @brief I2S config rx
  *
- * @note This API will disable I2S and configure parameters, could call i2s_enable() to enable I2S
+ * @note This API will stop I2S and configure parameters, could call i2s_start() to start I2S
  *
  * @param [in] ptr I2S base address
  * @param [in] mclk_in_hz mclk frequency in Hz
@@ -635,7 +622,7 @@ hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
 /**
  * @brief I2S config rx for slave
  *
- * @note This API will disable I2S and configure parameters, could call i2s_enable() to enable I2S
+ * @note This API will stop I2S and configure parameters, could call i2s_start() to start I2S
  *
  * @param [in] ptr I2S base address
  * @param [in] config i2s_transfer_config_t
@@ -646,7 +633,7 @@ hpm_stat_t i2s_config_rx_slave(I2S_Type *ptr, i2s_transfer_config_t *config);
 /**
  * @brief I2S config transfer
  *
- * @note This API will disable I2S and configure parameters, could call i2s_enable() to enable I2S
+ * @note This API will stop I2S and configure parameters, could call i2s_start() to start I2S
  *
  * @param [in] ptr I2S base address
  * @param [in] mclk_in_hz mclk frequency in Hz
@@ -658,7 +645,7 @@ hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_
 /**
  * @brief I2S config transfer for slave
  *
- * @note This API will disable I2S and configure parameters, could call i2s_enable() to enable I2S
+ * @note This API will stop I2S and configure parameters, could call i2s_start() to start I2S
  *
  * @param [in] ptr I2S base address
  * @param [in] config i2s_transfer_config_t
@@ -669,7 +656,7 @@ hpm_stat_t i2s_config_transfer_slave(I2S_Type *ptr, i2s_transfer_config_t *confi
 /**
  * @brief I2S config multiline transfer
  *
- * @note This API will disable I2S and configure parameters, could call i2s_enable() to enable I2S
+ * @note This API will stop I2S and configure parameters, could call i2s_start() to start I2S
  *
  * @param [in] ptr I2S base address
  * @param [in] mclk_in_hz mclk frequency in Hz
@@ -741,8 +728,9 @@ void i2s_get_default_config(I2S_Type *ptr, i2s_config_t *config);
  *
  * @param [in] ptr I2S base address
  * @param [in] config i2s_config_t
+ * @retval hpm_stat_t status_timeout or status_success
  */
-void i2s_init(I2S_Type *ptr, i2s_config_t *config);
+hpm_stat_t i2s_init(I2S_Type *ptr, i2s_config_t *config);
 
 #if defined(HPMSOC_HAS_HPMSDK_PDM) || defined(HPMSOC_HAS_HPMSDK_PDMLITE)
 /**

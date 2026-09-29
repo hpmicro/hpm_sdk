@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,6 +9,9 @@
 #include "hpm_clock_drv.h"
 #include <stdlib.h>
 
+#ifndef HPM_I2C_RELEASE_BUS_TIMEOUT_US
+#define HPM_I2C_RELEASE_BUS_TIMEOUT_US (5000UL)
+#endif
 typedef struct {
     I2C_Type *i2c_ptr;
     clock_name_t i2c_clock_name;
@@ -196,9 +199,20 @@ static void hpm_i2c_master_phase_config(I2C_Type *ptr, uint16_t device_addr, uin
 
 static void hpm_i2c_release_bus(I2C_Type *ptr)
 {
-    i2c_clear_status(ptr, I2C_STATUS_CMPL_MASK);
+    uint32_t ticks_per_us = clock_get_core_clock_ticks_per_us();
+    uint64_t expected_ticks = hpm_csr_get_core_cycle()
+        + (uint64_t)ticks_per_us * HPM_I2C_RELEASE_BUS_TIMEOUT_US;
+
+    i2c_clear_status(ptr, I2C_STATUS_CMPL_MASK | I2C_STATUS_ADDRHIT_MASK);
     hpm_i2c_master_phase_config(ptr, 0, I2C_NO_ADDRESS | I2C_NO_START, 0, false);
     i2c_master_issue_data_transmission(ptr);
+
+    /* Wait for the stop-only transaction to complete before returning. */
+    while (!(i2c_get_status(ptr) & I2C_STATUS_CMPL_MASK)) {
+        if (hpm_csr_get_core_cycle() > expected_ticks) {
+            return;
+        }
+    }
 }
 
 static void hpm_i2c_get_default_init_config(hpm_i2c_initialize_config_t *config)
@@ -407,6 +421,16 @@ hpm_stat_t hpm_i2c_master_addr_read_blocking(hpm_i2c_context_t *context, const u
     i2c_clear_fifo(ptr);
     hpm_i2c_master_phase_config(ptr, device_address, I2C_RD, buf_size, false);
     i2c_master_issue_data_transmission(ptr);
+
+    /* The repeated-start read phase generates a second address-hit event. */
+    expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 500UL; /* 500Us */
+    while (!(i2c_get_status(ptr) & I2C_STATUS_ADDRHIT_MASK)) {
+        if (hpm_csr_get_core_cycle() > expected_ticks) {
+            hpm_i2c_release_bus(ptr);
+            return status_i2c_no_addr_hit;
+        }
+    }
+    i2c_clear_status(ptr, I2C_STATUS_ADDRHIT_MASK);
 
     expected_ticks = hpm_csr_get_core_cycle() + (uint64_t)ticks_per_us * 1000UL * timeout;
     left = buf_size;

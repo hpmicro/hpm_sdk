@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,10 +8,18 @@
 #ifndef LWIPOPTS_APP_H
 #define LWIPOPTS_APP_H
 
+#include "common_cfg.h"
+
+/*
+ * Zero-copy TX holds each pbuf until DMA completes (up to one per TX descriptor).
+ * Keep PBUF_POOL_SIZE >= ENET_TX_BUFF_COUNT so TX hold does not starve the pbuf pool.
+ * RX zero-copy uses a separate custom pbuf pool sized by ENET_RX_BUFF_COUNT.
+ */
+#define PBUF_POOL_SIZE          (ENET_TX_BUFF_COUNT)
+
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE                48*1024
-
+#define MEM_SIZE                (32 * 1024)
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
@@ -20,7 +28,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* MEMP_NUM_TCP_SEG: the number of simultaneously queued TCP
    segments. */
-#define MEMP_NUM_TCP_SEG        88
+#define MEMP_NUM_TCP_SEG        40
 
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
@@ -34,7 +42,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_MSS                 (1500 - 40)	  /* TCP_MSS = (Ethernet MTU - IP header size - TCP header size) */
 
 /* TCP sender buffer space (bytes). */
-#define TCP_SND_BUF             (44 * TCP_MSS)
+#define TCP_SND_BUF             (20 * TCP_MSS)
 
 /*  TCP_SND_QUEUELEN: TCP sender buffer space (pbufs). This must be at least
   as much as (2 * TCP_SND_BUF/TCP_MSS) for things to work. */
@@ -48,7 +56,15 @@ a lot of data that needs to be copied, this should be set high. */
  * To use this feature let the following define uncommented.
  * To disable it and process by CPU comment the checksum.
 */
-#define CHECKSUM_BY_HARDWARE 1
+#define CHECKSUM_BY_HARDWARE
+
+/*
+ * ENET TX HW CRC mode (see enet_tx_hw_crc_mode_t in hpm_enet_drv.h):
+ * 0 = enet_tx_hw_crc_append, 1 = enet_tx_hw_crc_replace, 2 = enet_tx_hw_crc_off
+ */
+#ifndef ENET_TX_HW_CRC_MODE
+#define ENET_TX_HW_CRC_MODE 1
+#endif
 
 /*
  * Debug Options

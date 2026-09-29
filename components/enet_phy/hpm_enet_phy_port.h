@@ -27,6 +27,7 @@ typedef enum {
     hpm_enet_phy_rtl8201,
     hpm_enet_phy_lan8720,
     hpm_enet_phy_jl1111,
+    hpm_enet_phy_rtl8211f,
 } hpm_enet_phy_type_t;
 
 typedef struct {

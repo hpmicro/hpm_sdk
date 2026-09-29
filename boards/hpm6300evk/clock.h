@@ -58,6 +58,10 @@ void init_ptmr_clock(void);
 void init_ptmr_clock_group1(void);
 void init_usb0_clock(void);
 void init_acmp_clock(void);
+void init_i2s0_clock_22050(void);
+void init_i2s0_clock_default(void);
+void init_i2s1_clock_22050(void);
+void init_i2s1_clock_default(void);
 
 #ifdef __cplusplus
 }

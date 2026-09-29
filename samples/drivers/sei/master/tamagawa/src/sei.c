@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,30 +9,7 @@
 #include "hpm_clock_drv.h"
 #include "hpm_synt_drv.h"
 #include "hpm_sei_drv.h"
-#ifdef HPMSOC_HAS_HPMSDK_GPTMRV2
-#include "hpm_gptmrv2_drv.h"
-#else
-#include "hpm_gptmr_drv.h"
-#endif
 #include "hpm_interrupt.h"
-
-#define DISCONNECT_TIMEOUT_MS (1000)
-
-static void encoder_disconnect_timer_config(uint32_t time_ms)
-{
-    uint32_t gptmr_freq;
-    gptmr_channel_config_t config;
-
-    clock_add_to_group(BOARD_GPTMR_CLK_NAME, 0);
-    gptmr_channel_get_default_config(BOARD_GPTMR, &config);
-    gptmr_freq = clock_get_frequency(BOARD_GPTMR_CLK_NAME);
-    config.reload = gptmr_freq / 1000 * time_ms;
-    gptmr_channel_config(BOARD_GPTMR, BOARD_GPTMR_CHANNEL, &config, false);
-    gptmr_start_counter(BOARD_GPTMR, BOARD_GPTMR_CHANNEL);
-
-    gptmr_enable_irq(BOARD_GPTMR, GPTMR_CH_RLD_IRQ_MASK(BOARD_GPTMR_CHANNEL));
-    intc_m_enable_irq_with_priority(BOARD_GPTMR_IRQ, 1);
-}
 
 int main(void)
 {
@@ -265,24 +242,21 @@ int main(void)
     engine_config.wdg_enable = true;
     engine_config.wdg_action = sei_wdg_exec_exception_instr;
     engine_config.wdg_instr_idx = (instr_idx - 1);
-    engine_config.wdg_time = 1000;    /* 1000 bits time */
+    engine_config.wdg_time = (0xFFFF - 1);    /* 0xFFFE = 65534 bit-times, at 2.5Mbps: 65534 / 2500000 ≈ 26.2 ms */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
     /* [8] interrupt config */
-    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event);
-    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event, true);
+    sei_clear_irq_flag(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event | sei_irq_wdog_event);
+    sei_set_irq_enable(BOARD_SEI, BOARD_SEI_CTRL, sei_irq_latch1_event | sei_irq_trx_err_event | sei_irq_wdog_event, true);
     intc_m_enable_irq_with_priority(BOARD_SEI_IRQn, 1);
 
     /* [9] trigger config */
     trigger_input_conifg.trig_period_enable = true;
     trigger_input_conifg.trig_period_arming_mode = sei_arming_direct_exec;
     trigger_input_conifg.trig_period_sync_enable = false;
-    trigger_input_conifg.trig_period_time = (200 * (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000));    /* unit: 1ms, 200ms */
+    trigger_input_conifg.trig_period_time = (20 * (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000));    /* unit: 1ms, 20ms. Should be less than wdg time */
     sei_trigger_input_config_init(BOARD_SEI, BOARD_SEI_CTRL, &trigger_input_conifg);
-
-    /* [10] encoder disconnect timer config */
-    encoder_disconnect_timer_config(DISCONNECT_TIMEOUT_MS);
 
     while (1) {
         ;
@@ -302,28 +276,35 @@ void isr_sei(void)
     irq_flag &= sei_get_irq_enable_status(BOARD_SEI, BOARD_SEI_CTRL);
 
     if ((irq_flag & sei_irq_latch1_event) != 0) {
-        gptmr_channel_reset_count(BOARD_GPTMR, BOARD_GPTMR_CHANNEL);    /* reset disconnect timer */
         sample_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         update_latch_tm = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_1);
         delta = (update_latch_tm > sample_latch_tm) ? (update_latch_tm - sample_latch_tm) : (update_latch_tm - sample_latch_tm + 0xFFFFFFFFu);
-        printf("MT:%#x, ST:%#x, ALMC:%#x, CRC:%#x, sample_tm:%u, update_tm:%u, TimeDelay:%d*0.1us\n",
+        printf("MT:%#x, ST:%#x, ALMC:%#x, CRC:%#x, TimeDelta:%d*0.1us\n",
                 sei_get_data_value(BOARD_SEI, SEI_DAT_7),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_5),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_8),
                 sei_get_crc_value(BOARD_SEI, SEI_DAT_9),
-                sample_latch_tm, update_latch_tm, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 10000000));
+                delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 10000000));
+    }
+
+    if ((irq_flag & sei_irq_wdog_event) != 0) {
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_4);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_5);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_6);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_7);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_8);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_9);
+        sei_restart_asynchronous_xcvr(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+        printf("WDG Active!\n");
     }
 
     if ((irq_flag & sei_irq_trx_err_event) != 0) {
         printf("TRX Error!\n");
-    }
-}
-
-SDK_DECLARE_EXT_ISR_M(BOARD_GPTMR_IRQ, disconnect_tmr_isr)
-void disconnect_tmr_isr(void)
-{
-    if (gptmr_check_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL))) {
-        gptmr_clear_status(BOARD_GPTMR, GPTMR_CH_RLD_STAT_MASK(BOARD_GPTMR_CHANNEL));
-        printf("Encoder Disconnect Error!\n");
     }
 }

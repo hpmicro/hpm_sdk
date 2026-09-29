@@ -57,6 +57,13 @@ static hpm_stat_t hpm_enet_phy_port_get_addr(hpm_enet_phy_type_t type, uint8_t *
 #else
         return status_fail;
 #endif
+    case hpm_enet_phy_rtl8211f:
+#if defined(__USE_RTL8211F) && __USE_RTL8211F
+        *addr = RTL8211F_ADDR;
+        return status_success;
+#else
+        return status_fail;
+#endif
     default:
         return status_invalid_argument;
     }
@@ -98,6 +105,9 @@ hpm_stat_t hpm_enet_phy_port_init(hpm_enet_phy_port_config_t *config)
 #endif
 #if defined(__USE_JL1111) && __USE_JL1111
     jl1111_config_t jl1111_config;
+#endif
+#if defined(__USE_RTL8211F) && __USE_RTL8211F
+    rtl8211f_config_t rtl8211f_config;
 #endif
 
     if ((config == NULL) || (config->base == NULL)) {
@@ -173,6 +183,13 @@ hpm_stat_t hpm_enet_phy_port_init(hpm_enet_phy_port_config_t *config)
         }
 #endif
         break;
+    case hpm_enet_phy_rtl8211f:
+#if defined(__USE_RTL8211F) && __USE_RTL8211F
+        rtl8211f_reset(config->base, phy_addr);
+        rtl8211f_basic_mode_default_config(config->base, &rtl8211f_config);
+        phy_init_success = rtl8211f_basic_mode_init(config->base, phy_addr, &rtl8211f_config);
+#endif
+        break;
     default:
         return status_invalid_argument;
     }
@@ -230,6 +247,12 @@ hpm_stat_t hpm_enet_phy_port_get_status(hpm_enet_phy_port_config_t *config, enet
     case hpm_enet_phy_jl1111:
 #if defined(__USE_JL1111) && __USE_JL1111
         return jl1111_get_phy_status(config->base, phy_addr, status);
+#else
+        return status_fail;
+#endif
+    case hpm_enet_phy_rtl8211f:
+#if defined(__USE_RTL8211F) && __USE_RTL8211F
+        return rtl8211f_get_phy_status(config->base, phy_addr, status);
 #else
         return status_fail;
 #endif

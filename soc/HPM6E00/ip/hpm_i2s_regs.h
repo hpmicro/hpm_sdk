@@ -32,7 +32,7 @@ typedef struct {
 /*
  * SFTRST_RX (RW)
  *
- * software reset the RX module if asserted to be 1'b1. Self-clear.
+ * software reset the RX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.
  */
 #define I2S_CTRL_SFTRST_RX_MASK (0x40000UL)
 #define I2S_CTRL_SFTRST_RX_SHIFT (18U)
@@ -42,7 +42,7 @@ typedef struct {
 /*
  * SFTRST_TX (RW)
  *
- * software reset the TX module if asserted to be 1'b1. Self-clear.
+ * software reset the TX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.
  */
 #define I2S_CTRL_SFTRST_TX_MASK (0x20000UL)
 #define I2S_CTRL_SFTRST_TX_SHIFT (17U)
@@ -262,6 +262,36 @@ typedef struct {
 #define I2S_FIFO_THRESH_RX_GET(x) (((uint32_t)(x) & I2S_FIFO_THRESH_RX_MASK) >> I2S_FIFO_THRESH_RX_SHIFT)
 
 /* Bitfield definition for register: STA */
+/*
+ * SFTRST_RX_DONE (RO)
+ *
+ * 1：indicate that the software reset of CTRL[SFTRST_RX] is finished.
+ * 0: cleared automatically when configuring  CTRL[SFTRST_RX]=1.
+ */
+#define I2S_STA_SFTRST_RX_DONE_MASK (0x1000000UL)
+#define I2S_STA_SFTRST_RX_DONE_SHIFT (24U)
+#define I2S_STA_SFTRST_RX_DONE_GET(x) (((uint32_t)(x) & I2S_STA_SFTRST_RX_DONE_MASK) >> I2S_STA_SFTRST_RX_DONE_SHIFT)
+
+/*
+ * SFTRST_TX_DONE (RO)
+ *
+ * 1：indicate that the software reset of CTRL[SFTRST_TX] is finished.
+ * 0: cleared automatically when configuring  CTRL[SFTRST_TX]=1.
+ */
+#define I2S_STA_SFTRST_TX_DONE_MASK (0x800000UL)
+#define I2S_STA_SFTRST_TX_DONE_SHIFT (23U)
+#define I2S_STA_SFTRST_TX_DONE_GET(x) (((uint32_t)(x) & I2S_STA_SFTRST_TX_DONE_MASK) >> I2S_STA_SFTRST_TX_DONE_SHIFT)
+
+/*
+ * SFTRST_CLKGEN_DONE (RO)
+ *
+ * 1：indicate that the software reset of CTRL[SFTRST_CLKGEN] is finished.
+ * 0: cleared automatically when configuring  CTRL[SFTRST_CLKGEN]=1.
+ */
+#define I2S_STA_SFTRST_CLKGEN_DONE_MASK (0x400000UL)
+#define I2S_STA_SFTRST_CLKGEN_DONE_SHIFT (22U)
+#define I2S_STA_SFTRST_CLKGEN_DONE_GET(x) (((uint32_t)(x) & I2S_STA_SFTRST_CLKGEN_DONE_MASK) >> I2S_STA_SFTRST_CLKGEN_DONE_SHIFT)
+
 /*
  * TX_UD (W1C)
  *

@@ -1,49 +1,5 @@
-# Copyright (c) 2021-2022,2025 HPMicro
+# Copyright (c) 2021-2022,2025-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
-
-# Function to get the compiler version based on the compiler type
-# Arguments:
-#   compiler: The name of the compiler (e.g., gcc, clang, zcc)
-#   version_text: The text containing the version information
-#   compiler_version: The variable to store the extracted compiler version
-function(get_compiler_version compiler version_text compiler_version)
-    if("${compiler}" STREQUAL "gcc")
-        execute_process(
-            COMMAND
-            ${PYTHON_EXECUTABLE}
-            ${HPM_SDK_BASE}/scripts/get_gcc_version.py
-            "${version_text}"
-            RESULT_VARIABLE result
-            OUTPUT_VARIABLE v
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            )
-        set(${compiler_version} ${v} PARENT_SCOPE)
-    elseif("${compiler}" STREQUAL "clang")
-        execute_process(
-            COMMAND
-            ${PYTHON_EXECUTABLE}
-            ${HPM_SDK_BASE}/scripts/get_gcc_version.py
-            "${version_text}"
-            RESULT_VARIABLE result
-            OUTPUT_VARIABLE v
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            )
-        set(${compiler_version} ${v} PARENT_SCOPE)
-    elseif("${compiler}" STREQUAL "zcc")
-        execute_process(
-            COMMAND
-            ${PYTHON_EXECUTABLE}
-            ${HPM_SDK_BASE}/scripts/get_gcc_version.py
-            "${version_text}"
-            RESULT_VARIABLE result
-            OUTPUT_VARIABLE v
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            )
-        set(${compiler_version} ${v} PARENT_SCOPE)
-    else()
-        message(FATAL_ERROR "Unsupported compiler ${compiler}")
-    endif()
-endfunction()
 
 # Set up interface libraries for different toolchains
 # These libraries are used to define the interface for the toolchains
@@ -202,47 +158,68 @@ if(NOT RV_ARCH)
     set(RV_ARCH "rv32imac")
 endif()
 
-# @private
-# Function to get the toolchain GCC specification by executing the compiler with the --verbose flag
+# Probe whether the toolchain accepts extra march extensions on top of
+# RV_ARCH. Toolchain configure-time options cannot answer this reliably:
+# distro toolchains omit --with-isa-spec while still following the newer
+# ISA spec, and a rejected march means the toolchain predates the
+# extension and keeps those instructions in the base ISA, so the plain
+# arch string stays correct as-is.
 # Arguments:
-#   spec: The variable to store the extracted specification
-function(get_toolchain_gcc_spec spec)
-    get_compiler_version(${COMPILER} "${version_text}" ver)
-    set(COMPILER_VERSION ${ver})
-
+#   result: Variable to receive TRUE/FALSE in the caller scope
+#   ARGN: march extension suffix to probe, e.g. "_zicsr_zifencei"
+function(check_march_ext_supported result)
+    file(WRITE "${CMAKE_BINARY_DIR}/CMakeFiles/march_probe.c" "int main(void) { return 0; }\n")
     execute_process(
-        COMMAND ${CMAKE_C_COMPILER} --verbose
-        RESULT_VARIABLE ret
-        ERROR_VARIABLE verbose_text
+        COMMAND ${CMAKE_C_COMPILER} -march=${RV_ARCH}${ARGN} -mabi=${RV_ABI}
+                -c "${CMAKE_BINARY_DIR}/CMakeFiles/march_probe.c"
+                -o "${CMAKE_BINARY_DIR}/CMakeFiles/march_probe.o"
+        RESULT_VARIABLE march_ext_rc
         OUTPUT_QUIET
+        ERROR_QUIET
     )
-    STRING(REGEX REPLACE ".*--with-isa-spec=([A-Za-z0-9]+).*" "\\1" out ${verbose_text})
-    set(${spec} ${out} PARENT_SCOPE)
+    if(march_ext_rc EQUAL 0)
+        set(${result} TRUE PARENT_SCOPE)
+    else()
+        set(${result} FALSE PARENT_SCOPE)
+    endif()
 endfunction()
 
-# Get the toolchain GCC specification
-get_toolchain_gcc_spec(spec)
-if(spec GREATER_EQUAL 20191213)
-    if(NOT "${RV_ARCH}" MATCHES "_")
-        set(need_csr ON)
-        set(need_fencei ON)
-        STRING(FIND ${RV_ARCH} "g" exist)
-        if("${RV_ARCH}" MATCHES "g")
-            set(need_csr OFF)
-            set(need_fencei OFF)
-        elseif("${RV_ARCH}" MATCHES "[fd]")
-            set(need_csr OFF)
-        endif()
-        # Append ISA extensions if needed
-        if(need_csr AND NOT HPM_SDK_GCC_ISA_SPEC_NO_CSR)
-            set(RV_ARCH "${RV_ARCH}_zicsr")
-        endif()
-
-        if(need_fencei AND NOT HPM_SDK_GCC_ISA_SPEC_NO_FENCEI)
-            set(RV_ARCH "${RV_ARCH}_zifencei")
-        endif()
+# Decide which ISA extensions the march string needs. Toolchains following
+# ISA spec 20191213 split csr and fence.i out of the base ISA, so those
+# instructions only assemble when _zicsr/_zifencei are listed explicitly;
+# arch strings already carrying extensions, or implying them via g/f/d,
+# need no suffix.
+set(__isa_ext_suffix "")
+if(NOT "${RV_ARCH}" MATCHES "_")
+    set(need_csr ON)
+    set(need_fencei ON)
+    if("${RV_ARCH}" MATCHES "g")
+        set(need_csr OFF)
+        set(need_fencei OFF)
+    elseif("${RV_ARCH}" MATCHES "[fd]")
+        set(need_csr OFF)
+    endif()
+    if(need_csr AND NOT HPM_SDK_GCC_ISA_SPEC_NO_CSR)
+        string(APPEND __isa_ext_suffix "_zicsr")
+    endif()
+    if(need_fencei AND NOT HPM_SDK_GCC_ISA_SPEC_NO_FENCEI)
+        string(APPEND __isa_ext_suffix "_zifencei")
     endif()
 endif()
+
+if(__isa_ext_suffix AND NOT "${TOOLCHAIN_VARIANT}" STREQUAL "nds-llvm")
+    check_march_ext_supported(__march_ext_ok "${__isa_ext_suffix}")
+    if(__march_ext_ok)
+        string(APPEND RV_ARCH "${__isa_ext_suffix}")
+        message(STATUS "Toolchain accepts -march=${RV_ARCH}")
+    else()
+        message(STATUS "Toolchain keeps csr/fence.i in base ISA, using -march=${RV_ARCH}")
+    endif()
+endif()
+unset(need_csr)
+unset(need_fencei)
+unset(__isa_ext_suffix)
+unset(__march_ext_ok)
 
 # Remove timestamp from libraries to ensure reproducible builds
 set(CMAKE_ASM_CREATE_STATIC_LIBRARY "<CMAKE_AR> crD <TARGET> <LINK_FLAGS> <OBJECTS>")

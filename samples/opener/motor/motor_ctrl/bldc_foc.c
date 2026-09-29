@@ -1206,6 +1206,9 @@ void set_motor_speed(float speed)
     } else if (speed < -SPEED_MAX) {
         speed = -SPEED_MAX;
     }
+    if (g_motor_speed != speed) {
+        printf("\r\nmotor speed change to: %f.\r\n", speed);
+    }
     g_motor_speed = speed;
     user_speed.enable = true;
     user_speed.value = g_motor_speed * MCL_PI * 2;

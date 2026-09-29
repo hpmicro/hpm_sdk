@@ -1,0 +1,3 @@
+dependency:
+  - i2s
+  - board_audio_codec

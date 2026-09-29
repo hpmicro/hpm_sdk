@@ -44,7 +44,7 @@ ECAT_CIA402示例演示使用ESC外设, 基于ETG从站协议栈代码(SSC)实�
 3.2 使用虚拟电机
 ~~~~~~~~~~~~~~~~~~~~~~
 
-  默认使用实际电机进行运动控制，如果需要使用虚拟电机, 在文件`CMakeLists.txt`中, 设置"set(CONFIG_CIA402_USING_ACTUAL_MOTOR 0)"。
+  默认使用实际电机进行运动控制，如果需要使用虚拟电机, 在文件 `CMakeLists.txt` 中, 设置"set(CONFIG_CIA402_USING_ACTUAL_MOTOR 0)"。
 
 4. 生成从站协议栈代码
 ------------------------------

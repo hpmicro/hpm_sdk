@@ -16827,7 +16827,7 @@ Default those bits is 0, generate capture irq when capture rising edge.</descrip
             <fields>
               <field>
                 <name>DAT_CDM</name>
-                <description>Select DATA register to receive CDM bit in BiSSC slave mode
+                <description>Select DATA register to receive CDM bit in BiSSC mode
 0: ignore
 1: command
 2: data register 2
@@ -16878,7 +16878,13 @@ Default those bits is 0, generate capture irq when capture rising edge.</descrip
             <fields>
               <field>
                 <name>WDOG_TIME</name>
-                <description>Time out count for each instruction, counter in bit time.</description>
+                <description>Time out count for each instruction, counter in bit time.
+0：1 bit
+1：2 bits
+...
+0xFFFE：65535 bits
+0xFFFF: reserved
+Note：After configuration, the WDG timeout duration shall be longer than the trigger period (including external trigger, periodic trigger, and software trigger/enable).</description>
                 <bitOffset>0</bitOffset>
                 <bitWidth>16</bitWidth>
                 <access>read-write</access>
@@ -19649,17 +19655,17 @@ Note: CRC register will be cleared automatically by UPDATE if select the DATA re
             <field>
               <name>CK</name>
               <description>clock state configure
-a. In synchronous master mode:
-0: low
-1: rise-fall
-2: fall-rise
-3: high
-b. In synchronous slave mode:
-0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
-1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
-2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
-3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
-c.  In asynchronous mode: please keep 0.</description>
+- a. In synchronous master mode:
+  - 0: low
+  - 1: rise-fall
+  - 2: fall-rise
+  - 3: high
+- b. In synchronous slave mode:
+  - 0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
+  - 1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
+  - 2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
+  - 3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
+- c.  In asynchronous mode: please keep 0.</description>
               <bitOffset>24</bitOffset>
               <bitWidth>2</bitWidth>
               <access>read-write</access>
@@ -19696,16 +19702,16 @@ c.  In asynchronous mode: please keep 0.</description>
             </field>
             <field>
               <name>OPR</name>
-              <description>a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
-b. When OP is 1, this area is the the pointer to the command table.
-OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
-OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
-OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
-c. When OP is 2-7, this area is the data length as fellow:
-0: 1 bit
-1: 2 bit
- ...
-31: 32 bit</description>
+              <description>- a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
+- b. When OP is 1, this area is the the pointer to the command table.
+  - OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
+  - OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
+  - OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
+- c. When OP is 2-7, this area is the data length as fellow:
+  - 0: 1 bit
+  - 1: 2 bit
+   - ...
+  - 31: 32 bit</description>
               <bitOffset>0</bitOffset>
               <bitWidth>5</bitWidth>
               <access>read-write</access>
@@ -20917,7 +20923,7 @@ Only used in device operation mode.</description>
 SOF Received - R/WC.
 When the device controller detects a Start Of (micro) Frame, this bit will be set to a one.
 When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
-Therefore, this bit will be set roughly every 1ms in device FS mode and every 125ms in HS mode and will be synchronized to the actual SOF that is received.
+Therefore, this bit will be set roughly every 1ms in device FS mode and every 125us in HS mode and will be synchronized to the actual SOF that is received.
 Because the device controller is initialized to FS before connect, this bit will be set at an interval of 1ms during the prelude to connect and chirp.
 In host mode, this bit will be set every 125us and can be used by host controller driver as a time base.
 Software writes a 1 to this bit to clear it.</description>

@@ -39,26 +39,26 @@ Hardware
   - Motor control port
   - Raspberry PI extension port
 
-.. note::
+  .. note::
 
-   The sdram pins are multiplexed with the 15-20pin of the motor interface J26, so the motor interface and sdram can't be used at the same time.
+     The sdram pins are multiplexed with the 15-20pin of the motor interface J26, so the motor interface and sdram can't be used at the same time.
 
 DIP Switch S1
 -------------
 
 - Bit 1 and 2 control the boot mode
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - bit[2:1]
-     - Description
-   * - OFF, OFF
-     - Boot from Quad SPI NOR flash
-   * - OFF, ON
-     - Serial boot
-   * - ON, OFF
-     - ISP
+     * - bit[2:1]
+       - Description
+     * - OFF, OFF
+       - Boot from Quad SPI NOR flash
+     * - OFF, ON
+       - Serial boot
+     * - ON, OFF
+       - ISP
 
 .. _hpm6300evk_buttons:
 
@@ -282,31 +282,31 @@ Pin Description
 
 - ESP-HOSTED Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - PA07
-     - J28[11]
-     - RESET Pin
-   * - PC13
-     - J28[13]
-     - HANDSHAKE Pin
-   * - PC14
-     - J28[15]
-     - DATA_READY Pin
+     * - Function
+       - Position
+       - Note
+     * - PA07
+       - J28[11]
+       - RESET Pin
+     * - PC13
+       - J28[13]
+       - HANDSHAKE Pin
+     * - PC14
+       - J28[15]
+       - DATA_READY Pin
 
 - BROWNOUT Interrupt Indicator Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PA07
-     - J28[11]
+     * - Function
+       - Position
+     * - PA07
+       - J28[11]
 
 
 .. _hpm6300evk_known_issues:

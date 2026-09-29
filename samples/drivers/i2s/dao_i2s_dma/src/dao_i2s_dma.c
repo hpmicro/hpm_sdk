@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -87,15 +87,18 @@ void button_gpio_isr(void)
         /* change DAO_I2S status */
         if (dao_i2s_playing) {
             /* stop DAO and I2S */
-            i2s_disable(DAO_I2S);
+            i2s_stop(DAO_I2S);
             dao_stop(HPM_DAO);
             dao_i2s_playing = false;
             dao_i2s_status_changed = true;
         } else {
             /* reset and reopen DAO and I2S */
-            i2s_reset_tx(DAO_I2S);
+            if (i2s_reset_tx(DAO_I2S) != status_success) {
+                printf("i2s_reset_tx failed\n");
+            }
+            i2s_enable_tx_line(DAO_I2S, I2S_DAO_DATA_LINE); /*Enable I2S TX */
             dao_software_reset(HPM_DAO);
-            i2s_enable(DAO_I2S);
+            i2s_start(DAO_I2S);
             dao_start(HPM_DAO);
             dao_i2s_playing = true;
             dao_i2s_status_changed = true;
@@ -169,7 +172,10 @@ hpm_stat_t dao_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
 
     /* Config I2S interface to CODEC */
     i2s_get_default_config(DAO_I2S, &i2s_config);
-    i2s_init(DAO_I2S, &i2s_config);
+    stat = i2s_init(DAO_I2S, &i2s_config);
+    if (stat != status_success) {
+        return status_fail;
+    }
 
     /* Configure I2S transfer parameters */
     i2s_get_default_transfer_config_for_dao(&transfer);
@@ -258,17 +264,13 @@ hpm_stat_t dao_i2s_dma_play(audio_data_t *audio_data)
             return status_fail;
         }
 
-        /* reset I2S TX function and DAO peripharal */
-        i2s_reset_tx(DAO_I2S);
-        dao_software_reset(HPM_DAO);
-
-        /* fill tx dummy data to tx fifo to prevent underflow when TX starts */
+        /* fill tx dummy data to tx fifo to prevent underflow when TX starts if DMA not transfer data without I2S start */
         if (i2s_fill_tx_dummy_data(DAO_I2S, I2S_DAO_DATA_LINE, audio_data->channel_num) != status_success) {
             return status_fail;
         }
 
         /* start */
-        i2s_enable(DAO_I2S);
+        i2s_start(DAO_I2S);
         dao_start(HPM_DAO);
 
         /* Enable GPIO interrupt to stop/resume audio play */
@@ -291,8 +293,16 @@ hpm_stat_t dao_i2s_dma_play(audio_data_t *audio_data)
         gpio_disable_pin_interrupt(BOARD_APP_GPIO_CTRL, BOARD_APP_GPIO_INDEX, BOARD_APP_GPIO_PIN);
 
         /* stop */
-        i2s_disable(DAO_I2S);
+        i2s_stop(DAO_I2S);
         dao_stop(HPM_DAO);
+
+        /* reset I2S TX function and clear remaining data in TX FIFO */
+        stat = i2s_reset_tx(DAO_I2S);
+        if (stat != status_success) {
+            return status_fail;
+        }
+        i2s_enable_tx_line(DAO_I2S, I2S_DAO_DATA_LINE); /*Enable I2S TX */
+        dao_software_reset(HPM_DAO);
 
         if (dma_transfer_error) {
             printf("dma transfer i2s data failed\n");

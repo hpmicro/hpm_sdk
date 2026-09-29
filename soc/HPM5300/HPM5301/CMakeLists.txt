@@ -44,10 +44,11 @@ sdk_zcc_compile_options(-mtune=andes-d25-series)
 sdk_zcc_ld_options(-mtune=andes-d25-series)
 
 if(NOT HPM_SOC_DISABLE_B_EXT)
-    get_toolchain_gcc_spec(spec)
-    if(spec GREATER_EQUAL 20191213)
+    check_march_ext_supported(b_ext_supported "_zba_zbb_zbc_zbs")
+    if(b_ext_supported)
         set(RV_ARCH "${RV_ARCH}_zba_zbb_zbc_zbs" PARENT_SCOPE)
     endif()
+    unset(b_ext_supported)
 endif()
 
 set(SOC_LINKER_SCRIPT "" PARENT_SCOPE)

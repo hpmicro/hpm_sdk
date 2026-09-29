@@ -48,6 +48,8 @@ elseif("${HPM_SOC}" STREQUAL "HPM6P81")
     sdk_app_src(src/hpm6pxx/low_power_example.c)
 elseif("${HPM_SOC}" STREQUAL "HPM5E31")
     sdk_app_src(src/hpm5exx/low_power_example.c)
+elseif("${HPM_SOC}" STREQUAL "HPM5151")
+    sdk_app_src(src/hpm51xx/low_power_example.c)
 endif()
 
 sdk_compile_definitions(-DUSE_NONVECTOR_MODE=1)

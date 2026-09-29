@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -14,7 +14,15 @@
 #define DAC_BUFF0_COUNT (DAC_SOC_MAX_BUFF_COUNT / 32)  /* 2048 */
 #define DAC_BUFF1_COUNT (DAC_SOC_MAX_BUFF_COUNT / 32)  /* 2048 */
 
+#ifndef APP_DAC_ANA_CLK_HZ
+#define APP_DAC_ANA_CLK_HZ DAC_SOC_ANA_CLK_FREQ_MAX
+#endif
+
 #define PI HPM_PI
+
+static uint32_t s_dac_input_hz;
+static uint8_t s_dac_ana_div;
+static uint32_t s_dac_ana_hz;
 
 static __RW uint8_t direct_cmpt_flag;
 static __RW uint8_t step_running_flag;
@@ -48,6 +56,7 @@ static void init_common_config(dac_mode_t mode)
 
     dac_get_default_config(&config);
     config.dac_mode = mode;
+    config.ana_div = s_dac_ana_div;
     config.sync_mode = (clk_dac_src_ahb0 == clock_get_source(BOARD_APP_DAC_CLOCK_NAME)) ? true : false;
 
     dac_init(BOARD_DAC_BASE, &config);
@@ -89,7 +98,7 @@ static void set_step_mode_config(void)
     config0.round_mode = dac_round_mode_loop;
 
     dac_set_step_config(BOARD_DAC_BASE, DAC_STEP_CFG_IDX, &config0);
-    dac_set_output_frequency(BOARD_DAC_BASE, clock_get_frequency(BOARD_APP_DAC_CLOCK_NAME), DAC_SOC_MAX_OUTPUT_FREQ);
+    dac_set_output_frequency(BOARD_DAC_BASE, s_dac_input_hz, DAC_SOC_MAX_OUTPUT_FREQ);
 }
 
 static void set_buffer_mode_config(void)
@@ -117,7 +126,7 @@ static void set_buffer_mode_config(void)
     }
 
     dac_set_buffer_config(BOARD_DAC_BASE, &buffer_config);
-    dac_set_output_frequency(BOARD_DAC_BASE, clock_get_frequency(BOARD_APP_DAC_CLOCK_NAME), DAC_SOC_MAX_OUTPUT_FREQ);
+    dac_set_output_frequency(BOARD_DAC_BASE, s_dac_input_hz, DAC_SOC_MAX_OUTPUT_FREQ);
 
     dac_enable_interrupts(BOARD_DAC_BASE, DAC_BUF1_COMPLETE_EVENT);
 }
@@ -159,6 +168,25 @@ static void stop_handler(void)
     buf1_cmpt_flag = 0;
 }
 
+static hpm_stat_t app_dac_setup_clock(void)
+{
+    uint32_t input_hz;
+    uint8_t ana_div;
+    uint8_t ratio;
+
+    input_hz = board_init_dac_clock(BOARD_DAC_BASE, false);
+    if (dac_calc_ana_divider(input_hz, APP_DAC_ANA_CLK_HZ, &ana_div) != status_success) {
+        printf("DAC analog clock cannot meet %u Hz from input %u Hz (ana_div 2-8)\n", (unsigned int)APP_DAC_ANA_CLK_HZ, (unsigned int)input_hz);
+        return status_invalid_argument;
+    }
+    ratio = dac_ana_div_to_ratio(ana_div);
+    s_dac_input_hz = input_hz;
+    s_dac_ana_div = ana_div;
+    s_dac_ana_hz = input_hz / ratio;
+    printf("DAC clock: input=%u Hz, ana_div=%u, analog=%u Hz, output target=%u Hz\n", (unsigned int)s_dac_input_hz, (unsigned int)ratio, (unsigned int)s_dac_ana_hz, (unsigned int)DAC_SOC_MAX_OUTPUT_FREQ);
+    return status_success;
+}
+
 static uint8_t get_dac_mode(void)
 {
     uint8_t ch;
@@ -188,8 +216,10 @@ int main(void)
     /* Set a log title */
     printf("This is a DAC demo:\n");
 
-    /* Initialize a DAC clock */
-    board_init_dac_clock(BOARD_DAC_BASE, false);
+    /* Initialize a DAC clock; consume returned freq, do not retune CPU/AHB */
+    if (app_dac_setup_clock() != status_success) {
+        return 0;
+    }
 
     /* Initialize a DAC pin */
     board_init_dac_pins(BOARD_DAC_BASE);

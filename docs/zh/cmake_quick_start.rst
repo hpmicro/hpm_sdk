@@ -56,14 +56,14 @@ SDK CMake Quick Start
 
 .. important::
 
-   所有 SDK 配置变量**必须**在 ``find_package(hpm-sdk)`` 之前设置，包括：
+   所有 SDK 配置变量 **必须** 在 ``find_package(hpm-sdk)`` 之前设置，包括：
 
     - ``CONFIG_*`` — 功能开关（如 ``CONFIG_FREERTOS``、``CONFIG_LWIP``）
     - ``HEAP_SIZE`` / ``STACK_SIZE`` — 堆栈大小
     - ``HPM_BUILD_TYPE`` — 构建类型
     - ``CUSTOM_GCC_LINKER_FILE`` 等自定义变量
 
-   在 ``find_package`` 之后设置这些变量将**不会生效**。
+   在 ``find_package`` 之后设置这些变量将 **不会生效**。
 
 .. code-block:: cmake
 

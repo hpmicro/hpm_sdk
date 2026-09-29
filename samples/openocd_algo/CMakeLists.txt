@@ -1,4 +1,4 @@
-# Copyright (c) 2021 HPMicro
+# Copyright (c) 2021,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -9,6 +9,9 @@ set(CUSTOM_GCC_STARTUP_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/func_table.S)
 set(CMAKE_BUILD_TYPE RELEASE)
 set(HPM_SDK_LD_NO_NANO_SPECS 1)
 set(HPM_SDK_LD_NO_WHOLE_SDK 1)
+
+set(RV_ARCH "rv32imafc")
+set(RV_ABI "ilp32f")
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 

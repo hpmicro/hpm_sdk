@@ -10,7 +10,7 @@ I2S emulation
 
   - 多实例支持
     - 支持多个SPI模拟I2S实例（如I2S0, I2S1等），每个实例都有独立的配置参数。
-    - 通过``hpm_i2s_over_spi_t``结构体管理每个I2S实例的配置信息，比如bclk位时钟,lrck声道时钟,mclk主时钟的模拟生成，I2S数据模拟生成等。
+    - 通过 ``hpm_i2s_over_spi_t`` 结构体管理每个I2S实例的配置信息，比如bclk位时钟,lrck声道时钟,mclk主时钟的模拟生成，I2S数据模拟生成等。
   - 阻塞与非阻塞读写操作接口
 
     - 仅支持主机。
@@ -150,7 +150,7 @@ API调用流程介绍
 I2S-over-SPI初始化
 ^^^^^^^^^^^^^^^^^^^^
 
-- 调用 ``hpm_i2s_master_over_spi_init`` API 来初始化 I2S-over-SPI。在此过程中，``i2s_device`` 实例变量的参数会被赋值到API的``i2s``并生效。
+- 调用 ``hpm_i2s_master_over_spi_init`` API 来初始化 I2S-over-SPI。在此过程中，``i2s_device`` 实例变量的参数会被赋值到API的 ``i2s`` 并生效。
 
 - ``hpm_i2s_master_over_spi_init`` API原型：
 
@@ -447,7 +447,7 @@ I2S-over-SPI发送操作
                 printf("非阻塞发送启动失败: 0x%x\n", result);
             }
 
-- 调用 ``hpm_i2s_master_over_spi_tx_is_busy`` API 检查I2S发送状态，当``hpm_i2s_master_over_spi_tx_buffer_nonblocking`` 发送完成后会返回true。
+- 调用 ``hpm_i2s_master_over_spi_tx_is_busy`` API 检查I2S发送状态，当 ``hpm_i2s_master_over_spi_tx_buffer_nonblocking`` 发送完成后会返回true。
 
     - ``hpm_i2s_master_over_spi_tx_is_busy`` API原型：
 

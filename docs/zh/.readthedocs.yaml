@@ -21,6 +21,14 @@ build:
         - cd docs && make api_doc
         - cd docs && make zh
         - mkdir -p $READTHEDOCS_OUTPUT/html
+        # api_doc.md uses ../../api_doc/html/index.html (correct under local output/<lang>/html/).
+        # RTD flattens sphinx to the site root and renames doxygen html/ to api_doc/, so the link must
+        # be rewritten to api_doc/index.html here. DO NOT REMOVE: without this rewrite the api_doc page
+        # 404s on RTD and no linkcheck CI catches it (Makefile has no linkcheck target).
+        - test -f docs/output/zh/html/api_doc.html || { echo "ERROR:zh api_doc.html missing before rewrite"; exit 1; }
+        - sed -i 's|\.\./\.\./api_doc/html/index\.html|api_doc/index.html|g' docs/output/zh/html/api_doc.html
+        - grep -q 'href="api_doc/index\.html"' docs/output/zh/html/api_doc.html || { echo 'ERROR:zh api_doc link rewrite failed'; exit 1; }
         - cp -r docs/output/zh/html/* $READTHEDOCS_OUTPUT/html/
         - test -d docs/output/api_doc/html || { echo "api_doc/html missing; output tree:"; ls -R docs/output 2>/dev/null | head -40; exit 1; }
         - cp -r docs/output/api_doc/html $READTHEDOCS_OUTPUT/html/api_doc
+        - test -f $READTHEDOCS_OUTPUT/html/api_doc/index.html || { echo "ERROR:zh deployed api_doc index missing"; exit 1; }

@@ -103,7 +103,7 @@ mhd_wifi_demo
      [WiFi] CLM: API: 12.2 Data: 1.0.1 Compiler: 1.29.4 ClmImport: 1.39.2 Creation: 2022-08-16 11:23:10
      [WiFi] MHD: Version 1.0.11 B003 Dec  5 2024 14:11:04
 
-* 串口终端输入`help` 来查询支持的所有命令
+* 串口终端输入 `help` 来查询支持的所有命令
 
 * 典型应用场景
 

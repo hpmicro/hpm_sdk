@@ -22,6 +22,8 @@ ADC16 Temperature
   .. code-block:: console
 
    This is an ADC16 temperature acquisition demo:
+   ADC16 clock: input=200000000 Hz, div=4, conv=50000000 Hz
+   ADC16 sample: cycle=511, convert=21, fs=93984 Hz
    Current Soc Temp: 26℃
    Current Soc Temp: 26℃
    Current Soc Temp: 26℃
@@ -40,4 +42,6 @@ ADC16 Temperature
    Current Soc Temp: 26℃
    Current Soc Temp: 28℃
    Current Soc Temp: 28℃
+
+- 以上时钟行为 ``hpm6750evk2`` 默认 AHB 200 MHz 的打印。本示例需要 ADC16 温度传感器支持。
 

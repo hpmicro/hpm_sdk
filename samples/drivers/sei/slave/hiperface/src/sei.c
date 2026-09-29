@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -119,7 +119,7 @@ int main(void)
 
     /* [3] instructions */
     instr_idx = 0;
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_3, SEI_DAT_2, 8);  /* recv addr */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, 0, SEI_DAT_3, SEI_DAT_2, 8);  /* recv addr */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_3, SEI_DAT_CMD, 8);/* recv cmd */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_3, 8);  /* recv crc */
     /* jump to cmd */
@@ -228,7 +228,7 @@ int main(void)
     engine_config.wdg_enable = true;
     engine_config.wdg_action = sei_wdg_exec_exception_instr;
     engine_config.wdg_instr_idx = 0;
-    engine_config.wdg_time = 500;    /* 500 bits time */
+    engine_config.wdg_time = 200;    /* 200 bits time */
     sei_engine_config_init(BOARD_SEI, BOARD_SEI_CTRL, &engine_config);
     sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
 
@@ -260,28 +260,29 @@ void isr_sei(void)
     if ((irq_flag & sei_irq_latch1_event) != 0) {
         sample_latch_tm1 = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         delta = (sample_latch_tm1 > sample_latch_tm2) ? (sample_latch_tm1 - sample_latch_tm2) : (sample_latch_tm1 - sample_latch_tm2 + 0xFFFFFFFFu);
-        printf("ADDR:%#x, CMD:%#x, POS:%#x, CRC:%#x, sample_tm1:%u, sample_tm2:%u, sample_interval:%d us\n",
+        printf("ADDR:%#x, CMD:%#x, POS:%#x, CRC:%#x, sample_interval:%d us\n",
                 sei_get_data_value(BOARD_SEI, SEI_DAT_2),
                 sei_get_command_value(BOARD_SEI, BOARD_SEI_CTRL),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_4),
                 sei_get_crc_value(BOARD_SEI, SEI_DAT_5),
-                sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
+                delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
         sample_latch_tm2 = sample_latch_tm1;
     }
 
     if ((irq_flag & sei_irq_wdog_event) != 0) {
-        sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
-        sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
-        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
-    }
-
-    if ((irq_flag & sei_irq_trx_err_event) != 0) {
-        printf("TRX Error!\n");
         sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
         sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
         sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
         sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
         sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_4);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_5);
+        sei_restart_asynchronous_xcvr(BOARD_SEI, BOARD_SEI_CTRL);
         sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+        printf("WDG Active!\n");
+    }
+
+    if ((irq_flag & sei_irq_trx_err_event) != 0) {
+        printf("TRX Error!\n");
     }
 }

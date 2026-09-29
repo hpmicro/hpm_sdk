@@ -67,8 +67,8 @@ BLDC FOC控制
 
 硬件电流环会显示时间零，软件电流环计算时间在1us左右，这个时间会根据角度不同而波动，波动范围在25%，通过进行如下操作复现：
 
-- 关闭`mcl_app_config.h`除`MCL_EN_LOOP_TIME_COUNT`的宏
-- 编译选项`flash_xip_release`
+- 关闭 `mcl_app_config.h` 除 `MCL_EN_LOOP_TIME_COUNT` 的宏
+- 编译选项 `flash_xip_release`
 
 运行现象
 ------------

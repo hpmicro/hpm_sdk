@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 HPMicro
+ * Copyright (c) 2024-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -95,7 +95,10 @@ hpm_stat_t dao_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
 
     /* Config I2S interface to CODEC */
     i2s_get_default_config(TEST_I2S, &i2s_config);
-    i2s_init(TEST_I2S, &i2s_config);
+    stat = i2s_init(TEST_I2S, &i2s_config);
+    if (stat != status_success) {
+        return status_fail;
+    }
 
     i2s_get_default_transfer_config_for_dao(&transfer);
     transfer.sample_rate = audio_data->sample_rate;
@@ -191,8 +194,7 @@ hpm_stat_t mixer_play_one_sound(audio_data_t *sound)
     mixer_dst.src_ch_mask = (1 << SMIX_SOURCE_CH); /* enable source channel to destination channel */
     smix_mixer_config_dst_ch(SMIX, SMIX_DST_CH, &mixer_dst);
 
-    i2s_reset_tx(TEST_I2S);
-    dao_software_reset(HPM_DAO); /* reset DAO */
+    /* fill tx dummy data to tx fifo to prevent underflow when TX starts if DMA not transfer data without I2S start */
     if (i2s_fill_tx_dummy_data(TEST_I2S, TEST_I2S_DATA_LINE, sound->channel_num) != status_success) {
         printf("I2S error occurred during playing\n");
         return status_fail;
@@ -236,6 +238,13 @@ hpm_stat_t mixer_play_one_sound(audio_data_t *sound)
     i2s_stop(TEST_I2S); /* stop I2S */
     dao_stop(HPM_DAO);
 
+    /* reset I2S TX function and clear remaining data in TX FIFO */
+    if (i2s_reset_tx(TEST_I2S) != status_success) {
+        return status_fail;
+    }
+    i2s_enable_tx_line(TEST_I2S, TEST_I2S_DATA_LINE); /*Enable I2S TX */
+    dao_software_reset(HPM_DAO); /* reset DAO */
+
     if (smix_mixer_check_dst_cal_saturation_error(SMIX, SMIX_DST_CH)
         || smix_mixer_check_source_cal_saturation_error(SMIX, SMIX_SOURCE_CH)
         || smix_mixer_check_dst_data_underflew(SMIX, SMIX_DST_CH)) {
@@ -261,17 +270,20 @@ void button_gpio_isr(void)
                 /* stop DAO and I2S */
                 smix_mixer_dst_disable(SMIX);
                 smix_mixer_dst_disable_source_channel(SMIX, SMIX_DST_CH, (1 << SMIX_SOURCE_CH));
-                i2s_disable(DAO_I2S);
+                i2s_stop(DAO_I2S);
                 dao_stop(HPM_DAO);
                 dao_i2s_playing = false;
                 dao_i2s_status_changed = true;
             } else {
                 /* reset and reopen DAO and I2S */
-                i2s_reset_tx(DAO_I2S);
+                if (i2s_reset_tx(DAO_I2S) != status_success) {
+                    printf("i2s_reset_tx failed\n");
+                }
+                i2s_enable_tx_line(DAO_I2S, TEST_I2S_DATA_LINE); /*Enable I2S TX */
                 dao_software_reset(HPM_DAO);
                 smix_mixer_dst_enable(SMIX);
                 smix_mixer_dst_enable_source_channel(SMIX, SMIX_DST_CH, (1 << SMIX_SOURCE_CH));
-                i2s_enable(DAO_I2S);
+                i2s_start(DAO_I2S);
                 dao_start(HPM_DAO);
                 dao_i2s_playing = true;
                 dao_i2s_status_changed = true;

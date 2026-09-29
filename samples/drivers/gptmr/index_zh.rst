@@ -27,7 +27,7 @@ GPTMR通道配置
 
 - 需要确保GPTMR的时钟源已经开启，并且初始化了相关GPTMR外设引脚。
 
-  - 可使用`clock_add_to_group` 函数用于将GPTMR时钟源添加到时钟组中，从而确保GPTMR时钟源已经开启。
+  - 可使用 `clock_add_to_group` 函数用于将GPTMR时钟源添加到时钟组中，从而确保GPTMR时钟源已经开启。
 
 - GPTMR每个通道支持独立配置，可配置不同功能，比如输入捕获、输出比较、PWM等。
 

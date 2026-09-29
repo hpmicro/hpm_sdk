@@ -153,6 +153,7 @@
 #define ADC12_SOC_CALIBRATION_WAITING_LOOP_CNT     (10)
 #define ADC12_SOC_MAX_CH_NUM                       (17U)
 #define ADC12_SOC_MAX_SAMPLE_VALUE                 (4095U)
+#define ADC12_SOC_CONV_CLK_FREQ_MAX                (50000000UL)
 /* WDOG: Do not set INT_EN in adc12_init_channel. Use adc12_enable_wdog_interrupt() after in-window conversion. */
 #define ADC12_SOC_WDOG_INT_EN_DEFERRED             (1U)
 
@@ -162,6 +163,7 @@
 #define ADC16_SOC_TEMP_CH_EN                       (1U)
 #define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 #define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
+#define ADC16_SOC_CONV_CLK_FREQ_MAX                (50000000UL)
 /* WDOG: Do not set INT_EN in adc16_init_channel. Use adc16_enable_wdog_interrupt() after in-window conversion. */
 #define ADC16_SOC_WDOG_INT_EN_DEFERRED             (1U)
 

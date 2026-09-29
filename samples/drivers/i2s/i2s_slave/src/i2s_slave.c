@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -101,7 +101,11 @@ void i2s_slave_config(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel
     i2s_config.use_external_mclk = true;  /* Use external master clock */
     i2s_config.use_external_bclk = true;  /* Use external bit clock */
     i2s_config.use_external_fclk = true;  /* Use external frame clock */
-    i2s_init(I2S_SLAVE, &i2s_config);
+    if (i2s_init(I2S_SLAVE, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
 
     /* Configure I2S transfer parameters */
     i2s_get_default_transfer_config(&transfer);

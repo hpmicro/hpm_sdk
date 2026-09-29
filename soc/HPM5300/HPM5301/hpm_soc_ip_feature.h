@@ -39,6 +39,9 @@
 /* EWDG related feature */
 #define HPM_IP_FEATURE_EWDG_SOC_SUPPORT_TIMEOUT_INTERRUPT 1
 
+/* SYNT related feature */
+#define HPM_IP_FEATURE_SYNT_TIMESTAMP 1
+
 /* TRGM related feature */
 #define HPM_IP_FEATURE_TRGM_HAS_TRGM_IN_OUT_STATUS 1
 

@@ -50,6 +50,10 @@
 #define APP_ADC16_CH_SAMPLE_CYCLE            (8)
 #endif
 
+#ifndef APP_ADC16_CONV_CLK_HZ
+#define APP_ADC16_CONV_CLK_HZ                ADC16_SOC_CONV_CLK_FREQ_MAX
+#endif
+
 #define APP_ADC16_SW_AVE_COUNT (1)  /* software average count over seq DMA results, 1~16; not HW adc_loop */
 #define APP_ADC16_SEQ_START_POS              (0U)
 #define APP_ADC16_SEQ_DMA_BUFF_LEN_IN_4BYTES (APP_ADC16_SW_AVE_COUNT)
@@ -101,6 +105,33 @@ static adc16_diff_config_t diff_cfg_pair01_slave;
 static adc16_diff_config_t diff_cfg_pair23_master;
 static adc16_diff_config_t diff_cfg_pair23_slave;
 #endif
+
+static uint32_t s_adc16_clk_div;
+static uint8_t s_adc16_sample_printed;
+
+static hpm_stat_t app_adc16_prepare_clock(void *ptr)
+{
+    uint32_t input_hz;
+    uint32_t div;
+    uint32_t conv_hz;
+    uint32_t convert_cycles;
+    uint32_t fs_hz;
+
+    input_hz = board_init_adc_clock(ptr, true);
+    if (adc16_calc_clock_divider(input_hz, APP_ADC16_CONV_CLK_HZ, &div) != status_success) {
+        printf("ADC16 conv clock cannot meet %u Hz from input %u Hz (div 1-16)\n", (unsigned int)APP_ADC16_CONV_CLK_HZ, (unsigned int)input_hz);
+        return status_invalid_argument;
+    }
+    s_adc16_clk_div = div;
+    conv_hz = input_hz / div;
+    convert_cycles = adc16_res_16_bits;
+    printf("ADC16 clock: input=%u Hz, div=%u, conv=%u Hz\n", (unsigned int)input_hz, (unsigned int)div, (unsigned int)conv_hz);
+    if ((s_adc16_sample_printed == 0) && (adc16_calc_sample_rate(conv_hz, APP_ADC16_CH_SAMPLE_CYCLE, convert_cycles, &fs_hz) == status_success)) {
+        printf("ADC16 sample: cycle=%u, convert=%u, fs=%u Hz\n", (unsigned int)APP_ADC16_CH_SAMPLE_CYCLE, (unsigned int)convert_cycles, (unsigned int)fs_hz);
+        s_adc16_sample_printed = 1;
+    }
+    return status_success;
+}
 
 /* (%d) matches HW bus encoding; no remapping (e.g. zero diff stays 32768 when POS=1). */
 static int32_t adc16_diff_raw_to_code(uint32_t raw, const adc16_diff_config_t *cfg)
@@ -223,7 +254,7 @@ hpm_stat_t init_common_config_pair01(adc16_conversion_mode_t conv_mode, bool mas
 
     cfg.res         = adc16_res_16_bits;
     cfg.conv_mode   = conv_mode;
-    cfg.adc_clk_div = adc16_clock_divider_4;
+    cfg.adc_clk_div = s_adc16_clk_div;
 #if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb = (clk_adc_src_ahb0 == clock_get_source(master ? BOARD_APP_ADC16_DIFF_PAIR01_CLK_NAME_MASTER : BOARD_APP_ADC16_DIFF_PAIR01_CLK_NAME_SLAVE)) ? true : false;
 #endif
@@ -296,7 +327,7 @@ hpm_stat_t init_common_config_pair23(adc16_conversion_mode_t conv_mode, bool mas
 
     cfg.res         = adc16_res_16_bits;
     cfg.conv_mode   = conv_mode;
-    cfg.adc_clk_div = adc16_clock_divider_4;
+    cfg.adc_clk_div = s_adc16_clk_div;
 #if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb = (clk_adc_src_ahb0 == clock_get_source(master ? BOARD_APP_ADC16_DIFF_PAIR23_CLK_NAME_MASTER : BOARD_APP_ADC16_DIFF_PAIR23_CLK_NAME_SLAVE)) ? true : false;
 #endif
@@ -426,13 +457,21 @@ int main(void)
     printf("ADC16 differential sample\n");
 
 #if ADC16_DIFF_PAIR01
-    board_init_adc_clock(BOARD_APP_ADC16_DIFF_PAIR01_BASE_MASTER, true);
-    board_init_adc_clock(BOARD_APP_ADC16_DIFF_PAIR01_BASE_SLAVE, true);
+    if (app_adc16_prepare_clock(BOARD_APP_ADC16_DIFF_PAIR01_BASE_MASTER) != status_success) {
+        return 0;
+    }
+    if (app_adc16_prepare_clock(BOARD_APP_ADC16_DIFF_PAIR01_BASE_SLAVE) != status_success) {
+        return 0;
+    }
 #endif
 
 #if ADC16_DIFF_PAIR23
-    board_init_adc_clock(BOARD_APP_ADC16_DIFF_PAIR23_BASE_MASTER, true);
-    board_init_adc_clock(BOARD_APP_ADC16_DIFF_PAIR23_BASE_SLAVE, true);
+    if (app_adc16_prepare_clock(BOARD_APP_ADC16_DIFF_PAIR23_BASE_MASTER) != status_success) {
+        return 0;
+    }
+    if (app_adc16_prepare_clock(BOARD_APP_ADC16_DIFF_PAIR23_BASE_SLAVE) != status_success) {
+        return 0;
+    }
 #endif
 
     conv_mode = adc16_conv_mode_sequence;

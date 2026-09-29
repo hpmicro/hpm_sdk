@@ -21,7 +21,7 @@ HPM_JPEG这个sample通过HPM_JPEG组件进行编解码。解码后将文件显�
 工程配置
 ------------
 
-- 文件`CMakeLists.txt` :
+- 文件 `CMakeLists.txt` :
 
   - ``set (JPEG_USE_SDCARD 1)``  从SD卡中读取test.jpg文件; ``set (JPEG_USE_UDISK 1)``  从u盘中读取test.jpg文件。这两个为排他选项
 

@@ -216,10 +216,10 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
 #if USING_FEEDBACK == 1
 #ifdef CONFIG_USB_HS
     uint32_t feedback_value = AUDIO_FREQ_TO_FEEDBACK_HS(s_speaker_sample_rate);
-    AUDIO_FEEDBACK_TO_BUF_HS(s_speaker_feedback_buffer, feedback_value);
+    AUDIO_FEEDBACK_TO_BUF_HS_INTERVAL(s_speaker_feedback_buffer, feedback_value, EP_INTERVAL);
 #else
     uint32_t feedback_value = AUDIO_FREQ_TO_FEEDBACK_FS(s_speaker_sample_rate);
-    AUDIO_FEEDBACK_TO_BUF_FS(s_speaker_feedback_buffer, feedback_value);
+    AUDIO_FEEDBACK_TO_BUF_FS_INTERVAL(s_speaker_feedback_buffer, feedback_value, EP_INTERVAL);
 #endif
     usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE);
 #endif
@@ -271,10 +271,10 @@ void usbd_audio_iso_out_feedback_callback(uint8_t busid, uint8_t ep, uint32_t nb
     USB_LOG_RAW("actual feedback len:%d\r\n", (unsigned int)nbytes);
 #ifdef CONFIG_USB_HS
     uint32_t feedback_value = AUDIO_FREQ_TO_FEEDBACK_HS(s_speaker_sample_rate);
-    AUDIO_FEEDBACK_TO_BUF_HS(s_speaker_feedback_buffer, feedback_value);
+    AUDIO_FEEDBACK_TO_BUF_HS_INTERVAL(s_speaker_feedback_buffer, feedback_value, EP_INTERVAL);
 #else
     uint32_t feedback_value = AUDIO_FREQ_TO_FEEDBACK_FS(s_speaker_sample_rate);
-    AUDIO_FEEDBACK_TO_BUF_FS(s_speaker_feedback_buffer, feedback_value);
+    AUDIO_FEEDBACK_TO_BUF_FS_INTERVAL(s_speaker_feedback_buffer, feedback_value, EP_INTERVAL);
 #endif
     usbd_ep_start_write(busid, AUDIO_OUT_FEEDBACK_EP, s_speaker_feedback_buffer, FEEDBACK_ENDP_PACKET_SIZE);
 }

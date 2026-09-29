@@ -7202,7 +7202,7 @@ Only used in device operation mode.</description>
 SOF Received - R/WC.
 When the device controller detects a Start Of (micro) Frame, this bit will be set to a one.
 When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
-Therefore, this bit will be set roughly every 1ms in device FS mode and every 125ms in HS mode and will be synchronized to the actual SOF that is received.
+Therefore, this bit will be set roughly every 1ms in device FS mode and every 125us in HS mode and will be synchronized to the actual SOF that is received.
 Because the device controller is initialized to FS before connect, this bit will be set at an interval of 1ms during the prelude to connect and chirp.
 In host mode, this bit will be set every 125us and can be used by host controller driver as a time base.
 Software writes a 1 to this bit to clear it.</description>

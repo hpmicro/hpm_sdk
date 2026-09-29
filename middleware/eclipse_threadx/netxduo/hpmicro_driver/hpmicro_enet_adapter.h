@@ -28,7 +28,7 @@ typedef struct {
     enet_rx_desc_t *rx_desc_list_cur;
     enet_buff_config_t tx_buff_cfg;
 #if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)
-    enet_buff_config_netx_t rx_buff_cfg[60];
+    enet_buff_config_netx_t rx_buff_cfg[ENET_RX_BUFF_COUNT];
 #else
     enet_buff_config_t rx_buff_cfg;
 #endif

@@ -1,8 +1,10 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2012, Rockwell Automation, Inc.
- * All rights reserved.
+ * Copyright (c) 2024,2026 HPMicro
  *
- ******************************************************************************/
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ */
 
 #include <string.h>
 #include <stdlib.h>
@@ -109,7 +111,7 @@ EipStatus AfterAssemblyDataReceived(CipInstance *instance)
     /* handle the data received e.g., update outputs of the device */
     if (!help_info_printed) {
         help_info_printed = true;
-        printf("Mesaage receieved from host!\n");
+        printf("Message received from host!\n");
     }
     switch (instance->instance_number) {
     case DEMO_APP_OUTPUT_ASSEMBLY_NUM:

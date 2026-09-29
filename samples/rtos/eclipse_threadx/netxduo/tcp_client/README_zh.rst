@@ -11,14 +11,14 @@ Netx Duo Tcp客户端
 硬件设置
 ------------
 
-用网线连接开发板和电脑/路由器/交换机,并确保`SERVER_IPV4_ADDRESS`是可访问的。
+用网线连接开发板和电脑/路由器/交换机,并确保 `SERVER_IPV4_ADDRESS` 是可访问的。
 
 工程配置
 ------------
 
 - 以太网端口配置：参考 `以太网通用工程设置 <../../../../lwip/doc/Ethernet_Common_Project_Settings_zh.rst>`_
 
-- 可以通过`set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)`的语句来使能DHCP功能。
+- 可以通过 `set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)` 的语句来使能DHCP功能。
 
 运行现象
 ------------

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -8,6 +8,9 @@
 #define NETCONF_H
 
 #include "stdint.h"
+#include "lwipopts.h"
+#include "sys_arch.h"
+#include "lwip/netif.h"
 
 /* MAC ADDRESS */
 #define MAC_ADDR0   0x98
@@ -59,6 +62,7 @@ extern "C" {
 extern struct netif gnetif;
 /* Exported functions ------------------------------------------------------- */
 void netif_config(void);
+void netif_show_ip_info(struct netif *netif);
 void user_notification(struct netif *netif);
 #ifdef __cplusplus /* __cplusplus */
 }

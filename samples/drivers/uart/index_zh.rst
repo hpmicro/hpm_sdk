@@ -35,7 +35,7 @@ uart初始化
 
 - 需要确保UART的时钟源已经开启，并且初始化了相关UART外设引脚。
 
-  - 可使用`clock_add_to_group` 函数用于将UART时钟源添加到时钟组中，从而确保UART时钟源已经开启。
+  - 可使用 `clock_add_to_group` 函数用于将UART时钟源添加到时钟组中，从而确保UART时钟源已经开启。
 
 - 相关枚举值介绍：
 
@@ -763,7 +763,7 @@ DMA方式接收
   - **注意**
 
     - 不需要loopback功能，可以把 `loop_back_en` 设置为false
-    - 只要`auto_flow_ctrl_en` 设置为true，就会使能硬件CTS硬件流控
+    - 只要 `auto_flow_ctrl_en` 设置为true，就会使能硬件CTS硬件流控
     - 如果只需要使能CTS，可以把 `set_rts_high` 设置为true，`auto_flow_ctrl_en` 设置为true
     - 如果需要同时使能CTS和RTS，可以把 `set_rts_high` 设置为false，`auto_flow_ctrl_en` 设置为true
 

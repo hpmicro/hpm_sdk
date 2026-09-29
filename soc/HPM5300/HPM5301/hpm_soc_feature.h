@@ -111,6 +111,7 @@
 #define ADC16_SOC_MAX_CH_NUM                       (15U)
 #define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 #define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
+#define ADC16_SOC_CONV_CLK_FREQ_MAX                (50000000UL)
 /* WDOG: Do not set INT_EN in adc16_init_channel. Use adc16_enable_wdog_interrupt() after in-window conversion. */
 #define ADC16_SOC_WDOG_INT_EN_DEFERRED             (1U)
 #define ADC_SOC_NO_HW_TRIG_SRC                     (1U)
@@ -188,11 +189,6 @@
 #define EWDG_SOC_CLK_DIV_VAL_MAX        (5U)
 #define EWDG_SOC_OVERTIME_REG_WIDTH     (16U)
 #define EWDG_TIMEOUT_INTERRUPT_REQUIRE_EDGE_TRIGGER (1)
-
-/*
- * Sync Timer
- */
-#define SYNT_SOC_HAS_TIMESTAMP             (1U)
 
 /*
  * GPIO

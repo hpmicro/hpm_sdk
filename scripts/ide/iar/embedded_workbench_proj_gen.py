@@ -1,4 +1,4 @@
-# Copyright 2023,2025 hpmicro
+# Copyright 2023,2025-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 #!/usr/bin/env python3
@@ -47,7 +47,12 @@ def update_file_tree(sdk_base, out_dir, iar_file, f, tree, use_outdir_relpath):
         tmp_dir = re.sub(r'\$PROJ_DIR\$[\\/]', '', iar_dir)
         # get sdk relpath to out_dir
         sdk_base_relpath = re.sub(r'\\', r'/', HELPER.get_relpath(sdk_base, out_dir))
-        iar_dir = re.sub(sdk_base_relpath + r'[\\/]?', '', tmp_dir)
+        iar_dir = re.sub(
+            r'^' + re.escape(sdk_base_relpath) + r'[\\/]?',
+            '',
+            tmp_dir,
+            count=1,
+        )
     tree_insert_dirs(iar_dir, iar_file, f, tree)
 
 def populate_file_nodes(root, sdk_base, project_dir, custom_board_dir, out_dir, level = 1, use_outdir_relpath = True):

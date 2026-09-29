@@ -30,30 +30,30 @@ BOOT切换
     3. 松开 reset
     4. 松开 key
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - KEY
-     - 功能描述
-   * - OFF
-     - Quad SPI NOR flash 启动
-   * - ON
-     - 在系统编程
+     * - KEY
+       - 功能描述
+     * - OFF
+       - Quad SPI NOR flash 启动
+     * - ON
+       - 在系统编程
 
 .. _hpm5301evklite_buttons:
 
 按键
 ----
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 名称
-     - 功能
-   * - RESET
-     - Reset 按键
-   * - KEY&BOOT
-     - 用户按键 & BOOT切换按键
+     * - 名称
+       - 功能
+     * - RESET
+       - Reset 按键
+     * - KEY&BOOT
+       - 用户按键 & BOOT切换按键
 
 .. _hpm5301evklite_pins:
 
@@ -64,168 +64,169 @@ BOOT切换
   - UART0用于调试控制台串口或一些使用UART的功能测试
   - UART3用于一些使用UART的功能测试，例如USB_CDC_ACM_UART, MODBUS_RTU等。
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-     - 备注
-   * - UART3.TXD
-     - J3[8]
-     -
-   * - UART3.RXD
-     - J3[10]
-     -
-   * - UART0.TXD
-     - J3[36]
-     -
-   * - UART0.RXD
-     - J3[38]
-     -
-   * - UART3.break
-     - J3[24]
-     - 产生uart break信号
+     * - 功能
+       - 位置
+       - 备注
+     * - UART3.TXD
+       - J3[8]
+       -
+     * - UART3.RXD
+       - J3[10]
+       -
+     * - UART0.TXD
+       - J3[36]
+       -
+     * - UART0.RXD
+       - J3[38]
+       -
+     * - UART3.break
+       - J3[24]
+       - 产生uart break信号
 
 - SPI引脚：
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - SPI1.CSN
-     - J3[24]
-   * - SPI1.SCLK
-     - J3[23]
-   * - SPI1.MISO
-     - J3[21]
-   * - SPI1.MOSI
-     - J3[19]
+     * - 功能
+       - 位置
+     * - SPI1.CSN
+       - J3[24]
+     * - SPI1.SCLK
+       - J3[23]
+     * - SPI1.MISO
+       - J3[21]
+     * - SPI1.MOSI
+       - J3[19]
 
 - I2C引脚：
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - I2C3.SCL
-     - J3[28]
-   * - I2C3.SDA
-     - J3[27]
+     * - 功能
+       - 位置
+     * - I2C3.SCL
+       - J3[28]
+     * - I2C3.SDA
+       - J3[27]
 
 - ACMP引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - ACMP.CMP1.INN4
-     - J3[13]
-   * - ACMP.COMP_1
-     - J3[3]
+     * - 功能
+       - 位置
+     * - ACMP.CMP1.INN4
+       - J3[13]
+     * - ACMP.COMP_1
+       - J3[3]
 
 - ADC16引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - ADC0.INA2
-     - J3[26]
-   * - ADC1.INA1
-     - J3[3]
+     * - 功能
+       - 位置
+     * - ADC0.INA2
+       - J3[26]
+     * - ADC1.INA1
+       - J3[3]
 
 - TinyUF2引脚 :
 
-.. note::
+  .. note::
 
-  - PA9 连接 GND，同时按下 reset，board 进入 DFU mode, PA9 接 3.3V, 将app拖进枚举的U盘中, 下载app, 成功后自动跳转 app;
-  - PA9 连接3.3V，同时按下 reset，board 进入 bootloader 模式， 如果此时 flash 有有效的app，会自动跳转 app；
+    - PA9 连接 GND，同时按下 reset，board 进入 DFU mode, PA9 接 3.3V, 将app拖进枚举的U盘中, 下载app, 成功后自动跳转 app;
+    - PA9 连接3.3V，同时按下 reset，board 进入 bootloader 模式， 如果此时 flash 有有效的app，会自动跳转 app；
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - TinyUF2 Button
-     - J3[32]
+     * - 功能
+       - 位置
+     * - TinyUF2 Button
+       - J3[32]
 
 - GPTMR引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-     - 备注
-   * - GPTMR0.CAPT_1
-     - J3[3]
-     - SENT解码输入引脚（空闲低电平）
-   * - GPTMR0.COMP_1
-     - J3[5]
-     -
-   * - GPTMR0.COMP_3
-     - J3[8]
-     - SPI模拟I2S的BLCK
-   * - GPTMR0.COMP_2
-     - J3[26]
-     - SPI模拟I2S的LRCK
-   * - GPTMR1.COMP_1
-     - J3[7]
-     - SPI模拟I2S的MCLK
-   * - GPTMR0.CAPT_2
-     - J3[11]
-     - SENT解码输入引脚（空闲高电平）
+     * - 功能
+       - 位置
+       - 备注
+     * - GPTMR0.CAPT_1
+       - J3[3]
+       - SENT解码输入引脚（空闲低电平）
+     * - GPTMR0.COMP_1
+       - J3[5]
+       -
+     * - GPTMR0.COMP_3
+       - J3[8]
+       - SPI模拟I2S的BLCK
+     * - GPTMR0.COMP_2
+       - J3[26]
+       - SPI模拟I2S的LRCK
+     * - GPTMR1.COMP_1
+       - J3[7]
+       - SPI模拟I2S的MCLK
+     * - GPTMR0.CAPT_2
+       - J3[11]
+       - SENT解码输入引脚（空闲高电平）
 
 - SPI模拟I2S CS引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-     - 备注
-   * - PA31
-     - J3[11]
-     - 控制SPI从机CS的引脚
+     * - 功能
+       - 位置
+       - 备注
+     * - PA31
+       - J3[11]
+       - 控制SPI从机CS的引脚
 
 - CLOCK REF引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - PA09
-     - J3[32]
+     * - 功能
+       - 位置
+     * - PA09
+       - J3[32]
 
 - ESP-HOSTED 引脚接口
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-     - 备注
-   * - PA09
-     - J3[32]
-     - RESET引脚
-   * - PB12
-     - J3[27]
-     - HANDSHAKE引脚
-   * - PB13
-     - J3[28]
-     - DATA_READY引脚
+     * - 功能
+       - 位置
+       - 备注
+     * - PA09
+       - J3[32]
+       - RESET引脚
+     * - PB12
+       - J3[27]
+       - HANDSHAKE引脚
+     * - PB13
+       - J3[28]
+       - DATA_READY引脚
 
 - BROWNOUT中断指示引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - PB13
-     - J3[28]
+     * - 功能
+       - 位置
+     * - PB13
+       - J3[28]
+

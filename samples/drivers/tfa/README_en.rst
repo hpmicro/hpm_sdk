@@ -24,6 +24,11 @@ Supported Functions
 .. note::
    ATAN2 and CORDIC functions are only supported on some SoCs.
    On other SoCs, selecting these functions will print a "not supported" message.
+   TFA supports up to 4 levels of nested computation. If the nesting exceeds 4 levels, the results of the outermost computation will be lost and will be recomputed.
+   This project enables interrupt nesting protection by default.
+   If User has confirmed that the current environment has already disabled interrupts, ensuring that no interrupt nesting will occur (which could otherwise cause ongoing computation to be interrupted and corrupted by data computation triggered in a new interrupt),
+   the macro "CONFIG_TFA_NOT_USE_IRQ_NEST_PROTECTION" can be enabled in the CMakeLists file to disable the nesting protection for higher performance.
+
 
 Hardware Configuration
 ----------------------
@@ -73,29 +78,31 @@ Menu 0–9 test 10 TFA functions, comparing result and cycle time against the li
 .. code-block:: console
 
    0
-   tfa and math diff value:-0.000000, math calculation time:33 ticks, tfa calculation time:62 ticks.
+   tfa and math diff value:0.000000, math calculation time:24 ticks, tfa calculation time:57 ticks.
    1
-   tfa and math diff value:0.000000, math calculation time:363 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:25 ticks, tfa calculation time:58 ticks.
    2
-   tfa and math diff value:0.000000, math calculation time:1755 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:307 ticks, tfa calculation time:58 ticks.
    3
-   tfa and math diff value:0.000000, math calculation time:1826 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:309 ticks, tfa calculation time:58 ticks.
    4
-   tfa and math diff value:0.000000, math calculation time:3031 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:358 ticks, tfa calculation time:58 ticks.
    5
-   tfa and math diff value:-0.000000, math calculation time:2875 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:-0.000000, math calculation time:291 ticks, tfa calculation time:58 ticks.
    6
-   tfa and math diff value:-0.000000, math calculation time:1959 ticks, tfa calculation time:180 ticks.
+   tfa and math diff value:-0.000000, math calculation time:535 ticks, tfa calculation time:58 ticks.
    7
-   tfa and math diff value:-0.000000, math calculation time:552 ticks, tfa calculation time:63 ticks.
+   tfa and math diff value:0.000000, math calculation time:43 ticks, tfa calculation time:58 ticks.
    8
-   tfa and math diff value:0.000000, math calculation time:2108 ticks, tfa calculation time:150 ticks.
+   tfa and math diff value:0.000000, math calculation time:513 ticks, tfa calculation time:121 ticks.
    9
-   math angle value:6.981058, tfa angle value:6.980525, tfa and math angle diff value:-0.000533, math mode value:98.731964, tfa mode value:98.000000, tfa and math mode diff value:-0.731960, math calculation time:2901 ticks, tfa calculation time:93 ticks.
+   math angle value:6.981057, tfa angle value:6.980525, tfa and math angle diff value:-0.000533,math mode value:98.731964, tfa mode value:98.000000, tfa and math mode diff value:-0.731964,math calculation time:401 ticks, tfa calculation time:80 ticks.
 
 Menu option A performs a complex calculation, comparing its result and timing against the library function. Results:
 
 .. code-block:: console
 
    A
-   tfa and math diff value:-0.000000, math calculation time:9088 ticks, tfa calculation time:290 ticks.
+   tfa and math diff value:-0.000000, math calculation time:1269 ticks, tfa calculation time:288 ticks.
+
+Note: The mathematical function powf used in Menu 4 POW2 TEST cannot calculate correct values under the zcc 4.1.5 toolchain. This issue has been fixed in zcc 4.1.8, and users can upgrade to version 4.1.8 for accurate computation.

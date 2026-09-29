@@ -17,11 +17,11 @@ UART中断
 注意
 ------
 
--  在工程的CMakeLists.txt文件中, ``sdk_compile_definitions(-DCONFIG_UART_FIFO_MODE=1)``,默认使能FIFO, 若需要禁能FIFO, 请在工程中更改``sdk_compile_definitions(-DCONFIG_UART_FIFO_MODE=0)``或者删除``sdk_compile_definitions(-DCONFIG_UART_FIFO_MODE=1)``
+-  在工程的CMakeLists.txt文件中, ``sdk_compile_definitions(-DCONFIG_UART_FIFO_MODE=1)``,默认使能FIFO, 若需要禁能FIFO, 请在工程中更改 ``sdk_compile_definitions(-DCONFIG_UART_FIFO_MODE=0)`` 或者删除 ``sdk_compile_definitions(-DCONFIG_UART_FIFO_MODE=1)``
 
 -  在FIFO模式下，接收FIFO中的数据只有达到设置的接收FIFO阈值，才会进入一次有效接收数据中断。
 
--  示例中的接收FIFO阈值设置是接收FIFO深度的一半，每个SOC的接收FIFO深度不同，接收FIFO阈值也不同，FIFO深度可通过``uart_get_fifo_size``API或者``UART_SOC_FIFO_SIZE``宏定义获取。
+-  示例中的接收FIFO阈值设置是接收FIFO深度的一半，每个SOC的接收FIFO深度不同，接收FIFO阈值也不同，FIFO深度可通过 ``uart_get_fifo_size`` API或者 ``UART_SOC_FIFO_SIZE`` 宏定义获取。
 
 -  示例在使能FIFO模式下，接收每达到设置的接收FIFO阈值会进入一次接收中断，进而进行发送。按照FIFO阈值的整数倍进行回显。
 

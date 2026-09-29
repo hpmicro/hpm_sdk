@@ -645,7 +645,7 @@ SPI数据传输
     - DMA传输初始化设置API
 
       - 用于设置SPI使用DMA传输的初始化设置，包括使能发送或者接收DMA，设置SPI控制器的传输长度等。
-      - 如果每次传输的长度不变，则只需要初始化一次即可。主机模式下，下次传输可使用`spi_write_command` API接口设置。
+      - 如果每次传输的长度不变，则只需要初始化一次即可。主机模式下，下次传输可使用 `spi_write_command` API接口设置。
       - TXFIFO 有效数据小于等于设置阈值时，会触发DMA传输。阈值设置可以通过 `spi_set_tx_fifo_threshold` API接口设置。
       - RXFIFO 有效数据大于等于设置阈值时，会触发DMA传输。阈值设置可以通过 `spi_set_rx_fifo_threshold` API接口设置。
       - 使用DMA收发API参考 SPI组件 :ref:`spi_component <spi_component>`

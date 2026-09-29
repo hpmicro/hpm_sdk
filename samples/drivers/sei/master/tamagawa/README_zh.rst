@@ -35,14 +35,19 @@ SEI Master: Connect TAMAGAWA Encoder
    ----------------------------------------------------------------------
    SEI master tamagawa sample
    Started sei engine!
-   MT:0, ST:0x3bc029, ALMC:0xc8, CRC:0xec, sample_tm:600368065, update_tm:600377411, TimeDelay:467*0.1us
-   MT:0, ST:0x52c183, ALMC:0xc8, CRC:0xaf, sample_tm:640368065, update_tm:640377410, TimeDelay:467*0.1us
-   MT:0, ST:0x7de1bf, ALMC:0xc8, CRC:0x63, sample_tm:680368065, update_tm:680377408, TimeDelay:467*0.1us
-   MT:0x1, ST:0x104f00, ALMC:0xc8, CRC:0xdd, sample_tm:720368065, update_tm:720377408, TimeDelay:467*0.1us
-   MT:0x1, ST:0x51a04c, ALMC:0xc8, CRC:0x9a, sample_tm:760368065, update_tm:760377426, TimeDelay:468*0.1us
-   MT:0x1, ST:0x576bc0, ALMC:0xc8, CRC:0x18, sample_tm:800368065, update_tm:800377424, TimeDelay:467*0.1us
-   MT:0x2, ST:0x461e, ALMC:0xc8, CRC:0xfd, sample_tm:840368065, update_tm:840377422, TimeDelay:467*0.1us
-   MT:0x2, ST:0x461d, ALMC:0xc8, CRC:0x3d, sample_tm:880368065, update_tm:880377419, TimeDelay:467*0.1us
-   MT:0x2, ST:0x461c, ALMC:0xc8, CRC:0xbd, sample_tm:920368065, update_tm:920377414, TimeDelay:467*0.1us
-   MT:0x2, ST:0x461e, ALMC:0xc8, CRC:0xfd, sample_tm:960368065, update_tm:960377414, TimeDelay:467*0.1us
+   MT:0x8888, ST:0xa5a5, ALMC:0, CRC:0xd, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5a6, ALMC:0, CRC:0xe, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5a7, ALMC:0, CRC:0xf, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5a8, ALMC:0, CRC:0, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5a9, ALMC:0, CRC:0x1, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5aa, ALMC:0, CRC:0x2, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5ab, ALMC:0, CRC:0x3, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5ac, ALMC:0, CRC:0x4, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5ad, ALMC:0, CRC:0x5, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5ae, ALMC:0, CRC:0x6, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5af, ALMC:0, CRC:0x7, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5b0, ALMC:0, CRC:0x18, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5b1, ALMC:0, CRC:0x19, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5b2, ALMC:0, CRC:0x1a, TimeDelta:462*0.1us
+   MT:0x8888, ST:0xa5b3, ALMC:0, CRC:0x1b, TimeDelta:462*0.1us
 

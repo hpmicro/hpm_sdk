@@ -7228,21 +7228,21 @@ bit2: software key 0: not selected, 1:selected</description>
           <fields>
             <field>
               <name>SFTRST_RX</name>
-              <description>software reset the RX module if asserted to be 1'b1. Self-clear.</description>
+              <description>software reset the RX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.</description>
               <bitOffset>18</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SFTRST_TX</name>
-              <description>software reset the TX module if asserted to be 1'b1. Self-clear.</description>
+              <description>software reset the TX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.</description>
               <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SFTRST_CLKGEN</name>
-              <description>software reset the CLK GEN module if asserted to be 1'b1.  Self-clear.</description>
+              <description>software reset the CLK GEN module if asserted to be 1'b1.</description>
               <bitOffset>16</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -7432,7 +7432,7 @@ This bit controls the generation of an interrupt when an error condition  (UD, O
           <addressOffset>0x10</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
+          <resetMask>0xFE01FFFF</resetMask>
           <fields>
             <field>
               <name>TX_UD</name>
@@ -16558,7 +16558,7 @@ Only used in device operation mode.</description>
 SOF Received - R/WC.
 When the device controller detects a Start Of (micro) Frame, this bit will be set to a one.
 When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
-Therefore, this bit will be set roughly every 1ms in device FS mode and every 125ms in HS mode and will be synchronized to the actual SOF that is received.
+Therefore, this bit will be set roughly every 1ms in device FS mode and every 125us in HS mode and will be synchronized to the actual SOF that is received.
 Because the device controller is initialized to FS before connect, this bit will be set at an interval of 1ms during the prelude to connect and chirp.
 In host mode, this bit will be set every 125us and can be used by host controller driver as a time base.
 Software writes a 1 to this bit to clear it.</description>

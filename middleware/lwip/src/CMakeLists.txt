@@ -1,9 +1,10 @@
-# Copyright (c) 2021-2025 HPMicro
+# Copyright (c) 2021-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 sdk_inc(.)
 sdk_inc(include)
 sdk_inc(include/lwip/apps)
+sdk_inc(../../../samples/lwip/common)
 
 sdk_src(core/altcp.c)
 sdk_src(core/altcp_alloc.c)

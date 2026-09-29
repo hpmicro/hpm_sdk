@@ -163,5 +163,4 @@ IO操作
    IPv4 Netmask: 255.255.255.0
    IPv4 Gateway: 192.168.100.1
 
-   Mesaage receieved from host!
-
+   Message received from host!

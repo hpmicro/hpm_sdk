@@ -11,7 +11,7 @@ SMIX示例工程演示音频码流的混音功能。示例工程中将两种不�
 工程配置
 ------------
 
-- 在文件`CMakeLists.txt`中,  根据开发板原理图，设置匹配的audio codec类型，例如："set(CONFIG_CODEC "wm8960")"
+- 在文件 `CMakeLists.txt` 中,  根据开发板原理图，设置匹配的audio codec类型，例如："set(CONFIG_CODEC "wm8960")"
 
 硬件设置
 ------------

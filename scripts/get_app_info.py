@@ -1,4 +1,4 @@
-# Copyright (c) 2023 HPMicro
+# Copyright (c) 2023-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
@@ -15,6 +15,7 @@ LINKED_PROJECT_NAME="project_name"
 LINKED_PROJECT_BUILD_TYPE="build_type"
 
 EXCLUDED_IDES="excluded_ides"
+DEPENDENCY="dependency"
 
 DEBUG_INFO="debug"
 DEBUG_INFO_SES="ses"
@@ -53,6 +54,12 @@ def get_excluded_ides(app_info):
     if not app_info is None and EXCLUDED_IDES in app_info.keys():
         excluded_ides = app_info[EXCLUDED_IDES]
     return excluded_ides
+
+def get_dependencies(app_info):
+    dependencies = []
+    if not app_info is None and DEPENDENCY in app_info.keys():
+        dependencies = app_info[DEPENDENCY]
+    return dependencies
 
 def get_ses_info(app_info, info_type = "auto_start_gdb_server"):
     gdb_auto_start = "Yes"
@@ -110,6 +117,13 @@ def get_app_info(app_yml, info_type, write_to_stdout = False):
             if write_to_stdout:
                 sys.stdout.write("%s" % value)
         # return True, even if no excluded IDE is found
+        return True, value
+    elif info_type == DEPENDENCY:
+        dependencies = get_dependencies(app_info)
+        if (not dependencies is None) and len(dependencies) > 0:
+            value = (";".join(dependencies))
+            if write_to_stdout:
+                sys.stdout.write("%s" % value)
         return True, value
     return False, value
 

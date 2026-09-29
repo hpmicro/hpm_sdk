@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 HPMicro
+ * Copyright (c) 2024,2026 HPMicro
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -10,7 +10,7 @@ define memory with size = 4G;
 define region ILM = [from 0x00000000 size 128k];    /* ILM */
 define region DLM = [from 0x00200000 size 128k];    /* DLM */
 define region NONCACHEABLE_RAM = [from 0x01200000 size _noncacheable_size];
-define region AXI_SRAM = [from 0x01220000 size 112k];
+define region AXI_SRAM = [from 0x01200000 + _noncacheable_size size 240K - _noncacheable_size];
 define region SHARE_RAM = [from 0x0123C000 size 16k];
 define region AHB_SRAM = [from 0xF0200000 size 32k];
 

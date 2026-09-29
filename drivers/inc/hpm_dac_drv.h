@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -44,6 +44,22 @@ typedef enum {
     dac_ana_div_6,      /**< Divide by 6 */
     dac_ana_div_8       /**< Divide by 8 */
 } dac_ana_div_t;
+
+/**
+ * @brief Get the analog-clock divide ratio from @ref dac_ana_div_t.
+ *
+ * Analog clock is input_hz / ratio. Valid ratios are 2, 4, 6 and 8.
+ *
+ * @param[in] ana_div Analog divider enum.
+ * @return Divide ratio 2, 4, 6 or 8. Invalid enum returns 0.
+ */
+static inline uint8_t dac_ana_div_to_ratio(uint8_t ana_div)
+{
+    if (ana_div > dac_ana_div_8) {
+        return 0;
+    }
+    return (uint8_t)((ana_div + 1U) * 2U);
+}
 
 /** @brief DAC configuration structure */
 typedef struct {
@@ -169,6 +185,21 @@ hpm_stat_t dac_set_buffer_config(DAC_Type *ptr, dac_buffer_config_t *config);
  *         - @ref status_invalid_argument Invalid frequency
  */
 hpm_stat_t dac_set_output_frequency(DAC_Type *ptr, uint32_t dac_input_freq, uint32_t dac_output_freq);
+
+/**
+ * @brief Calculate a DAC analog divider so analog clock is at most target_ana_hz.
+ *
+ * Analog clock is input_hz / ANA_DIV. Selects the smallest ANA_DIV in
+ * {2, 4, 6, 8} such that input_hz / ANA_DIV <= target_ana_hz.
+ * Does not change CPU/AHB or analog source clocks.
+ *
+ * @param[in] input_hz Input clock in Hz from board_init_dac_clock().
+ * @param[in] target_ana_hz Analog-clock ceiling in Hz.
+ * @param[out] ana_div Calculated divider of @ref dac_ana_div_t.
+ * @retval status_success A legal divider was found.
+ * @retval status_invalid_argument No ANA_DIV in 2-8 can meet the ceiling.
+ */
+hpm_stat_t dac_calc_ana_divider(uint32_t input_hz, uint32_t target_ana_hz, uint8_t *ana_div);
 
 /**
  * @brief Set DAC step software trigger

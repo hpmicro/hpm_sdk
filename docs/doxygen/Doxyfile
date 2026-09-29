@@ -2255,13 +2255,10 @@ PREDEFINED             = "HPM_EN_MATH_NN_LIB=1" \
                         "HPM_IP_FEATURE_SPI_CS_SELECT=1" \
                         "HPM_IP_FEATURE_SPI_SUPPORT_DIRECTIO=1" \
                         "HPM_IP_FEATURE_I2C_SUPPORT_RESET=1" \
-                        "HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE=1" \
-                        "HPM_IP_FEATURE_SEI_ASYNCHRONOUS_MODE_V2=1" \
-                        "HPM_IP_FEATURE_SEI_TIMEOUT_REWIND_FEATURE=1" \
-                        "HPM_IP_FEATURE_SEI_HAVE_DAT10_31=1" \
-                        "HPM_IP_FEATURE_SEI_HAVE_INTR64_255=1" \
-                        "HPM_IP_FEATURE_SEI_HAVE_CTRL2_12=1" \
-                        "HPM_IP_FEATURE_SEI_HAVE_PTCD=1" \
+                        "HPM_IP_FEATURE_SEI_ERRATA_E00047=1" \
+                        "HPM_IP_FEATURE_SEI_ERRATA_E00048=1" \
+                        "HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD=1" \
+                        "HPM_IP_FEATURE_SEI_TRIG_IN_DIV=1" \
                         "HPMSOC_HAS_HPMSDK_ADC16=1" \
                         "HPM_IP_FEATURE_ADC16_SEQ_STOP_POS_INT=1" \
                         "HPM_IP_FEATURE_ADC16_HAS_MOT_EN=1"

@@ -12,46 +12,9 @@
 
 static volatile tsw_phy_status_t last_status = {.tsw_phy_link = tsw_phy_link_unknown};
 uint8_t mac[] = {0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17};
-ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) tsw_tsf_t entry[10];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t send_buff[TSW_SEND_DESC_COUNT][TSW_SEND_BUFF_LEN];
 ATTR_PLACE_AT_NONCACHEABLE_BSS_WITH_ALIGNMENT(TSW_SOC_DATA_BUS_WIDTH) uint8_t recv_buff[TSW_RECV_DESC_COUNT][TSW_RECV_BUFF_LEN];
-ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) uint8_t data_buff[] = {
-0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00,
-0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17,
-0x08, 0x06,
-0x00, 0x01,
-0x08, 0x00,
-0x06,
-0x04,
-0x00, 0x01,
-0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17,
-0xc0, 0xa8, 0x64, 0x0a,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-0xc0, 0xa8, 0x64, 0x05,
-};
 
-ATTR_PLACE_AT_NONCACHEABLE_INIT_WITH_ALIGNMENT(4) uint8_t data_buff1[TSW_SOC_SWITCH_HEADER_LEN + 1024] = {
-0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00,
-0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17,
-0x08, 0x06,
-0x00, 0x01,
-0x08, 0x00,
-0x06,
-0x04,
-0x00, 0x01,
-0x98, 0x2c, 0xbc, 0xb1, 0x9f, 0x17,
-0xc0, 0xa8, 0x64, 0x0a,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-0xc0, 0xa8, 0x64, 0x05,
-};
 /*---------------------------------------------------------------------*
  * Initialization
  *---------------------------------------------------------------------*/
@@ -68,7 +31,7 @@ hpm_stat_t tsw_init(TSW_Type *ptr)
     tsw_ep_set_mac_addr(ptr, BOARD_TSW_PORT, mac, true);
 
     /* Set MAC Mode: GMII, CLKSEL: refclk */
-    tsw_ep_set_mac_mode(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF == tsw_port_phy_itf_rgmii ? tsw_mac_mode_gmii : tsw_mac_mode_mii);
+    tsw_ep_set_mac_mode(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF ==  tsw_port_phy_itf_rgmii ? tsw_mac_mode_gmii : tsw_mac_mode_mii);
 
     /* Set port PHY interface */
     tsw_set_port_interface(ptr, BOARD_TSW_PORT, BOARD_TSW_PORT_ITF);
@@ -155,7 +118,11 @@ void tsw_self_adaptive_port_speed(void)
  *---------------------------------------------------------------------*/
 int main(void)
 {
-    tsw_fpe_config_t config;
+    hpm_stat_t stat;
+    tsw_frame_t frame;
+    uint32_t rx_sec;
+    uint32_t rx_nsec;
+    uint8_t data[1536];
     uint32_t value = 0;
 
     /* Initialize BSP */
@@ -180,33 +147,42 @@ int main(void)
 
     /* Initialize MAC and DMA */
     if (tsw_init(BOARD_TSW) == 0) {
-        /* Prepare streams */
-        memcpy(send_buff[0], data_buff, sizeof(data_buff));
-        memcpy(send_buff[1], data_buff1, sizeof(data_buff1));
-
-        /* Set FPE config */
-        tsw_fpe_get_default_mms_ctrl_config(BOARD_TSW, BOARD_TSW_PORT, &config);
-        tsw_fpe_set_mms_ctrl(BOARD_TSW, BOARD_TSW_PORT, &config);
-        tsw_fpe_enable_mms(BOARD_TSW, BOARD_TSW_PORT);
 
         while (1) {
             if (tsw_get_link_status()) {
-                tsw_set_tx_hdr_route((tx_hdr_desc_t *)send_buff[1], TSW_CPU_SEND_TO_PORT(BOARD_TSW_PORT), tsw_traffic_queue_1, 2);
-                tsw_send_frame(BOARD_TSW, send_buff[1], TSW_DMA_FRAME_LEN(data_buff1), 1);
 
-                tsw_set_tx_hdr_route((tx_hdr_desc_t *)send_buff[0], TSW_CPU_SEND_TO_PORT(BOARD_TSW_PORT), tsw_traffic_queue_0, 1);
-                tsw_send_frame(BOARD_TSW, send_buff[0], TSW_DMA_FRAME_LEN(data_buff), 0);
-                board_delay_ms(500);
+                stat = tsw_recv_frame(BOARD_TSW, &frame);
 
-                tsw_fpe_get_mms_statistics_counter(BOARD_TSW, BOARD_TSW_PORT, tsw_fpe_mms_fragment_tx_counter, &value);
-                printf("FPE MMS Fragment Tx Counter: %d\n", value);
+                if (stat == status_success) {
+                    if (frame.length > TSW_SOC_SWITCH_HEADER_LEN) {
+                        frame.buffer = recv_buff[frame.id];
+                        memcpy(data, &frame.buffer[TSW_SOC_ETH_PAYLOAD_OFFSET], TSW_FRAME_ETH_LEN(frame.length));
+                        tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
 
-              printf("==================================================================\n");
+                        tsw_get_rx_hdr_timestamp(frame.buffer, &rx_sec, &rx_nsec);
+                        printf("FPE: %d, RX-Time: %d.%09d\n", tsw_get_rx_hdr_fpe(frame.buffer), rx_sec, rx_nsec);
+                        printf("Rx Frame Length: %d\n", TSW_FRAME_ETH_LEN(frame.length));
+
+                        for (uint16_t i = 0; i < TSW_FRAME_ETH_LEN(frame.length); i++) {
+                            printf("%02x ", data[i]);
+                        }
+                        printf("\n");
+
+                        tsw_fpe_get_mms_statistics_counter(BOARD_TSW, BOARD_TSW_PORT, tsw_fpe_mms_frame_assembly_ok_counter, &value);
+                        printf("FPE Assembly Ok Counter: %d\n", value);
+                        printf("========================================================================================================");
+                        printf("======================================================================================================\n");
+                    }
+                } else if (stat == status_fail) {
+                    tsw_commit_recv_desc(BOARD_TSW, recv_buff[frame.id], TSW_RECV_BUFF_LEN, frame.id);
+                } else {
+
+                }
             }
 
         }
     } else {
-        printf("TSW initialization fails !!!\n");
+        printf("TSW initialization failed !!!\n");
 
         while (1) {
 

@@ -47,36 +47,36 @@ Hardware
   - LED
   - CAN
 
-.. note::
+  .. note::
 
-  - **When using FEMC(SDRAM) or PPI peripherals, please insert the corresponding expansion board into the PPI/FEMC interface**
+    - **When using FEMC(SDRAM) or PPI peripherals, please insert the corresponding expansion board into the PPI/FEMC interface**
 
-    - The standard expansion board for HPM6P00EVK evaluation purposes is as follows, with a 16 bits SDRAM (FEMC access), a 16 bits SRAM (FEMC or PPI access) and a parallel ADC (PPI access).
+      - The standard expansion board for HPM6P00EVK evaluation purposes is as follows, with a 16 bits SDRAM (FEMC access), a 16 bits SRAM (FEMC or PPI access) and a parallel ADC (PPI access).
 
-      .. image:: doc/hpm6p00evk_ext.png
-        :alt: hpm6p00evk_ext
+        .. image:: doc/hpm6p00evk_ext.png
+          :alt: hpm6p00evk_ext
 
-  - The FEMC/PPI interface has high flexibility. If you need to evaluate other parallel port devices, such as FPGA, ASYNC SRAM, etc., you can design your own expansion board or contact us.
+    - The FEMC/PPI interface has high flexibility. If you need to evaluate other parallel port devices, such as FPGA, ASYNC SRAM, etc., you can design your own expansion board or contact us.
 
 DIP Switch
 ----------
 
 - Bit 1 and 2 control the boot mode
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - bit[2:1]
-     - Description
-   * - OFF, OFF
-     - Boot from Quad SPI NOR flash
-   * - OFF, ON
-     - Boot from eMMC
-   * - ON, OFF
-     - ISP
+     * - bit[2:1]
+       - Description
+     * - OFF, OFF
+       - Boot from Quad SPI NOR flash
+     * - OFF, ON
+       - Boot from eMMC
+     * - ON, OFF
+       - ISP
 
-.. note::
-  - **On HPM6P00EVKRevB, when the ISP mode is selected and Segger or Ozone is used for online debugging, network initialization will fail due to the multiplexing of USB0_P and ENet RXCK signals and the differential output from the USB controller.**
+  .. note::
+    - **On HPM6P00EVKRevB, when the ISP mode is selected and Segger or Ozone is used for online debugging, network initialization will fail due to the multiplexing of USB0_P and ENet RXCK signals and the differential output from the USB controller.**
 
 .. _hpm6p00evk_buttons:
 
@@ -360,26 +360,26 @@ Pin Description
 
 - HALL Pin
 
-The HALL pin of the hpm6p00evk needs to be wired separately.
+  The HALL pin of the hpm6p00evk needs to be wired separately.
 
-.. list-table::
-    :header-rows: 1
+  .. list-table::
+      :header-rows: 1
 
-    * - Function
-      - EVK Position
-      - Motor Position
-    * - HALL.U
-      - J4[1]
-      - J22[3]
-    * - HALL.V
-      - J4[3]
-      - J22[4]
-    * - HALL.W
-      - J4[5]
-      - J22[5]
-    * - GND
-      - J4[32]
-      - J22[1]
+      * - Function
+        - EVK Position
+        - Motor Position
+      * - HALL.U
+        - J4[1]
+        - J22[3]
+      * - HALL.V
+        - J4[3]
+        - J22[4]
+      * - HALL.W
+        - J4[5]
+        - J22[5]
+      * - GND
+        - J4[32]
+        - J22[1]
 
 - PWM Output Pin
 
@@ -598,29 +598,43 @@ The HALL pin of the hpm6p00evk needs to be wired separately.
 
 - ESP-HOSTED Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - PA16
-     - P5[11]
-     - RESET Pin
-   * - PC29
-     - P5[5]
-     - HANDSHAKE Pin
-   * - PC28
-     - P5[3]
-     - DATA_READY Pin
+     * - Function
+       - Position
+       - Note
+     * - PA16
+       - P5[11]
+       - RESET Pin
+     * - PC29
+       - P5[5]
+       - HANDSHAKE Pin
+     * - PC28
+       - P5[3]
+       - DATA_READY Pin
 
 - BROWNOUT Interrupt Indicator Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PY07
-     - P5[19]
+     * - Function
+       - Position
+     * - PY07
+       - P5[19]
 
+.. _hpm6p00evk_known_issues:
+
+Board Known Issue
+-----------------
+
+- I2S0 and FEMC pin multiplexing issue
+
+  - Impact
+
+    - The ``PB00`` pin is multiplexed between ``I2S0_TXD_3`` and ``FEMC_A_00``. Examples that use the I2S0 codec must not be built or run with the ``flash_sdram_xip`` build type. Configuring ``I2S0_TXD_3`` changes the FEMC address pin configuration and may corrupt data in external SDRAM.
+
+  - Solution
+
+    - Use a build type that does not place runtime data in external SDRAM, such as ``flash_xip`` or ``ram``.

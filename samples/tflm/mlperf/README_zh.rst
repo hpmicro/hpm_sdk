@@ -21,7 +21,7 @@ MLPerf 代码、使用方法和规则请参见`GitHub仓库 <https://github.com/
 代码选项
 ------------
 
-- 请在该工程的CMakeLists.txt的`find_package`前添加如下代码，获得更高性能
+- 请在该工程的CMakeLists.txt的 `find_package` 前添加如下代码，获得更高性能
 
 
 .. code-block:: cmake

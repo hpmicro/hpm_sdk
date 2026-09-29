@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -592,6 +592,16 @@ static inline uint32_t sei_get_trig_input_time(SEI_Type *ptr, uint8_t idx, sei_t
 static inline uint32_t sei_get_latch_time(SEI_Type *ptr, uint8_t idx, uint8_t latch_idx)
 {
     return ptr->CTRL[idx].LATCH[latch_idx].TIME;
+}
+
+/**
+ * @brief Restart the SEI asynchronous transceiver, it will reset the asynchronous transceiver state machine and restart the asynchronous transceiver
+ * @param [in] ptr SEI base address
+ * @param [in] idx SEI ctrl index, such as SEI_CTRL_0, SEI_CTRL_1, etc.
+ */
+static inline void sei_restart_asynchronous_xcvr(SEI_Type *ptr, uint8_t idx)
+{
+    ptr->CTRL[idx].XCVR.CTRL |= SEI_CTRL_XCVR_CTRL_RESTART_MASK;
 }
 
 /**

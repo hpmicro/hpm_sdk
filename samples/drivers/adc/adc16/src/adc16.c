@@ -55,6 +55,14 @@
 #define APP_ADC16_TRIG_SRC_FREQUENCY         (20000U)
 #endif
 
+#ifndef APP_ADC16_PERIOD_NS
+#define APP_ADC16_PERIOD_NS                  (500000000ULL) /* 500 ms */
+#endif
+
+#ifndef APP_ADC16_CONV_CLK_HZ
+#define APP_ADC16_CONV_CLK_HZ                ADC16_SOC_CONV_CLK_FREQ_MAX
+#endif
+
 /*
  * SAMPLE_CFG.ADC_LOOP exponent n when IP has ADC_LOOP: repeat count is 2^n (0 = once).
  * Max n is ADC16_SOC_ADC_LOOP_MAX_EXP for the SoC.
@@ -115,6 +123,32 @@ static uint32_t s_oneshot_capture_count;
 static uint32_t s_sequence_capture_count;
 static uint32_t s_period_capture_count;
 static uint32_t s_preemption_capture_count;
+static uint32_t s_adc16_input_hz;
+static uint32_t s_adc16_clk_div;
+static uint32_t s_adc16_conv_hz;
+
+static hpm_stat_t app_adc16_setup_clock(void)
+{
+    uint32_t input_hz;
+    uint32_t div;
+    uint32_t convert_cycles;
+    uint32_t fs_hz;
+
+    input_hz = board_init_adc_clock(BOARD_APP_ADC16_BASE, true);
+    if (adc16_calc_clock_divider(input_hz, APP_ADC16_CONV_CLK_HZ, &div) != status_success) {
+        printf("ADC16 conv clock cannot meet %u Hz from input %u Hz (div 1-16)\n", (unsigned int)APP_ADC16_CONV_CLK_HZ, (unsigned int)input_hz);
+        return status_invalid_argument;
+    }
+    s_adc16_input_hz = input_hz;
+    s_adc16_clk_div = div;
+    s_adc16_conv_hz = input_hz / div;
+    convert_cycles = adc16_res_16_bits;
+    printf("ADC16 clock: input=%u Hz, div=%u, conv=%u Hz\n", (unsigned int)s_adc16_input_hz, (unsigned int)s_adc16_clk_div, (unsigned int)s_adc16_conv_hz);
+    if (adc16_calc_sample_rate(s_adc16_conv_hz, APP_ADC16_CH_SAMPLE_CYCLE, convert_cycles, &fs_hz) == status_success) {
+        printf("ADC16 sample: cycle=%u, convert=%u, fs=%u Hz\n", (unsigned int)APP_ADC16_CH_SAMPLE_CYCLE, (unsigned int)convert_cycles, (unsigned int)fs_hz);
+    }
+    return status_success;
+}
 
 #if APP_ADC16_ENABLE_LOOP_EXP_LOG
 static void adc16_print_loop(uint8_t ch)
@@ -386,7 +420,7 @@ hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
 
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
-    cfg.adc_clk_div    = adc16_clock_divider_4;
+    cfg.adc_clk_div    = s_adc16_clk_div;
 #if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb   = (APP_ADC16_CLOCK_BUS == clock_get_source(BOARD_APP_ADC16_CLK_NAME)) ? true : false;
 #endif
@@ -496,6 +530,12 @@ hpm_stat_t init_period_config(void)
     adc16_channel_config_t ch_cfg;
     adc16_prd_config_t prd_cfg;
     hpm_stat_t st;
+    uint64_t ticks;
+    uint64_t actual_ns;
+    uint64_t target_ns;
+    uint64_t min_ns;
+    uint32_t convert_cycles;
+    uint32_t conv_cycles;
 
     /* get a default channel config */
     adc16_get_channel_default_config(&ch_cfg);
@@ -513,8 +553,31 @@ hpm_stat_t init_period_config(void)
         }
     }
 
-    prd_cfg.prescale     = 22;    /* Set divider: 2^22 clocks */
-    prd_cfg.period_count = 5;     /* 6 periods */
+    convert_cycles = adc16_res_16_bits;
+    conv_cycles = APP_ADC16_CH_SAMPLE_CYCLE + convert_cycles;
+#if defined(HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP) && HPM_IP_FEATURE_ADC16_HAS_ADC_LOOP
+    conv_cycles = conv_cycles << APP_ADC16_CH_ADC_LOOP_EXP;
+#endif
+    target_ns = APP_ADC16_PERIOD_NS;
+    min_ns = ((uint64_t)conv_cycles / s_adc16_conv_hz) * 1000000000ULL + (((uint64_t)conv_cycles % s_adc16_conv_hz) * 1000000000ULL) / s_adc16_conv_hz;
+    if (target_ns < min_ns) {
+        printf("ADC16 period %u ns is shorter than one sample (%u ns) at conv %u Hz\n", (unsigned int)target_ns, (unsigned int)min_ns, (unsigned int)s_adc16_conv_hz);
+        return status_invalid_argument;
+    }
+    if (adc16_calc_prd_config(s_adc16_conv_hz, target_ns, &prd_cfg) != status_success) {
+        printf("ADC16 period cannot meet %u ns from conv %u Hz\n", (unsigned int)target_ns, (unsigned int)s_adc16_conv_hz);
+        return status_invalid_argument;
+    }
+    ticks = (1ULL << prd_cfg.prescale) * (prd_cfg.period_count + 1U);
+    if (ticks < conv_cycles) {
+        printf("ADC16 period actual ticks shorter than one sample\n");
+        return status_invalid_argument;
+    }
+    /* period timer only hits 2^prescale*prd steps, so actual may differ from target */
+    actual_ns = (ticks / s_adc16_conv_hz) * 1000000000ULL + ((ticks % s_adc16_conv_hz) * 1000000000ULL) / s_adc16_conv_hz;
+    printf("ADC16 period: target=%u ns, actual=%u ns (prescale=%u prd=%u)\n",
+           (unsigned int)target_ns, (unsigned int)actual_ns,
+           (unsigned int)prd_cfg.prescale, (unsigned int)(prd_cfg.period_count + 1U));
     for (uint32_t i = 0; i < sizeof(period_adc_channel); i++) {
         prd_cfg.ch = period_adc_channel[i];
         adc16_set_prd_config(BOARD_APP_ADC16_BASE, &prd_cfg);
@@ -789,10 +852,12 @@ int main(void)
     /* ADC pin initialization */
     board_init_adc16_pins();
 
-    /* ADC clock initialization */
-    board_init_adc_clock(BOARD_APP_ADC16_BASE, true);
-
     printf("This is an ADC16 demo:\n");
+
+    /* ADC clock initialization: consume returned freq, do not retune CPU/AHB */
+    if (app_adc16_setup_clock() != status_success) {
+        return 0;
+    }
 
     while (1) {
         /* Get a conversion mode from a console window */

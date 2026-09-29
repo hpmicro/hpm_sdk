@@ -1,20 +1,22 @@
 .. _tsn_stmid_frer_egress:
 
 tsn_stmid_frer_egress
-==========================================
+============================================
 
 概述
 ------
 
-本示例展示了TSN帧识别和冗余消除(IEEE802.1 CB)
+本示例展示了TSN 帧识别证以及帧冗余传输(IEEE802.1 CB)
 
-- 观察帧信息
+- 观察帧识别结果
 
-  - 所观察到的帧为经过冗余消除算法后的帧
+  - 帧成功识别后，由STMID模块生成递增的序列号，并传递给FRER模块添加R-Tag
 
-  - 帧序号与原始帧一致
+- 冗余传输可使用多播机制实现
 
-  - "Presendted Frames"表示当前已恢复的帧数量
+  - 由于受限于开发板硬件设计，此功能未做展示 (TSW外设不具备数据帧分裂功能)
+
+- 在接收端， 需要另外一块开发板运行tsn_stmid_frer_ingress,  观察数据帧的恢复
 
 硬件设置
 ------------
@@ -44,45 +46,12 @@ tsn_stmid_frer_egress
      Link Status: Up
      Link Speed:  1000Mbps
      Link Duplex: Full duplex
-     Link Status: Down
-     Link Status: Up
-     Link Speed:  1000Mbps
-     Link Duplex: Full duplex
-     Valid: 1, SID: 1, SeqNo: 0
-     RX-Time: 20.295925680
-     RX Frame Length: 54
-     38 14 28 14 90 78 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00
-     Presented Frames: 1
-
-     Valid: 1, SID: 1, SeqNo: 1
-     RX-Time: 20.799703960
-     RX Frame Length: 54
-     38 14 28 14 90 78 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00
-     Presented Frames: 2
-
-     Valid: 1, SID: 1, SeqNo: 2
-     RX-Time: 21.303476990
-     RX Frame Length: 54
-     38 14 28 14 90 78 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00
-     Presented Frames: 3
-
-     Valid: 1, SID: 1, SeqNo: 3
-     RX-Time: 21.807250010
-     RX Frame Length: 54
-     38 14 28 14 90 78 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00
-     Presented Frames: 4
-
-     Valid: 1, SID: 1, SeqNo: 4
-     RX-Time: 22.311024700
-     RX Frame Length: 54
-     38 14 28 14 90 78 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00
-     Presented Frames: 5
-
-     Valid: 1, SID: 1, SeqNo: 5
-     RX-Time: 22.814797840
-     RX Frame Length: 54
-     38 14 28 14 90 78 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00
-     Presented Frames: 6
+     Stream Match Count: 1,  SeqNo: 1
+     Stream Match Count: 2,  SeqNo: 2
+     Stream Match Count: 3,  SeqNo: 3
+     Stream Match Count: 4,  SeqNo: 4
+     Stream Match Count: 5,  SeqNo: 5
+     Stream Match Count: 6,  SeqNo: 6
 
 
 

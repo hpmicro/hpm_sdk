@@ -3,7 +3,7 @@
 **TSW端口配置**
 ======================
 
-- 对于仅支持单网口的sample：开发板上有双网口，在`CMakeLists.txt`中，支持如下配置：
+- 对于仅支持单网口的sample：开发板上有双网口，在 `CMakeLists.txt` 中，支持如下配置：
 
   - set(APP_USE_TSW_PORT_COUNT 1): 使能开发板上TSW对应的RGMII端口 <sup> **1/2** </sup>
 

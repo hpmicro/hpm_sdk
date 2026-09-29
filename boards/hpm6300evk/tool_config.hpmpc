@@ -1,15 +1,15 @@
 {
-  "clientKey": "28c289d3df6fd5e0d40b2c4276f4a328",
-  "secretKey": "21ca36480d8f75a2f2004ce52dd7c332",
+  "clientKey": "79127c65a30927b2384eac8fdd615826",
+  "secretKey": "0fedcab461e92a2604c2db051bafb87f",
   "content": {
-    "pid": "6033454b-48e8-40fc-ae40-719d2746ca44",
+    "pid": "66358f7d-7d95-400c-824d-444218e9803a",
     "info": {
       "projectName": "tool_config",
       "sdkName": "1.12.0",
       "socName": "HPM6360",
       "packageName": "LQFP144",
-      "createTime": 1781447135717,
-      "updateTime": 1781447137332,
+      "createTime": 1787129548195,
+      "updateTime": 1789026385397,
       "vscodePid": "e4f7df54-856d-4289-8325-e965d40bffed"
     },
     "pinmux": {
@@ -985,6 +985,10 @@
             "srcClocks": [],
             "funcClocks": [
               "clk_top_adc0"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc0"
             ]
           },
           "enableClocks": {
@@ -1022,6 +1026,10 @@
             "srcClocks": [],
             "funcClocks": [
               "clk_top_adc1"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc1"
             ]
           },
           "enableClocks": {
@@ -1058,6 +1066,10 @@
           "selectClocks": {
             "srcClocks": [],
             "funcClocks": [
+              "clk_top_adc2"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
               "clk_top_adc2"
             ]
           },
@@ -1168,6 +1180,10 @@
           "selectClocks": {
             "srcClocks": [],
             "funcClocks": [
+              "clk_top_dac0"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
               "clk_top_dac0"
             ]
           },
@@ -1415,6 +1431,107 @@
             "clk_top_i2c3": 0
           }
         },
+        "init_i2s0_clock_22050": {
+          "selectClocks": {
+            "srcClocks": [
+              "osc32k",
+              "osc24m"
+            ],
+            "funcClocks": [
+              "clk_top_i2s0"
+            ],
+            "pllVcoClocks": [
+              "pll0",
+              "pll1",
+              "pll2"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s0": "0"
+          },
+          "funcClkConfig": {
+            "clk_top_aud0": {
+              "from": "clk1_pll2",
+              "divFactor": 20
+            }
+          }
+        },
+        "init_i2s0_clock_default": {
+          "selectClocks": {
+            "srcClocks": [
+              "osc32k",
+              "osc24m"
+            ],
+            "funcClocks": [
+              "clk_top_i2s0"
+            ],
+            "pllVcoClocks": [
+              "pll0",
+              "pll1",
+              "pll2"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s0": "0"
+          }
+        },
+        "init_i2s1_clock_22050": {
+          "selectClocks": {
+            "srcClocks": [
+              "osc32k",
+              "osc24m"
+            ],
+            "funcClocks": [
+              "clk_top_i2s1"
+            ],
+            "pllVcoClocks": [
+              "pll0",
+              "pll1",
+              "pll2"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s1": "0"
+          },
+          "funcClkConfig": {
+            "clk_top_aud1": {
+              "from": "clk1_pll2",
+              "divFactor": 20
+            },
+            "clk_top_i2s1": {
+              "from": "clk_top_aud1"
+            },
+            "clk_top_aud0": {
+              "from": "clk0_pll2",
+              "divFactor": 21
+            }
+          }
+        },
+        "init_i2s1_clock_default": {
+          "selectClocks": {
+            "srcClocks": [
+              "osc32k",
+              "osc24m"
+            ],
+            "funcClocks": [
+              "clk_top_i2s1"
+            ],
+            "pllVcoClocks": [
+              "pll0",
+              "pll1",
+              "pll2"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s1": "0"
+          },
+          "funcClkConfig": {
+            "clk_top_aud1": {
+              "from": "clk0_pll2",
+              "divFactor": 21
+            }
+          }
+        },
         "init_ptmr_clock": {
           "selectClocks": {
             "srcClocks": [],
@@ -1544,7 +1661,11 @@
         "init_ptmr_clock",
         "init_ptmr_clock_group1",
         "init_usb0_clock",
-        "init_acmp_clock"
+        "init_acmp_clock",
+        "init_i2s0_clock_22050",
+        "init_i2s0_clock_default",
+        "init_i2s1_clock_22050",
+        "init_i2s1_clock_default"
       ]
     }
   }

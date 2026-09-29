@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,5 +9,11 @@
 #define COMMON_CFG
 
 #define LWIP_APP_TIMER_INTERVAL (1) /* 1 ms*/
+
+/* Keep TX hold / RX pool within 128KB DLM (.fast_ram: ram_heap + PBUF_POOL) */
+#define ENET_TX_BUFF_COUNT  (20U)
+#define ENET_RX_BUFF_COUNT  (24U)
+#define ENET_TX_BUFF_SIZE   (1536U)
+#define ENET_RX_BUFF_SIZE   (1536U)
 
 #endif

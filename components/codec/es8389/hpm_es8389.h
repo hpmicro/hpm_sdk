@@ -93,6 +93,7 @@
  */
 #define EVEREST_MCLK_PIN   0
 
+
 /** @def EVEREST_VOLTAGE_1V8
  * @brief 1.8V voltage selection value
  */
@@ -534,6 +535,70 @@ hpm_stat_t es8389_set_data_format(codec_control_t *control, uint32_t mclk, uint3
  * @return status_success if successful, status_invalid_argument if module is invalid.
  */
 hpm_stat_t es8389_set_volume(codec_control_t *control, es8389_module_t module, uint8_t volume);
+
+/**
+ * @brief Get the valid volume range in dB for the specified module.
+ *
+ * This function returns the minimum and maximum volume in dB that the specified module accepts.
+ *
+ * All supported modules (es8389_adc1, es8389_adc2, es8389_dac1, es8389_dac2)
+ * share the same valid range: -95.5dB to +32dB.
+ *
+ * @param module Module to get the volume range for, it can be es8389_adc1, es8389_adc2, es8389_dac1, or es8389_dac2.
+ * @param min_db Pointer to store the minimum volume in dB.
+ * @param max_db Pointer to store the maximum volume in dB.
+ * @return status_success if successful, status_invalid_argument if module is invalid.
+ */
+hpm_stat_t es8389_get_volume_db_range(es8389_module_t module, float *min_db, float *max_db);
+
+/**
+ * @brief Set the volume of different modules in ES8389, in decibels.
+ *
+ * This function converts the target volume in dB to the register value
+ * according to the datasheet, then sets the digital volume for the
+ * specified module.
+ * The register has 0.5dB step resolution: 0x00 = -95.5dB, 0xBF = 0dB, 0xFF = +32dB.
+ * The input value is rounded to the nearest 0.5dB step.
+ *
+ * @param control ES8389 control structure.
+ * @param module Module to set volume, it can be es8389_adc1, es8389_adc2, es8389_dac1, or es8389_dac2.
+ * @param volume_db Target volume in dB, valid range: -95.5dB to +32dB.
+ * @return status_success if successful, status_invalid_argument if module is invalid or volume_db is out of range.
+ */
+hpm_stat_t es8389_set_volume_db(codec_control_t *control, es8389_module_t module, float volume_db);
+
+/**
+ * @brief Clamp the volume in dB to the valid range of the specified module.
+ *
+ * This function limits the input volume in dB to the valid range of the specified
+ * module and stores the clamped value via clamped_db. A typical usage is to clamp
+ * a desired volume before passing it to es8389_set_volume_db().
+ *
+ * All supported modules (es8389_adc1, es8389_adc2, es8389_dac1, es8389_dac2)
+ * share the same valid range: -95.5dB to +32dB.
+ *
+ * @param module Module to clamp the volume for, it can be es8389_adc1, es8389_adc2, es8389_dac1, or es8389_dac2.
+ * @param volume_db Desired volume in dB.
+ * @param clamped_db Pointer to store the volume in dB clamped to the valid range of the module.
+ * @return status_success if successful, status_invalid_argument if module is invalid.
+ */
+hpm_stat_t es8389_clamp_volume_db(es8389_module_t module, float volume_db, float *clamped_db);
+
+/**
+ * @brief Set the volume of different modules in ES8389, in percent of the full volume range.
+ *
+ * This function converts the volume percent to the register value and sets the
+ * digital volume for the specified module. The percent maps linearly onto the
+ * module's full dB range: 0 percent is the minimum volume (-95.5dB, not mute)
+ * and 100 percent is the maximum volume (+32dB). Use es8389_mute() to mute a
+ * module.
+ *
+ * @param control ES8389 control structure.
+ * @param module Module to set volume, it can be es8389_adc1, es8389_adc2, es8389_dac1, or es8389_dac2.
+ * @param volume_percent Volume in percent of the full volume range, valid range: 0 to 100.
+ * @return status_success if successful, status_invalid_argument if module is invalid or volume_percent is out of range.
+ */
+hpm_stat_t es8389_set_volume_percent(codec_control_t *control, es8389_module_t module, int8_t volume_percent);
 
 /**
  * @brief Enable/disable mute for the specified module.

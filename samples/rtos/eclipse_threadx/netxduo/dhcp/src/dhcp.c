@@ -30,7 +30,7 @@ VOID thread_0_entry(ULONG thread_input);
 #define PACKET_POOL_SIZE ((PACKET_SIZE + sizeof(NX_PACKET)) * PACKET_COUNT)
 
 /* Define IP stack size.   */
-#define IP_STACK_SIZE 2048
+#define IP_STACK_SIZE 4096
 
 /* Define IP thread priority.  */
 #define IP_THREAD_PRIORITY 1

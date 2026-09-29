@@ -29,11 +29,13 @@ ADC16 差分采样
 - 打印前缀随板级 master/slave ADC 配对而定，可能为 ``ADC2/ADC3`` 或 ``ADC0/ADC1``，详见目标 board README
 - 每行 ``0xXXXX (N)``：``0xXXXX`` 为 DMA 低 16 位 raw 十六进制；``(N)`` 为按 master 侧差分配置解码的十进制。默认配置下 ``(N)`` 为有符号，近零差分时常在 0 附近小幅波动；编码规则见下文 *差分结果码值* 一节
 
-  下列示例均假设默认配置 ``position_mode=differential``、``full_resolution=0``：
+  下列示例均假设默认配置 ``position_mode=differential``、``full_resolution=0``。时钟行为 ``hpm6p00evk`` 默认 AHB 200 MHz、ADC2/ADC3 配对的打印：
 
   .. code-block:: console
 
    ADC16 differential sample
+   ADC16 clock: input=200000000 Hz, div=4, conv=50000000 Hz
+   ADC16 sample: cycle=8, convert=21, fs=1724137 Hz
    ADC2/ADC3 diff result: 0x0003 (3)
    ADC2/ADC3 diff result: 0xfffc (-4)
    ADC2/ADC3 diff result: 0x0001 (1)

@@ -72,9 +72,7 @@ enum {
 };
 
 /* Macro Const Declaration */
-#define I2S_MCLK_FREQ_IN_HZ (24576000UL)
-
-#define AUDIO_MIC_TX_SZ (CFG_TUD_AUDIO_EP_SZ_IN - (CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX * CFG_TUD_AUDIO_FUNC_1_FORMAT_1_N_BYTES_PER_SAMPLE_TX))  /* actual mic data per packet (1 frame less than EP max) */
+#define AUDIO_MIC_TX_SZ CFG_TUD_AUDIO_FUNC_1_EP_IN_SLOT_SIZE
 
 #define SPEAKER_DMA_CHANNEL 1U
 #define MIC_DMA_CHANNEL     2U
@@ -90,10 +88,11 @@ enum {
 #define DAO_I2S_TX_DMAMUX_SRC BOARD_SPEAKER_I2S_TX_DMAMUX_SRC
 
 /* Variable Definition */
-volatile uint32_t current_sample_rate;
+static volatile uint32_t s_speaker_sample_rate = CFG_TUD_AUDIO_FUNC_1_SAMPLE_RATE_RX;
+static volatile uint32_t s_mic_sample_rate = CFG_TUD_AUDIO_FUNC_1_SAMPLE_RATE_TX;
 
 /* List of supported sample rates */
-const uint32_t sample_rates[] = {16000};
+const uint32_t sample_rates[] = {CFG_TUD_AUDIO_FUNC_1_SAMPLE_RATE_TX};
 
 #define N_SAMPLE_RATES  TU_ARRAY_SIZE(sample_rates)
 
@@ -120,38 +119,27 @@ static volatile uint8_t s_mic_buf_rear;
 static volatile bool s_mic_dma_transfer_done;
 
 
+static void mic_init_i2s_pdm(void);
+static void speaker_init_i2s_dao(void);
+static hpm_stat_t mic_config_i2s_recording(uint32_t sample_rate);
+static hpm_stat_t speaker_config_i2s_playback(uint32_t sample_rate);
 void i2s_pdm_dma_cfg(uint32_t *ptr, uint32_t size);
-void reinit_dao_i2s_cfg(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num);
 void audio_task(void);
 bool speaker_out_buff_is_empty(void);
 bool mic_in_buff_is_empty(void);
 
 /* PDM */
-void pdm_config(void)
+static void mic_init_i2s_pdm(void)
 {
     i2s_config_t i2s_config;
-    i2s_transfer_config_t transfer;
     pdm_config_t pdm_config;
 
     i2s_get_default_config(PDM_I2S, &i2s_config);
-    i2s_init(PDM_I2S, &i2s_config);
-
-    /*
-     * config transfer for PDM
-     */
-    i2s_get_default_transfer_config_for_pdm(&transfer);
-    /*
-     * enable mic0 @ RXD0
-     */
-    transfer.data_line = PDM_I2S_DATA_LINE;
-    transfer.channel_slot_mask = BOARD_PDM_DUAL_CHANNEL_MASK; /* 2 channels */
-    if (status_success != i2s_config_rx(PDM_I2S, I2S_MCLK_FREQ_IN_HZ, &transfer)) {
-        printf("I2S config failed for PDM\n");
+    if (i2s_init(PDM_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
         while (1) {
-            ;
         }
     }
-    i2s_start(PDM_I2S);
 
     pdm_get_default_config(HPM_PDM, &pdm_config);
     pdm_init(HPM_PDM, &pdm_config);
@@ -160,29 +148,17 @@ void pdm_config(void)
     dmamux_config(BOARD_APP_DMAMUX, MIC_DMAMUX_CHANNEL, PDM_I2S_RX_DMAMUX_SRC, true);
 }
 
-void dao_config(void)
+static void speaker_init_i2s_dao(void)
 {
     i2s_config_t i2s_config;
-    i2s_transfer_config_t transfer;
     dao_config_t dao_config;
 
     i2s_get_default_config(DAO_I2S, &i2s_config);
-    i2s_init(DAO_I2S, &i2s_config);
-    /*
-     * config transfer for DAO
-     */
-    i2s_get_default_transfer_config_for_dao(&transfer);
-    transfer.sample_rate = 16000;
-    transfer.audio_depth = CFG_TUD_AUDIO_FUNC_1_FORMAT_1_RESOLUTION_RX;
-    transfer.channel_slot_mask = 0x3;
-    if (status_success != i2s_config_tx(DAO_I2S, I2S_MCLK_FREQ_IN_HZ, &transfer)) {
-        printf("I2S config failed for DAO\n");
+    if (i2s_init(DAO_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
         while (1) {
-            ;
         }
     }
-    i2s_start(DAO_I2S);
-
     dao_get_default_config(HPM_DAO, &dao_config);
     dao_init(HPM_DAO, &dao_config);
 
@@ -203,9 +179,11 @@ int main(void)
 
     if (BOARD_TUD_RHPORT == 0) {
         board_init_usb(HPM_USB0);
+        intc_set_irq_priority(IRQn_USB0, 1);
 #ifdef HPM_USB1
     } else if (BOARD_TUD_RHPORT == 1) {
         board_init_usb(HPM_USB1);
+        intc_set_irq_priority(IRQn_USB1, 1);
 #endif
     } else {
         printf("Don't support HPM_USB%d!\n", BOARD_TUD_RHPORT);
@@ -216,6 +194,11 @@ int main(void)
 
     printf("USB%d Device - UAC2 Speaker Mic Demo\r\n", BOARD_TUD_RHPORT);
 
+    speaker_init_i2s_dao();
+    mic_init_i2s_pdm();
+
+    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, 2);
+
     /* init device stack on configured roothub port */
     tusb_rhport_init_t dev_init = {
       .role = TUSB_ROLE_DEVICE,
@@ -224,12 +207,6 @@ int main(void)
     tusb_init(BOARD_TUD_RHPORT, &dev_init);
 
     board_init_after_tusb();
-
-    pdm_config();
-    dao_config();
-
-    intc_m_enable_irq_with_priority(BOARD_APP_DMA1_IRQ, 1);
-    intc_set_irq_priority(IRQn_USB0, 2);
 
     while (1) {
         tud_task();
@@ -273,9 +250,11 @@ static bool tud_audio_clock_get_request(uint8_t rhport, audio20_control_request_
 
     if (request->bControlSelector == AUDIO20_CS_CTRL_SAM_FREQ) {
         if (request->bRequest == AUDIO20_CS_REQ_CUR) {
-            TU_LOG1("Clock get current freq %u\r\n", current_sample_rate);
+            uint32_t sample_rate = (request->bEntityID == UAC2_ENTITY_SPK_CLOCK) ?
+                                       s_speaker_sample_rate : s_mic_sample_rate;
+            TU_LOG1("Clock get current freq %u\r\n", sample_rate);
 
-            audio20_control_cur_4_t curf = { tu_htole32(current_sample_rate) };
+            audio20_control_cur_4_t curf = { tu_htole32(sample_rate) };
             return tud_audio_buffer_and_schedule_control_xfer(rhport, (tusb_control_request_t const *)request, &curf, sizeof(curf));
         } else if (request->bRequest == AUDIO20_CS_REQ_RANGE) {
             audio20_control_range_4_n_t(N_SAMPLE_RATES) rangef = {
@@ -313,12 +292,14 @@ static bool tud_audio_clock_set_request(uint8_t rhport, audio20_control_request_
     if (request->bControlSelector == AUDIO20_CS_CTRL_SAM_FREQ) {
         TU_VERIFY(request->wLength == sizeof(audio20_control_cur_4_t));
 
-        current_sample_rate = ((audio20_control_cur_4_t const *)buf)->bCur;
+        uint32_t sample_rate = ((audio20_control_cur_4_t const *)buf)->bCur;
 
-        TU_LOG1("Clock set current freq: %d\r\n", current_sample_rate);
+        TU_LOG1("Clock set current freq: %d\r\n", sample_rate);
 
         if (request->bEntityID == UAC2_ENTITY_SPK_CLOCK) {
-            reinit_dao_i2s_cfg(current_sample_rate, CFG_TUD_AUDIO_FUNC_1_FORMAT_1_RESOLUTION_RX, CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_RX);
+            s_speaker_sample_rate = sample_rate;
+        } else {
+            s_mic_sample_rate = sample_rate;
         }
         return true;
     } else {
@@ -482,24 +463,6 @@ bool tud_audio_set_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
     return false;
 }
 
-bool tud_audio_set_itf_close_ep_cb(uint8_t rhport, tusb_control_request_t const *p_request)
-{
-    (void)rhport;
-
-    uint8_t const itf = tu_u16_low(tu_le16toh(p_request->wIndex));
-    uint8_t const alt = tu_u16_low(tu_le16toh(p_request->wValue));
-
-    if (ITF_NUM_AUDIO_STREAMING_SPK == itf && alt == 0) {
-        dao_stop(HPM_DAO);
-        s_spk_rx_flag = false;
-    } else if (ITF_NUM_AUDIO_STREAMING_MIC == itf && alt == 0) {
-        pdm_stop(HPM_PDM);
-        s_mic_tx_flag = false;
-    }
-
-    return true;
-}
-
 bool tud_audio_set_itf_cb(uint8_t rhport, tusb_control_request_t const *p_request)
 {
     (void)rhport;
@@ -507,20 +470,59 @@ bool tud_audio_set_itf_cb(uint8_t rhport, tusb_control_request_t const *p_reques
     uint8_t const alt = tu_u16_low(tu_le16toh(p_request->wValue));
 
     TU_LOG1("Set interface %d alt %d\r\n", itf, alt);
-    if (ITF_NUM_AUDIO_STREAMING_SPK == itf && alt != 0) {
-        dao_start(HPM_DAO);
-        s_spk_rx_flag = true;
-        s_spk_buf_front = 0;
-        s_spk_buf_rear = 0;
-        s_spk_dma_transfer_req = true;
-        s_spk_dma_transfer_done = false;
-    } else if (ITF_NUM_AUDIO_STREAMING_MIC == itf && alt != 0) {
-        pdm_start(HPM_PDM);
-        s_mic_tx_flag = true;
-        s_mic_buf_front = 0;
-        s_mic_buf_rear = 0;
-        s_mic_dma_transfer_done = false;
-        i2s_pdm_dma_cfg((uint32_t *)&mic_buf[s_mic_buf_rear][0], AUDIO_MIC_TX_SZ);
+    if (ITF_NUM_AUDIO_STREAMING_SPK == itf) {
+        if (alt != 0) {
+            i2s_reset_tx(DAO_I2S);
+            if (speaker_config_i2s_playback(s_speaker_sample_rate) != status_success) {
+                TU_LOG1("Speaker I2S config failed\r\n");
+                return false;
+            }
+            s_spk_rx_flag = true;
+            s_spk_buf_front = 0;
+            s_spk_buf_rear = 0;
+            s_spk_dma_transfer_req = true;
+            s_spk_dma_transfer_done = false;
+            if (spk_mute[0]) {
+                dao_stop(HPM_DAO);
+            } else {
+                dao_start(HPM_DAO);
+            }
+            i2s_start(DAO_I2S);
+        } else {
+            s_spk_rx_flag = false;
+            s_spk_dma_transfer_req = false;
+            s_spk_dma_transfer_done = false;
+            dma_abort_channel(BOARD_APP_DMA1, 1u << SPEAKER_DMA_CHANNEL);
+            i2s_reset_tx(DAO_I2S);
+            i2s_stop(DAO_I2S);
+            dao_stop(HPM_DAO);
+        }
+    } else if (ITF_NUM_AUDIO_STREAMING_MIC == itf) {
+        if (alt != 0) {
+            i2s_reset_rx(PDM_I2S);
+            if (mic_config_i2s_recording(s_mic_sample_rate) != status_success) {
+                TU_LOG1("Microphone I2S config failed\r\n");
+                return false;
+            }
+            s_mic_tx_flag = true;
+            s_mic_buf_front = 0;
+            s_mic_buf_rear = 0;
+            s_mic_dma_transfer_done = false;
+            if (mic_mute[0]) {
+                pdm_stop(HPM_PDM);
+            } else {
+                pdm_start(HPM_PDM);
+            }
+            i2s_pdm_dma_cfg((uint32_t *)&mic_buf[s_mic_buf_rear][0], AUDIO_MIC_TX_SZ);
+            i2s_start(PDM_I2S);
+        } else {
+            s_mic_tx_flag = false;
+            s_mic_dma_transfer_done = false;
+            dma_abort_channel(BOARD_APP_DMA1, 1u << MIC_DMA_CHANNEL);
+            i2s_reset_rx(PDM_I2S);
+            i2s_stop(PDM_I2S);
+            pdm_stop(HPM_PDM);
+        }
     }
 
     return true;
@@ -580,10 +582,10 @@ void isr_dma(void)
 
     if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
         s_spk_dma_transfer_done = true;
-    } else if (0 != (mic_status & DMA_CHANNEL_STATUS_TC)) {
+    }
+
+    if (0 != (mic_status & DMA_CHANNEL_STATUS_TC)) {
         s_mic_dma_transfer_done = true;
-    } else {
-        ;
     }
 }
 
@@ -600,10 +602,12 @@ void i2s_speaker_dma_cfg(volatile uint32_t *ptr, uint32_t size)
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
-    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_2T; /* 2 transfers per burst: each burst fetches one stereo audio frame (2 channels) */
 
     if (status_success != dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
+    } else {
+        i2s_enable_tx(DAO_I2S, 1U << DAO_I2S_DATA_LINE);
     }
 }
 
@@ -621,36 +625,45 @@ void i2s_pdm_dma_cfg(uint32_t *ptr, uint32_t size)
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_INCREMENT;
     ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.src_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
-    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
+    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_2T; /* 2 transfers per burst: each burst fetches one stereo audio frame (2 channels) */
 
     if (status_success != dma_setup_channel(BOARD_APP_DMA1, MIC_DMA_CHANNEL, &ch_config, true)) {
         printf(" dma setup channel failed\n");
+    } else {
+        i2s_enable_rx(PDM_I2S, 1U << PDM_I2S_DATA_LINE);
     }
 }
 
-void reinit_dao_i2s_cfg(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
+static hpm_stat_t speaker_config_i2s_playback(uint32_t sample_rate)
 {
-    (void)channel_num;
-    i2s_config_t i2s_config;
     i2s_transfer_config_t transfer;
+    uint32_t i2s_mclk_hz;
 
-    i2s_get_default_config(DAO_I2S, &i2s_config);
-    i2s_init(DAO_I2S, &i2s_config);
-
-    /*
-     * config transfer for DAO
-     */
     i2s_get_default_transfer_config_for_dao(&transfer);
+    transfer.data_line = DAO_I2S_DATA_LINE;
     transfer.sample_rate = sample_rate;
-    transfer.audio_depth = audio_depth;
+    transfer.audio_depth = CFG_TUD_AUDIO_FUNC_1_FORMAT_1_RESOLUTION_RX;
+    transfer.channel_num_per_frame = 2;
     transfer.channel_slot_mask = 0x3;
-    if (status_success != i2s_config_tx(DAO_I2S, I2S_MCLK_FREQ_IN_HZ, &transfer)) {
-        printf("I2S config failed for DAO\n");
-        while (1) {
-            ;
-        }
-    }
-    i2s_start(DAO_I2S);
+
+    i2s_mclk_hz = clock_get_frequency(DAO_I2S_CLK_NAME);
+
+    return i2s_config_tx(DAO_I2S, i2s_mclk_hz, &transfer);
+}
+
+static hpm_stat_t mic_config_i2s_recording(uint32_t sample_rate)
+{
+    i2s_transfer_config_t transfer;
+    uint32_t i2s_mclk_hz;
+
+    i2s_get_default_transfer_config_for_pdm(&transfer);
+    transfer.data_line = PDM_I2S_DATA_LINE;
+    transfer.sample_rate = sample_rate;
+    transfer.channel_slot_mask = BOARD_PDM_DUAL_CHANNEL_MASK;
+
+    i2s_mclk_hz = clock_get_frequency(PDM_I2S_CLK_NAME);
+
+    return i2s_config_rx(PDM_I2S, i2s_mclk_hz, &transfer);
 }
 
 /*---------------------------------------------------------------------*/

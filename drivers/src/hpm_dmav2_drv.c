@@ -97,7 +97,7 @@ hpm_stat_t dma_config_linked_descriptor(DMAV2_Type *ptr, dma_linked_descriptor_t
     if ((config->dst_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
      || (config->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
      || (ch_num >= DMA_SOC_CHANNEL_NUM)
-     || (config->en_infiniteloop)
+     || (config->en_infiniteloop && (config->linked_ptr != 0))
      || ((config->dst_mode == DMA_HANDSHAKE_MODE_HANDSHAKE) && (config->src_mode == DMA_HANDSHAKE_MODE_HANDSHAKE))) {
         return status_invalid_argument;
     }
@@ -119,7 +119,7 @@ hpm_stat_t dma_config_linked_descriptor(DMAV2_Type *ptr, dma_linked_descriptor_t
     descriptor->swap_table = config->swap_table;
 #endif
 
-    tmp = DMAV2_CHCTRL_CTRL_INFINITELOOP_SET(false)
+    tmp = DMAV2_CHCTRL_CTRL_INFINITELOOP_SET(config->en_infiniteloop)
         | DMAV2_CHCTRL_CTRL_HANDSHAKEOPT_SET(config->handshake_opt)
         | DMAV2_CHCTRL_CTRL_BURSTOPT_SET(config->burst_opt)
         | DMAV2_CHCTRL_CTRL_PRIORITY_SET(config->priority)

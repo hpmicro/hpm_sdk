@@ -89,188 +89,188 @@ Pin Description
 
 - SPI Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - SPI2.CSN
-     - P1[24]
-   * - SPI2.SCLK
-     - P1[23]
-   * - SPI2.MISO
-     - P1[21]
-   * - SPI2.MOSI
-     - P1[19]
+     * - Function
+       - Position
+     * - SPI2.CSN
+       - P1[24]
+     * - SPI2.SCLK
+       - P1[23]
+     * - SPI2.MISO
+       - P1[21]
+     * - SPI2.MOSI
+       - P1[19]
 
 - I2C Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - I2C0.SCL
-     - P1[13]
-   * - I2C0.SDA
-     - P1[15]
+     * - Function
+       - Position
+     * - I2C0.SCL
+       - P1[13]
+     * - I2C0.SDA
+       - P1[15]
 
 - ACMP Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - CMP.INN6
-     - P2[11]
-   * - CMP.COMP_1
-     - P1[7]
+     * - Function
+       - Position
+     * - CMP.INN6
+       - P2[11]
+     * - CMP.COMP_1
+       - P1[7]
 
 - GPTMR Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - GPTMR5.CAPT_1
-     - P1[12]
-     - SENT decode input pin (idle low level)
-   * - GPTMR5.COMP_0
-     - P1[31]
-     - MCLK of i2s emulation
-   * - GPTMR5.COMP_1
-     - P1[35]
-     - LRCK of i2s emulation
-   * - GPTMR5.COMP_2
-     - P2[38]
-     - BLCK of i2s emulation
-   * - GPTMR5.CAPT_2
-     - P2[23]
-     - SENT decode input pin (idle high level)
+     * - Function
+       - Position
+       - Remark
+     * - GPTMR5.CAPT_1
+       - P1[12]
+       - SENT decode input pin (idle low level)
+     * - GPTMR5.COMP_0
+       - P1[31]
+       - MCLK of i2s emulation
+     * - GPTMR5.COMP_1
+       - P1[35]
+       - LRCK of i2s emulation
+     * - GPTMR5.COMP_2
+       - P2[38]
+       - BLCK of i2s emulation
+     * - GPTMR5.CAPT_2
+       - P2[23]
+       - SENT decode input pin (idle high level)
 
 - ADC12 Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - ADC12 Reference Voltage Setting
-     - N/A
-   * - ADC0.VINP14
-     - P1[33]
+     * - Function
+       - Position
+     * - ADC12 Reference Voltage Setting
+       - N/A
+     * - ADC0.VINP14
+       - P1[33]
 
 - ADC16 Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - ADC16 Reference Voltage Setting
-     - N/A
-   * - ADC3.INA2
-     - P1[16]
+     * - Function
+       - Position
+     * - ADC16 Reference Voltage Setting
+       - N/A
+     * - ADC3.INA2
+       - P1[16]
 
 - PWM Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PWM0.P4
-     - P1[29]
-   * - PWM0.P5
-     - P1[32]
+     * - Function
+       - Position
+     * - PWM0.P4
+       - P1[29]
+     * - PWM0.P5
+       - P1[32]
 
 - DAO interface
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - Speaker
-     - J2
+     * - Function
+       - Position
+     * - Speaker
+       - J2
 
 - I2S pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - I2S0.FCLK
-     - P1[35]
-   * - I2S0.BCLK
-     - P1[12]
-   * - I2S0.RXD1
-     - P1[38]
-   * - I2S0.TXD1
-     - P1[40]
-   * - GND
-     - P1[39]
+     * - Function
+       - Position
+     * - I2S0.FCLK
+       - P1[35]
+     * - I2S0.BCLK
+       - P1[12]
+     * - I2S0.RXD1
+       - P1[38]
+     * - I2S0.TXD1
+       - P1[40]
+     * - GND
+       - P1[39]
 
 - Ethernet PPS Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Pin
-     - Position
-   * - ENET0.EVTO0
-     - PF05
-     - P1[38]
-   * - ENET0.EVTO1
-     - PF06
-     - P1[12]
-   * - ENET0.EVTO2
-     - PF09
-     - P1[35]
-   * - ENET0.EVTI0
-     - PF00
-     - P1[26]
-   * - ENET0.EVTI1
-     - PF01
-     - P1[27]
-   * - ENET0.EVTI2
-     - PF02
-     - P1[28]
+     * - Function
+       - Pin
+       - Position
+     * - ENET0.EVTO0
+       - PF05
+       - P1[38]
+     * - ENET0.EVTO1
+       - PF06
+       - P1[12]
+     * - ENET0.EVTO2
+       - PF09
+       - P1[35]
+     * - ENET0.EVTI0
+       - PF00
+       - P1[26]
+     * - ENET0.EVTI1
+       - PF01
+       - P1[27]
+     * - ENET0.EVTI2
+       - PF02
+       - P1[28]
 
 - UART13 pin
 
   The UART13 is used for core1 debug console or some functional testing using UART, such as uart_software_rx_idle, uart_rx_timeout, uart_software_lin, MICROROS_UART, USB_CDC_ACM_UART, MODBUS_RTU etc.
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - UART13.TXD
-     - P1[8]
-     -
-   * - UART13.RXD
-     - P1[10]
-     -
-   * - UART13.break
-     - P1[24]
-     - generate uart break signal
+     * - Function
+       - Position
+       - Remark
+     * - UART13.TXD
+       - P1[8]
+       -
+     * - UART13.RXD
+       - P1[10]
+       -
+     * - UART13.break
+       - P1[24]
+       - generate uart break signal
 
 - TRGMUX pin for uart_software_rx_idle sample
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - TRGM2_P9 (PD19)
-     - P2[35]
+     * - Function
+       - Position
+     * - TRGM2_P9 (PD19)
+       - P2[35]
 
 - Motor Pin
 
@@ -278,37 +278,37 @@ Pin Description
 
 - Tamper Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Pin
-     - Position
-     - Mode
-   * - TAMP.08
-     - PZ08
-     - P1[10]
-     - Active Mode
-   * - TAMP.09
-     - PZ09
-     - P1[8]
-     - Active Mode
-   * - TAMP.10
-     - PZ10
-     - P1[22]
-     - Passive Mode
+     * - Function
+       - Pin
+       - Position
+       - Mode
+     * - TAMP.08
+       - PZ08
+       - P1[10]
+       - Active Mode
+     * - TAMP.09
+       - PZ09
+       - P1[8]
+       - Active Mode
+     * - TAMP.10
+       - PZ10
+       - P1[22]
+       - Passive Mode
 
 - CS Pin of i2s emulation
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Remark
-   * - PD25
-     - P2[40]
-     - the pin that controls the SPI slave CS
+     * - Function
+       - Position
+       - Remark
+     * - PD25
+       - P2[40]
+       - the pin that controls the SPI slave CS
 
 - CLOCK REF Pin
 
@@ -322,31 +322,31 @@ Pin Description
 
 - ESP-HOSTED Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - PB13
-     - P1[3]
-     - RESET Pin
-   * - PB10
-     - P1[15]
-     - HANDSHAKE Pin
-   * - PB11
-     - P1[13]
-     - DATA_READY Pin
+     * - Function
+       - Position
+       - Note
+     * - PB13
+       - P1[3]
+       - RESET Pin
+     * - PB10
+       - P1[15]
+       - HANDSHAKE Pin
+     * - PB11
+       - P1[13]
+       - DATA_READY Pin
 
 - BROWNOUT Interrupt Indicator Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PZ09
-     - P1[8]
+     * - Function
+       - Position
+     * - PZ09
+       - P1[8]
 
 Known Issues
 ------------

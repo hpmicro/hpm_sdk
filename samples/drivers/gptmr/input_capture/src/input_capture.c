@@ -26,9 +26,9 @@
 static void input_capture_config(void);
 
 volatile bool capture_is_done;
-volatile int frist_rising_count;
+volatile int first_rising_count;
 volatile int next_rising_count;
-volatile bool frist_rised;
+volatile bool first_rising_edge_captured;
 volatile uint32_t gptmr_freq;
 
 SDK_DECLARE_EXT_ISR_M(APP_BOARD_GPTMR_IRQ, isr_gptmr)
@@ -37,12 +37,12 @@ void isr_gptmr(void)
     if (gptmr_check_status(APP_BOARD_GPTMR, GPTMR_CH_CAP_STAT_MASK(APP_BOARD_GPTMR_CH))) {
         gptmr_clear_status(APP_BOARD_GPTMR, GPTMR_CH_CAP_STAT_MASK(APP_BOARD_GPTMR_CH));
         if (!capture_is_done) {
-            if (frist_rised == false) {
-                frist_rising_count = gptmr_channel_get_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, gptmr_counter_type_rising_edge);
-                frist_rised = true;
+            if (first_rising_edge_captured == false) {
+                first_rising_count = gptmr_channel_get_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, gptmr_counter_type_rising_edge);
+                first_rising_edge_captured = true;
             } else {
                 next_rising_count = gptmr_channel_get_counter(APP_BOARD_GPTMR, APP_BOARD_GPTMR_CH, gptmr_counter_type_rising_edge);
-                frist_rised = false;
+                first_rising_edge_captured = false;
                 capture_is_done = true;
             }
         }
@@ -53,7 +53,7 @@ int main(void)
 {
     int tmp_time;
     capture_is_done = false;
-    frist_rised = false;
+    first_rising_edge_captured = false;
     board_init();
     init_gptmr_pins(APP_BOARD_GPTMR);
     printf("gptmr input capture test\n");
@@ -63,7 +63,7 @@ int main(void)
             __asm("nop");
         }
         /* tick depends on the gptmr clock, if the clock is 100Mhz, the tick is 10ns*/
-        tmp_time = abs(frist_rising_count - next_rising_count);
+        tmp_time = abs(first_rising_count - next_rising_count);
         printf("capture the pulse width : %d tick\n", tmp_time);
         capture_is_done = false;
     }

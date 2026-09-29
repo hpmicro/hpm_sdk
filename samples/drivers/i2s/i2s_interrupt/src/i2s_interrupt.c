@@ -107,7 +107,10 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     i2s_config.tx_fifo_threshold = TEST_I2S_TX_FIFO_THRESHOLD; /* tx fifo data <= threshold will generate irq */
     i2s_config.rx_fifo_threshold = TEST_I2S_TX_FIFO_THRESHOLD; /* rx fifo data >= threshold will generate irq */
     i2s_config.enable_mclk_out = true;
-    i2s_init(CODEC_I2S, &i2s_config);
+    stat = i2s_init(CODEC_I2S, &i2s_config);
+    if (stat != status_success) {
+        return status_fail;
+    }
     i2s_invert_fclk_out = i2s_config.invert_fclk_out;
 
     /* Configure I2S transfer parameters */
@@ -251,11 +254,11 @@ int main(void)
     }
 
     /* Start I2S transfer and wait for completion */
-    i2s_enable(CODEC_I2S); /* start I2S */
+    i2s_start(CODEC_I2S); /* start I2S */
     while ((!audio_play_finished)) {
         __asm("nop");
     }
-    i2s_disable(CODEC_I2S); /* stop I2S */
+    i2s_stop(CODEC_I2S); /* stop I2S */
     printf("I2S interrupt play finished\n");
 
     return 0;

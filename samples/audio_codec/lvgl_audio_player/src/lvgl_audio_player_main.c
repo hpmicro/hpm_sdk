@@ -248,7 +248,7 @@ static void init_audio_player(char *fname)
 {
     hpm_stat_t res;
 
-    dma_abort_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
+    dma_abort_channel(BOARD_APP_DMA1, 1u << TARGET_I2S_TX_DMA_CH);
     dma_disable_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
     dma_clear_transfer_status(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
     i2s_stop(TARGET_I2S);

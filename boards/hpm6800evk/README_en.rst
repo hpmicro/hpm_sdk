@@ -55,17 +55,17 @@ DIP Switch SW2
 
 - Bit 1 and 2 control the boot mode
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - bit[2:1]
-     - Description
-   * - OFF, OFF
-     - Boot from Quad SPI NOR flash
-   * - OFF, ON
-     - Boot from eMMC
-   * - ON, OFF
-     - ISP
+     * - bit[2:1]
+       - Description
+     * - OFF, OFF
+       - Boot from Quad SPI NOR flash
+     * - OFF, ON
+       - Boot from eMMC
+     * - ON, OFF
+       - ISP
 
 .. _hpm6800evk_buttons:
 
@@ -89,27 +89,27 @@ Plug-in
 
 - The ADC/DAC reference voltage is selected as follows:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Connection
-     - Description
-   * - J18
-     - Reference voltage
+     * - Connection
+       - Description
+     * - J18
+       - Reference voltage
 
 - The eMMC voltage is selected as follows:
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Connection
-     - Description
-   * - J6
-     - eMMC voltage selection (3.3V / 1.8V)
+     * - Connection
+       - Description
+     * - J6
+       - eMMC voltage selection (3.3V / 1.8V)
 
-.. note::
+  .. note::
 
-  User should short VCCQ and 1.8V pin for eMMC testing
+    User should short VCCQ and 1.8V pin for eMMC testing
 
 .. _hpm6800evk_pins:
 
@@ -371,31 +371,31 @@ Pin Description
 
 - ESP-HOSTED Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-     - Note
-   * - PE11
-     - P2[13]
-     - RESET Pin
-   * - PE12
-     - P2[3]
-     - HANDSHAKE Pin
-   * - PE13
-     - P2[5]
-     - DATA_READY Pin
+     * - Function
+       - Position
+       - Note
+     * - PE11
+       - P2[13]
+       - RESET Pin
+     * - PE12
+       - P2[3]
+       - HANDSHAKE Pin
+     * - PE13
+       - P2[5]
+       - DATA_READY Pin
 
 - BROWNOUT Interrupt Indicator Pin
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Function
-     - Position
-   * - PE27
-     - J19[5]
+     * - Function
+       - Position
+     * - PE27
+       - J19[5]
 
 
 .. _hpm6800evk_known_issues:
@@ -436,3 +436,4 @@ Board Known Issue
   - Revised Status
 
     - Not yet revised, `HPM6800EVKRevD` and previous versions have this issue.
+

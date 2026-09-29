@@ -58,7 +58,7 @@ int main(void)
     cfg.cn_index        = APP_BOARD_SYNC_PWM_CH;
     pwm_config(APP_BOARD_SYNC_PWM, &cfg);
 
-    /* frist: start counter*/
+    /* first: start counter */
     gptmr_start_counter(APP_BOARD_PWM, APP_BOARD_PWM_CH);
     gptmr_start_counter(APP_BOARD_SYNC_PWM, APP_BOARD_SYNC_PWM_CH);
 

@@ -221,7 +221,10 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     /* Config I2S interface to CODEC */
     i2s_get_default_config(CODEC_I2S, &i2s_config);
     i2s_config.enable_mclk_out = true;
-    i2s_init(CODEC_I2S, &i2s_config);
+    stat = i2s_init(CODEC_I2S, &i2s_config);
+    if (stat != status_success) {
+        return status_fail;
+    }
     i2s_invert_fclk_out = i2s_config.invert_fclk_out;
 
     /* Configure I2S transfer parameters */
@@ -272,19 +275,25 @@ hpm_stat_t test_i2s_dma_play(audio_data_t *audio_data)
             return status_fail;
         }
 
-        i2s_reset_tx(CODEC_I2S); /* reset I2S tx and clear tx fifo */
-        /* fill tx dummy data to tx fifo to prevent underflow when TX starts */
+        /* fill tx dummy data to tx fifo to prevent underflow when TX starts if DMA not transfer data without I2S start */
         if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, audio_data->channel_num) != status_success) {
             return status_fail;
         }
-        i2s_enable(CODEC_I2S); /* start I2S */
+        i2s_start(CODEC_I2S); /* start I2S */
 
         /* Wait for transfer completion */
         while ((!dma_transfer_error) && (!dma_transfer_done)) {
             __asm("nop");
         }
 
-        i2s_disable(CODEC_I2S); /* stop I2S */
+        i2s_stop(CODEC_I2S); /* stop I2S */
+
+        /* reset I2S tx and clear tx fifo */
+        stat = i2s_reset_tx(CODEC_I2S);
+        if (stat != status_success) {
+            return status_fail;
+        }
+        i2s_enable_tx_line(CODEC_I2S, CODEC_I2S_TX_DATA_LINE); /* Enable I2S TX */
 
         if (dma_transfer_error) {
             printf("dma transfer i2s data failed\n");

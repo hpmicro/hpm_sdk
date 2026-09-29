@@ -1,5 +1,146 @@
 # Change Log
 
+## [1.13.0] - 2026-09-30:
+
+- Main changes since 1.12.1
+- Tested Segger Embedded Studio Version: 8.28
+- Tested Zcc toolchain 4.1.5
+
+### Changed:
+  - soc: HPM6200/HPM5300/HPM5100: remove redundant cpu_div toggle in sysctl_config_cpu0_domain_clock().
+  - drivers/samples: using errata E00047 and E00048 workaround.
+  - drivers: tfa: update tfa and math value and calculate time.
+  - drivers: synt: add synt_enable_oneshot_mode() API.
+  - synt: remove soc feature, using ip feature instead.
+  - drivers: pdgo: update pcnt resolution settings.
+  - drivers: enet: fix multi-segment tx and rx timestamp path.
+  - drivers: pllctl: delete pllctl_pll_ss_disable() when configure frac pll frequency.
+  - drivers: pllctl: optimize integer and fractional PLL frequency configuration.
+  - boards: hpm6p00evk: add known issue for i2s and sdram build type.
+  - boards: HPM6750EVK2/HPM6800EVK: Add optional exact 44.1kHz audio clock configuration.
+  - boards: hpm5100evk: configure CPU to 400MHz and AHB to 200MHz with extern DCDC power supply.
+  - middleware: netxduo: enable ENET HW checksum in adapter.
+  - middleware: netx&lwip: align enet mmc interrupt mask.
+  - samples: cherryusb/tinyusb: uac: add i2s_start/stop in endpoint open/close.
+  - samples: uac: samples: wm8960: using wm8960_mute() API to mute.
+  - samples: audio_codec: enable exact 44100Hz audio PLL.
+  - samples: audio_codec: set dac volume to -20db.
+  - samples: usb samples: updated volume control functions to use dB unit for audio volume adjustment.
+  - samples: cherryusb: samples: print sample rate when usb audio stream opened.
+  - samples: cherryusb: samples: process audio data in i2s dma isr and usb isr.
+  - samples: audio: clarify audio device selection.
+  - samples: tsn: samples: align names with switch port.
+  - samples: tsn: samples: rename sample to match Qci input.
+  - samples: pdgo: rename resolution to total_lines.
+  - samples: sei: samples: add rewind when wdg active.
+  - samples: sei: samples: add rewind when disconnect.
+  - samples: modbus/opener/erpc: align enet lwip zero-copy path.
+  - samples: lwip: samples: force -O3 for high throughput.
+  - samples: lwip: merge single/multiple lwipopts into shared ports.
+  - samples: lwip: merge single/multiple arch into shared ports.
+  - samples: lwip: merge single/multiple ethernetif into shared ports.
+  - samples: lwip: harden RX d-cache invalidate for buff size changes.
+  - samples: lwip: prepare zero-copy enet tx hold support.
+  - samples: lwip: define CHECKSUM_BY_HARDWARE without value.
+  - samples: cherryusb: samples: audio: samples: support 44.1kHz samplerate.
+  - samples: audio_codec: update dma burst size aligned to audio channels.
+  - samples: usb: upgrade CherryUSB UAC1 audio handling.
+  - samples: usb: refine UAC2 audio stream handling.
+  - samples: cherryusb: samples: update readme docs.
+  - samples: cherryusb: samples: speak_fb: using AUDIO_FEEDBACK_TO_BUF_HS_INTERVAL macros.
+  - samples: cherryusb: samples: derive packet rates from endpoint intervals.
+  - samples: cherryusb: samples: update mic adjustment window.
+  - samples: cherryusb: samples: support speak feedback.
+  - samples: cherryusb: samples: auto-detect audio device from board features.
+  - samples: cherryusb: samples: audio: samples: support adaptive feature.
+  - samples: cherryusb: samples: audio: samples: support codec.
+  - samples: cherryusb: samples: support mic adaptive feature.
+  - samples: cherryusb: samples: audio_v2_mic_speaker: update init sequence.
+  - samples: cherryusb: samples: audio: samples: update for support codec.
+  - samples: cherryusb: samples: audio_v2_speaker_sync: update for support codec and feedback logic.
+  - docs: boards: fix readme table indentation for all boards.
+  - cmake: gate special configs by app and board features.
+  - cmake: auto-detect CONFIG_CODEC from board_codec_* feature in board YAML.
+
+### Fixed:
+  - soc: hpm5301:add fencei() to rom auto_config.
+  - soc: hpm6pxx: fix flash_sdram_xxx.ld error.
+  - soc: hpm6pxx: fix segger linker file axi sram region error.
+  - soc: HPM6800/HPM6E000/HPM6P00/HPM5100: add I2S software reset status bits and feature.
+  - drivers: i2c: enlarge the polling timeout of the blocking APIs.
+  - drivers: pcfg: fix dcdc stable status always return false when wakeup from standby mode.
+  - drivers: dmav2: fix infiniteloop config with linked_ptr.
+  - drivers: I2S: replace i2s_enable()/i2s_disable_irq() with i2s_start()/i2s_stop().
+  - drivers: I2S: fix i2s_reset_rx/i2s_reset_tx API.
+  - drivers: i2s: fill tx fifo not require BCLK.
+  - drivers: i2s: fix i2s software reset function.
+  - drivers: adc12: restore app clock after calibration.
+  - drivers: adc12/adc16: fix period config time matching.
+  - drivers: adc12/adc16/dac: keep conversion clocks under the cap.
+  - boards: add delay after RGMII reset.
+  - boards: hpm6300evk/hpm6p00evk/hpm6e00evk: fix i2s 44100kHz clock settings.
+  - boards: hpm5300evk/hpm536fevk: fix DAC analog clock.
+  - components: enet_phy: components: fix speed reported before valid.
+  - components: i2c: wait second addr-hit in repeated-start read.
+  - components: i2c: wait bus release complete with timeout.
+  - middleware: netx: init phy after enet controller init.
+  - middleware: cherryusb: middleware: freertos: fix usb_osal_sem_take() and usb_osal_timer_stop() in isr.
+  - middleware: fatfs: fix cache invalidate for diskio read.
+  - middleware: cherryusb: middleware: fix AUDIO_FREQ_TO_FEEDBACK_HS definition.
+  - middleware: threadx: fix ip32d context error.
+  - samples: netx: increase ip stack size.
+  - samples: modbus: reconnect tcp master after link up.
+  - samples: modbus: bring the network interface up.
+  - samples: cherryusb: samples: audio_v2_mic_speaker_freertos aligned to audio_v2_mic_speaker_rtthread.
+  - samples: i2s: re-enable I2S TX/RX module after calling i2s_reset_tx()/i2s_reset_rx().
+  - samples: opener: replace freertos fucntions with cmsis os functions.
+  - samples: opener: adapt to the common lwip app source files.
+  - samples: opener: delete opener lwip files.
+  - samples: modbus/opener/erpc: fix non-GCC build for undeclared sys_now.
+  - samples: lwip: samples: use enet_init ptr and fix ENET ISR base.
+  - samples: lwip: samples: fix netif state race on OS RX path.
+  - samples: lwip: samples: fix dlm region overflow.
+  - samples: lwip: samples: fix unreliable enet tx path.
+  - samples: lwip/opener/erpc: fix enet MAC init error detection.
+  - samples: lwip: include netinfo.h in lwip common source file.
+  - samples: lwip: invalidate cache before returning RX buffer to DMA.
+  - samples: audio_codec: fix dma abort function params usage.
+  - samples: cherryusb/tinyusb: samples: prevent UAC2 audio channel misalignment.
+  - samples: I2S: replace i2s_enable()/i2s_disable_irq() with i2s_start()/i2s_stop().
+  - samples: i2s&smix: Correct the timing of executing software reset.
+  - samples: i2s: check I2S API return value.
+  - samples: tinyengine: fix person_obj build with Andes GCC 14.2.
+  - samples: openocd_algo: enable fpu before auto config.
+  - samples: openocd_algo: add null check for hybrid XPI enable.
+  - docs: fix missing spaces of inline markup.
+  - docs: update erpc_motor doc.
+  - cmake: toolchains: probe compiler for march extension support.
+  - scripts: ide:iar Fix virtual path display issue.
+
+### Added:
+  - soc: HPM5100: add hpm5100 support
+  - board: add hpm5100evk support
+  - drivers: tfa: add CONFIG_TFA_IRQ_NEST_PROTECT macro.
+  - drivers: sei: add sei_restart_asynchronous_xcvr() API.
+  - drivers: enet: add HW checksum offload API.
+  - boards: add macro BOARD_APP_I2S_RX_DMA_REQ.
+  - components: codec: components: add sgtl_set_volume_percent() API.
+  - components: codec: components: add wm8960_set_volume_percent() and wm8960_mute() API.
+  - components: codec: components: add es8389_set_volume_percent() API.
+  - components: codec: components: add sgtl_get_volume_db_range() and sgtl_clamp_volume_db() API.
+  - components: codec: components: add wm8960_get_volume_db_range() and wm8960_clamp_volume_db() API.
+  - components: codec: components: add es8389_get_volume_db_range() and es8389_clamp_volume_db() API.
+  - components: codec: components: add sgtl_set_volume_db() API.
+  - components: codec: components: add wm8960_set_volume_db() API.
+  - components: codec: components: add es8389_set_volume_db() API.
+  - components: enet_phy: add RTL8211F Ethernet PHY support.
+  - samples: tinyusb: add uac2_headset sample readme files.
+  - samples: lwip: support multi-segment RX payload as pbuf chain.
+  - samples: lwip: add enet tx hw crc mode select (append/replace/off).
+  - samples: lwip: add enable for ENET HW checksum offload.
+  - samples: cherryusb: samples: add audio_v2_headset sample.
+  - samples: tinyusb: samples: add uac2_headset sample, which using codec.
+
 ## [1.12.1] - 2026-07-05:
 
 - Main changes since 1.12.0

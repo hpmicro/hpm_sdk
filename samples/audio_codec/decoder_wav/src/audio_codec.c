@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -97,7 +97,7 @@ static void init_audio_player(char *fname)
 {
     hpm_stat_t res;
 
-    dma_abort_channel(BOARD_APP_DMA1, TARGET_I2S_TX_DMA_CH);
+    dma_abort_channel(BOARD_APP_DMA1, 1u << TARGET_I2S_TX_DMA_CH);
     if (wav_ctrl_ptr->func.file != 0) {
         wav_ctrl_ptr->func.close_file(wav_ctrl_ptr->func.file);
     }

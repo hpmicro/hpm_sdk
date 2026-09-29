@@ -17,6 +17,7 @@
    hpm6800evk/README_zh
    hpm6e00evk/README_zh
    hpm6p00evk/README_zh
+   hpm5100evk/README_zh
    extension/index_zh
 
 **板卡资源详情**
@@ -74,6 +75,11 @@
         点击 :ref:`hpm6p00evk_pins` 查看引脚详情
 
         点击 :ref:`hpm6p00evk_buttons` 查看按钮详情
+
+    .. tab:: HPM5100EVK
+        点击 :ref:`hpm5100evk_pins` 查看引脚详情
+
+        点击 :ref:`hpm5100evk_buttons` 查看按钮详情
 
 **板卡已知问题详情**
 

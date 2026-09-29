@@ -17,6 +17,7 @@ This chapter describes the board-related configuration
    hpm6800evk/README_en
    hpm6e00evk/README_en
    hpm6p00evk/README_en
+   hpm5100evk/README_en
    extension/index_en
 
 **Board Resource Details**
@@ -74,6 +75,11 @@ This chapter describes the board-related configuration
         Click :ref:`hpm6p00evk_pins` to view pin details
 
         Click :ref:`hpm6p00evk_buttons` to view button details
+
+    .. tab:: HPM5100EVK
+        点击 :ref:`hpm5100evk_pins` 查看引脚详情
+
+        点击 :ref:`hpm5100evk_buttons` 查看按钮详情
 
 **Board Known Issue Details**
 

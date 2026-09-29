@@ -1253,24 +1253,57 @@ uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
 {
     uint32_t freq = 0;
 
+    /*
+     * The fixed PLL3 clock used by init_i2s*_clock_22050() cannot generate an exact
+     * 44.1kHz-family clock. BOARD_USE_AUDIO_PLL_FOR_EXACT_44100 changes the PLL3 CLK0
+     * post-divider to provide the exact clock, but it also affects all I2S instances.
+     * Select the option according to the application's requirements.
+     */
     if (ptr == HPM_I2S0) {
         if ((sample_rate % 22050) == 0) {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll3, pllctlv2_clk0, pllctlv2_div_1p6);
+            init_i2s0_clock_default();
+            clock_set_source_divider(clock_aud0, clk_src_pll3_clk0, 20);
+#else
             init_i2s0_clock_22050();
+#endif
         } else {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll3, pllctlv2_clk0, pllctlv2_div_1p4);
+#endif
             init_i2s0_clock_default();
         }
         freq = clock_get_frequency(clock_i2s0);
     } else if (ptr == HPM_I2S1) {
         if ((sample_rate % 22050) == 0) {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll3, pllctlv2_clk0, pllctlv2_div_1p6);
+            init_i2s1_clock_default();
+            clock_set_source_divider(clock_aud1, clk_src_pll3_clk0, 20);
+#else
             init_i2s1_clock_22050();
+#endif
         } else {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll3, pllctlv2_clk0, pllctlv2_div_1p4);
+#endif
             init_i2s1_clock_default();
         }
         freq = clock_get_frequency(clock_i2s1);
     } else if (ptr == HPM_I2S3) {
         if ((sample_rate % 22050) == 0) {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll3, pllctlv2_clk0, pllctlv2_div_1p6);
+            init_i2s3_clock_default();
+            clock_set_source_divider(clock_aud3, clk_src_pll3_clk0, 20);
+#else
             init_i2s3_clock_22050();
+#endif
         } else {
+#if defined(BOARD_USE_AUDIO_PLL_FOR_EXACT_44100) && BOARD_USE_AUDIO_PLL_FOR_EXACT_44100
+            pllctlv2_set_postdiv(HPM_PLLCTLV2, pllctlv2_pll3, pllctlv2_clk0, pllctlv2_div_1p4);
+#endif
             init_i2s3_clock_default();
         }
         freq = clock_get_frequency(clock_i2s3);
@@ -1299,6 +1332,7 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 1);
+        board_delay_ms(BOARD_ENET_RGMII_RST_DELAY_MS);
     } else {
         return status_invalid_argument;
     }
@@ -1747,4 +1781,3 @@ void init_sent_decode_pins(bool idle_high)
     (void)idle_high;
     init_gptmr2_channel0_pin_as_capture();
 }
-

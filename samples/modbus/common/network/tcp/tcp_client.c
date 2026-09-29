@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -20,12 +20,25 @@ static bool is_active = false;
 hpm_stat_t network_tcp_client_init(void)
 {
     ip4_addr_t server_ip;
+    err_t err;
+
+    if (client_pcb != NULL) {
+        return status_success;
+    }
+
     client_pcb = tcp_new();
     if (client_pcb == NULL) {
         return status_invalid_argument;
     }
+
     IP4_ADDR(&server_ip, REMOTE_IP_ADDR0, REMOTE_IP_ADDR1, REMOTE_IP_ADDR2, REMOTE_IP_ADDR3);
-    tcp_connect(client_pcb, &server_ip, TCP_SERVER_PORT, client_connected);
+    err = tcp_connect(client_pcb, &server_ip, TCP_SERVER_PORT, client_connected);
+    if (err != ERR_OK) {
+        tcp_abort(client_pcb);
+        client_pcb = NULL;
+        return status_fail;
+    }
+
     tcp_err(client_pcb, client_err);
     return status_success;
 }
@@ -82,14 +95,18 @@ bool tcp_client_connect_state(void)
     return is_active;
 }
 
+bool tcp_client_is_connecting(void)
+{
+    return client_pcb != NULL;
+}
+
 static void client_err(void *arg, err_t err)
 {
     (void)arg;
     (void)err;
     printf("connect error! closed by core!!\n");
-    printf("try to connect to server again!!\n");
-    tcp_close(client_pcb);
-    network_tcp_client_init();
+    client_pcb = NULL;
+    is_active = false;
 }
 
 static err_t client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
@@ -112,8 +129,9 @@ static err_t client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t 
         pbuf_free(p);
     } else if (err == ERR_OK) {
         printf("server has been disconnected!\n");
+        client_pcb = NULL;
+        is_active = false;
         tcp_close(tpcb);
-        network_tcp_client_init();
     }
     return ERR_OK;
 }

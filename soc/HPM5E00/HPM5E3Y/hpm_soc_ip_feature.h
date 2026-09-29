@@ -98,6 +98,12 @@
 /* PLB related feature */
 #define HPM_IP_FEATURE_PLB_COUNTER_READ_REAL_TIME 1
 
+/* SYNT related feature */
+#define HPM_IP_FEATURE_SYNT_TIMESTAMP 1
+#define HPM_IP_FEATURE_SYNT_ONESHOT_MODE 1
+#define HPM_IP_FEATURE_SYNT_CHAN16 1
+#define HPM_IP_FEATURE_SYNT_DCCS 1
+
 /* TRGM related feature */
 #define HPM_IP_FEATURE_TRGM_HAS_TRGM_IN_OUT_STATUS 1
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HPMicro
+ * Copyright (c) 2021,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -62,7 +62,11 @@ void test_vad_to_dao(void)
     vad_init(TEST_VAD, &vad_config);
 
     i2s_get_default_config(DAO_I2S, &i2s_config);
-    i2s_init(DAO_I2S, &i2s_config);
+    if (i2s_init(DAO_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
     /*
      * config transfer for DAO
      */

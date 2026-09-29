@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,36 +10,41 @@
 #include "netconf.h"
 #include "netif/etharp.h"
 #include "ethernetif.h"
+#include "common_lwip.h"
 
-struct netif gnetif;
 
 void netif_config(void)
 {
     ip_addr_t ipaddr;
     ip_addr_t netmask;
     ip_addr_t gw;
-
     IP_ADDR4(&ipaddr, IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
     IP_ADDR4(&netmask, NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
     IP_ADDR4(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
 
-    netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &ethernet_input);
+    enet_netif_state_bind(0, ENET);
+    netif_add(&gnetif, &ipaddr, &netmask, &gw, &enet_netif_state[0], &ethernetif_init, &ethernet_input);
 
     netif_set_default(&gnetif);
 
-    if (netif_is_link_up(&gnetif)) {
-        netif_set_up(&gnetif);
-    } else {
-        netif_set_down(&gnetif);
-    }
+    /*
+     * Administrative and physical link states are independent in lwIP.
+     * The PHY adaptive handler updates the latter after auto-negotiation.
+     */
+    netif_set_up(&gnetif);
+}
+
+void netif_show_ip_info(struct netif *netif)
+{
+    printf("IPv4 Address: %s\n", ipaddr_ntoa(&netif->ip_addr));
+    printf("IPv4 Netmask: %s\n", ipaddr_ntoa(&netif->netmask));
+    printf("IPv4 Gateway: %s\n", ipaddr_ntoa(&netif->gw));
 }
 
 void user_notification(struct netif *netif)
 {
     if (netif_is_up(netif)) {
-        printf("Static IP: %d.%d.%d.%d\n", IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
-        printf("Netmask  : %d.%d.%d.%d\n", NETMASK_ADDR0, NETMASK_ADDR1, NETMASK_ADDR2, NETMASK_ADDR3);
-        printf("Gateway  : %d.%d.%d.%d\n", GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
+        netif_show_ip_info(netif);
     } else {
         printf("The network interface card is not ready!\n");
     }

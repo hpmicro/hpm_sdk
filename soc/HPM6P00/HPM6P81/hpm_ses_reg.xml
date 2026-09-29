@@ -16028,6 +16028,9 @@
       <BitField name="RX" start="0" size="8"/>
     </Register>
     <Register name="STA" start="+0x10" size="0x4">
+      <BitField name="SFTRST_RX_DONE" start="24" size="1"/>
+      <BitField name="SFTRST_TX_DONE" start="23" size="1"/>
+      <BitField name="SFTRST_CLKGEN_DONE" start="22" size="1"/>
       <BitField name="TX_UD" start="13" size="4"/>
       <BitField name="RX_OV" start="9" size="4"/>
       <BitField name="TX_DN" start="5" size="4"/>
@@ -16139,6 +16142,9 @@
       <BitField name="RX" start="0" size="8"/>
     </Register>
     <Register name="STA" start="+0x10" size="0x4">
+      <BitField name="SFTRST_RX_DONE" start="24" size="1"/>
+      <BitField name="SFTRST_TX_DONE" start="23" size="1"/>
+      <BitField name="SFTRST_CLKGEN_DONE" start="22" size="1"/>
       <BitField name="TX_UD" start="13" size="4"/>
       <BitField name="RX_OV" start="9" size="4"/>
       <BitField name="TX_DN" start="5" size="4"/>

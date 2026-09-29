@@ -310,6 +310,14 @@ get_extram_size_of_board(${BOARD_YAML} extram_size)
 # Categories in the special_categories list will set corresponding CONFIG_* variables
 # This must be done before board CMakeLists.txt is included
 get_board_info(${BOARD_YAML} feature board_features)
+
+# Read application dependencies once. Each special category is checked against
+# its corresponding board feature when it is processed below.
+set(app_dependencies "")
+if(APP_YAML_PATH AND EXISTS "${APP_YAML_PATH}/app.yaml")
+    get_app_dependencies("${APP_YAML_PATH}/app.yaml" app_dependencies)
+endif()
+
 if(board_features AND NOT board_features STREQUAL "0" AND NOT board_features STREQUAL "not found")
     # Convert colon-separated string to CMake list
     string(REPLACE ":" ";" feature_list "${board_features}")
@@ -332,6 +340,26 @@ if(board_features AND NOT board_features STREQUAL "0" AND NOT board_features STR
             set(category "${CMAKE_MATCH_1}")
             set(value "${CMAKE_MATCH_2}")
 
+            # Match the category to the base board feature required by the
+            # application. Codec is the naming exception: its base feature is
+            # board_audio_codec rather than board_codec.
+            set(category_dependency "board_${category}")
+            if("${category}" STREQUAL "codec")
+                set(category_dependency "board_audio_codec")
+            endif()
+            set(app_has_category_dependency FALSE)
+            foreach(app_dependency ${app_dependencies})
+                if("${app_dependency}" MATCHES "(^|[ ]*\\|\\|[ ]*)${category_dependency}([ ]*\\|\\||$)")
+                    set(app_has_category_dependency TRUE)
+                    break()
+                endif()
+            endforeach()
+            set(board_has_category_feature FALSE)
+            list(FIND feature_list "${category_dependency}" category_feature_index)
+            if(category_feature_index GREATER_EQUAL 0)
+                set(board_has_category_feature TRUE)
+            endif()
+
             # Check if category needs special processing
             list(FIND special_categories ${category} category_index)
             if(category_index GREATER_EQUAL 0)
@@ -343,6 +371,17 @@ if(board_features AND NOT board_features STREQUAL "0" AND NOT board_features STR
                 # Set the variable if not already defined
                 if(NOT DEFINED ${config_var_name})
                     set(${config_var_name} ${value} CACHE STRING "Board ${category_upper} Name")
+                endif()
+                # Auto-enable CONFIG_{CATEGORY} for a special category only when
+                # both app.yaml and the board declare its base feature.
+                # e.g., board_codec_sgtl5000 → CONFIG_CODEC=1
+                # Only set if user hasn't explicitly set it (user override takes priority)
+                if(NOT DEFINED CONFIG_${category_upper})
+                    # Auto-enable a special category only when both app.yaml and
+                    # the board declare its corresponding base feature.
+                    if(app_has_category_dependency AND board_has_category_feature)
+                        set(CONFIG_${category_upper} 1 CACHE INTERNAL "Auto-detected: board has ${category} (from board_${category}_${value})")
+                    endif()
                 endif()
             endif()
         endif()
@@ -408,4 +447,3 @@ if(${APP_SRC_DIR} STREQUAL ${APP_BIN_DIR})
     message(FATAL_ERROR "source directory is the same with binary directory.\
     please specify a build directory, e.g. cmake -Bbuild -H.")
 endif()
-

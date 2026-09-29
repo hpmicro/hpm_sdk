@@ -44,7 +44,7 @@
 #define PACKET_POOL_SIZE ((PACKET_SIZE + sizeof(NX_PACKET)) * PACKET_COUNT)
 
 /* Define IP stack size.   */
-#define IP_STACK_SIZE 2048
+#define IP_STACK_SIZE 4096
 
 /* Define ARP pool.  */
 #define ARP_POOL_SIZE 1024

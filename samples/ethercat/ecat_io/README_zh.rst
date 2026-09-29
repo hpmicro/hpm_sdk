@@ -59,7 +59,7 @@ ECAT_IO示例用于演示使用ESC外设和从站协议栈代码(SSC)实现ECAT�
 
   - 注释掉生成的协议栈代码ecatappl.c中的"#define SET_EEPROM_PTR pEEPROM = aEepromData;"内容，解决编译错误。
 
-  - 在文件`CMakeLists.txt`中, 设置"set(CONFIG_EEPROM_EMULATION 0)"，重新构建工程。
+  - 在文件 `CMakeLists.txt` 中, 设置"set(CONFIG_EEPROM_EMULATION 0)"，重新构建工程。
 
 4. 生成从站协议栈代码
 ------------------------------

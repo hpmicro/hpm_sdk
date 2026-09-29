@@ -27,7 +27,36 @@
 
 #define APP_ADC16_CH_WDOG_EVENT              (1 << ADC16_SOC_TEMP_CH_NUM)
 
+#ifndef APP_ADC16_CONV_CLK_HZ
+#define APP_ADC16_CONV_CLK_HZ                ADC16_SOC_CONV_CLK_FREQ_MAX
+#endif
+
 __IO uint32_t res_out_of_thr_flag;
+
+static uint32_t s_adc16_clk_div;
+
+static hpm_stat_t app_adc16_setup_clock(void)
+{
+    uint32_t input_hz;
+    uint32_t div;
+    uint32_t conv_hz;
+    uint32_t convert_cycles;
+    uint32_t fs_hz;
+
+    input_hz = board_init_adc_clock(APP_ADC_TEMP_ADC16_BASE, true);
+    if (adc16_calc_clock_divider(input_hz, APP_ADC16_CONV_CLK_HZ, &div) != status_success) {
+        printf("ADC16 conv clock cannot meet %u Hz from input %u Hz (div 1-16)\n", (unsigned int)APP_ADC16_CONV_CLK_HZ, (unsigned int)input_hz);
+        return status_invalid_argument;
+    }
+    s_adc16_clk_div = div;
+    conv_hz = input_hz / div;
+    convert_cycles = adc16_res_16_bits;
+    printf("ADC16 clock: input=%u Hz, div=%u, conv=%u Hz\n", (unsigned int)input_hz, (unsigned int)div, (unsigned int)conv_hz);
+    if (adc16_calc_sample_rate(conv_hz, ADC_SAMPLE_CYCLE, convert_cycles, &fs_hz) == status_success) {
+        printf("ADC16 sample: cycle=%u, convert=%u, fs=%u Hz\n", (unsigned int)ADC_SAMPLE_CYCLE, (unsigned int)convert_cycles, (unsigned int)fs_hz);
+    }
+    return status_success;
+}
 
 SDK_DECLARE_EXT_ISR_M(BOARD_APP_ADC16_IRQn, isr_temp)
 void isr_temp(void)
@@ -53,7 +82,7 @@ hpm_stat_t init_common_config(adc16_conversion_mode_t conv_mode)
     adc16_get_default_config(&cfg);
     cfg.res            = adc16_res_16_bits;
     cfg.conv_mode      = conv_mode;
-    cfg.adc_clk_div    = adc16_clock_divider_4;
+    cfg.adc_clk_div    = s_adc16_clk_div;
 #if !defined(HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB) || !HPM_IP_FEATURE_ADC16_FORCE_SYNC_AHB
     cfg.sel_sync_ahb   = (clk_adc_src_ahb0 == clock_get_source(BOARD_APP_ADC16_CLK_NAME)) ? true : false;
 #endif
@@ -130,16 +159,18 @@ int main(void)
     /* Bsp initialization */
     board_init();
 
-    /* ADC clock initialization */
-    board_init_adc_clock(APP_ADC_TEMP_ADC16_BASE, true);
+    printf("This is an ADC16 temperature acquisition demo:\n");
+
+    /* ADC clock initialization: consume returned freq, do not retune CPU/AHB */
+    if (app_adc16_setup_clock() != status_success) {
+        return 0;
+    }
 
     /* ADC common initialization */
     init_common_config(adc16_conv_mode_oneshot);
 
     /* ADC read patter config */
     init_oneshot_config();
-
-    printf("This is an ADC16 temperature acquisition demo:\n");
 
     /* Main loop */
     while (1) {

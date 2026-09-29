@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 HPMicro
+ * Copyright (c) 2022-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,14 +15,17 @@
 #include "rtt_port.h"
 #include "rtthread.h"
 
-#define task_speaker_PRIORITY    (RT_THREAD_PRIORITY_MAX - 6U)
-#define task_mic_PRIORITY    (RT_THREAD_PRIORITY_MAX - 5U)
+#define AUDIO_TASK_PRIORITY (RT_THREAD_PRIORITY_MAX - 5U)
 
-extern void task_speaker_play(void *pvParameters);
-extern void task_mic_play(void *pvParameters);
+static void audio_task(void *argument)
+{
+    (void)argument;
 
-usb_osal_thread_t task_handle_speaker_play;
-usb_osal_thread_t task_handle_mic_play;
+    while (1) {
+        audio_v2_task(0);
+        usb_osal_msleep(10U);
+    }
+}
 
 void rt_hw_board_init(void)
 {
@@ -35,30 +38,22 @@ void rt_hw_board_init(void)
     init_dao_pins();
     board_init_pdm_clock();
     init_pdm_pins();
-
-    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 2);
-    i2s_enable_dma_irq_with_priority(1);
 }
 
 int main(void)
 {
-    printf("cherry usb audio v2 mic and speaker sample.\n");
+    printf("CherryUSB audio v2 mic and speaker rtthread sample.\n");
 
-    audio_v2_init(0, CONFIG_HPM_USBD_BASE);
-    speaker_init_i2s_dao_codec();
+    speaker_init_i2s_dao();
     mic_init_i2s_pdm();
 
-    task_handle_speaker_play = usb_osal_thread_create("speaker_play", 4096U, task_speaker_PRIORITY, task_speaker_play, NULL);
-    if (task_handle_speaker_play == NULL) {
-        printf("task_speaker_play creation failed!.\n");
-        for (;;) {
-            ;
-        }
-    }
+    i2s_enable_dma_irq_with_priority(2);
+    intc_set_irq_priority(CONFIG_HPM_USBD_IRQn, 1);
+    audio_v2_init(0, CONFIG_HPM_USBD_BASE);
 
-    task_handle_mic_play = usb_osal_thread_create("mic_play", 4096U, task_mic_PRIORITY, task_mic_play, NULL);
-    if (task_handle_mic_play == NULL) {
-        printf("task_mic_play creation failed!.\n");
+    usb_osal_thread_t task = usb_osal_thread_create("audio", 4096U, AUDIO_TASK_PRIORITY, audio_task, NULL);
+    if (task == NULL) {
+        printf("audio task creation failed!.\n");
         for (;;) {
             ;
         }

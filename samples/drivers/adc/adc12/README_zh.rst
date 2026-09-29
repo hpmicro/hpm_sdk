@@ -30,6 +30,8 @@ ADC12
   .. code-block:: console
 
    This is an ADC12 demo:
+   ADC12 clock: input=200000000 Hz, div=4, conv=50000000 Hz
+   ADC12 sample: cycle=20, convert=14, fs=1470588 Hz
    1. Oneshot    mode
    2. Period     mode
    3. Sequence   mode
@@ -56,6 +58,7 @@ ADC12
     .. code-block:: console
 
      Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 2
+     ADC12 period: target=500000000 ns, actual=500695040 ns (prescale=17 prd=191)
      Period Mode - ADC0 [channel 11] - Result: 0x0ffb
      Period Mode - ADC0 [channel 11] - Result: 0x0fff
      Period Mode - ADC0 [channel 11] - Result: 0x0ffd

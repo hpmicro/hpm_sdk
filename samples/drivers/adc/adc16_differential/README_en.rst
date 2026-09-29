@@ -30,11 +30,13 @@ Expected console output
 - The line prefix depends on the board master/slave ADC pair and may be ``ADC2/ADC3`` or ``ADC0/ADC1``; see the target board README
 - Each line is ``0xXXXX (N)``: ``0xXXXX`` is the DMA low 16-bit raw hex; ``(N)`` is decimal decoded from the master diff config. Under the default config ``(N)`` is signed and typically drifts slightly around zero at near-zero differential; see the *Diff result encoding* section below
 
-  Examples below assume default config ``position_mode=differential``, ``full_resolution=0``:
+  Examples below assume default config ``position_mode=differential``, ``full_resolution=0``. The clock lines are from ``hpm6p00evk`` (AHB 200 MHz) with the ADC2/ADC3 pair:
 
   .. code-block:: console
 
    ADC16 differential sample
+   ADC16 clock: input=200000000 Hz, div=4, conv=50000000 Hz
+   ADC16 sample: cycle=8, convert=21, fs=1724137 Hz
    ADC2/ADC3 diff result: 0x0003 (3)
    ADC2/ADC3 diff result: 0xfffc (-4)
    ADC2/ADC3 diff result: 0x0001 (1)

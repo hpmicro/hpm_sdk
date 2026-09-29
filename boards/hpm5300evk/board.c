@@ -390,19 +390,19 @@ uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
 
     if (ptr == HPM_DAC0) {
         if (clk_src_ahb == true) {
-            /* Configure the DAC clock to 180MHz */
+            /* Configure the DAC clock from AHB (@160MHz by default) */
             init_dac0_ahb_clock();
         } else {
-            /* Configure the DAC clock to 166MHz */
+            /* Configure the DAC clock from pll1_clk2 via ana divider (/3, @166MHz by default) */
             init_dac0_analog_clock();
         }
         freq = clock_get_frequency(clock_dac0);
     } else if (ptr == HPM_DAC1) {
         if (clk_src_ahb == true) {
-            /* Configure the DAC clock to 180MHz */
+            /* Configure the DAC clock from AHB (@160MHz by default) */
             init_dac1_ahb_clock();
         } else {
-            /* Configure the DAC clock to 166MHz */
+            /* Configure the DAC clock from pll1_clk2 via ana divider (/3, @166MHz by default) */
             init_dac1_analog_clock();
         }
         freq = clock_get_frequency(clock_dac1);

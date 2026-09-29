@@ -261,6 +261,12 @@ typedef struct {
  * WDOG_TIME (RW)
  *
  * Time out count for each instruction, counter in bit time.
+ * 0：1 bit
+ * 1：2 bits
+ * ...
+ * 0xFFFE：65535 bits
+ * 0xFFFF: reserved
+ * Note：After configuration, the WDG timeout duration shall be longer than the trigger period (including external trigger, periodic trigger, and software trigger/enable).
  */
 #define SEI_CTRL_ENGINE_WDG_CFG_WDOG_TIME_MASK (0xFFFFU)
 #define SEI_CTRL_ENGINE_WDG_CFG_WDOG_TIME_SHIFT (0U)
@@ -3091,17 +3097,17 @@ typedef struct {
  * CK (RW)
  *
  * clock state configure
- * a. In synchronous master mode:
- * 0: low
- * 1: rise-fall
- * 2: fall-rise
- * 3: high
- * b. In synchronous slave mode:
- * 0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
- * 1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
- * 2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
- * 3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
- * c.  In asynchronous mode: please keep 0.
+ * - a. In synchronous master mode:
+ *   - 0: low
+ *   - 1: rise-fall
+ *   - 2: fall-rise
+ *   - 3: high
+ * - b. In synchronous slave mode:
+ *   - 0：Use TX_POINT and RX_POINT as the timing for data transmission and reception. Disable the TIMEOUT function in the communication protocol( this is not WDG).
+ *   - 1：Switch the timing for data transmission and reception (e.g., switching edges for receive/transmit in an EnDat Encoder communication cycle). Disable the TIMEOUT function in the communication protocol.
+ *   - 2：Use TX_POINT and RX_POINT as the timing for data transmission and reception；Enable the TIMEOUT function in the communication protocol.
+ *   - 3：Switch the timing for data transmission and reception. Enable the TIMEOUT function in the communication protocol.
+ * - c.  In asynchronous mode: please keep 0.
  */
 #define SEI_INSTR_CK_MASK (0x3000000UL)
 #define SEI_INSTR_CK_SHIFT (24U)
@@ -3147,16 +3153,16 @@ typedef struct {
 /*
  * OPR (RW)
  *
- * a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
- * b. When OP is 1, this area is the the pointer to the command table.
- * OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
- * OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
- * OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
- * c. When OP is 2-7, this area is the data length as fellow:
- * 0: 1 bit
- * 1: 2 bit
- *  ...
- * 31: 32 bit
+ * - a. When OP is 0, this area is the halt time in baudrate, 0 represents infinite time.
+ * - b. When OP is 1, this area is the the pointer to the command table.
+ *   - OPR[4]=1, OPR[3:0] value is CMD_TABLE instruct pointer;
+ *   - OPR[4]=0, OPR[3:0]=0 is INIT_POINTER;
+ *   - OPR[4]=0, OPR[3:0]=1 is WDG_POINTER.
+ * - c. When OP is 2-7, this area is the data length as fellow:
+ *   - 0: 1 bit
+ *   - 1: 2 bit
+ *    - ...
+ *   - 31: 32 bit
  */
 #define SEI_INSTR_OPR_MASK (0x1FU)
 #define SEI_INSTR_OPR_SHIFT (0U)

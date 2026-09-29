@@ -3304,8 +3304,6 @@
       <BitField name="CH0RLDEN" start="0" size="1"/>
     </Register>
     <Register name="GCR" start="+0x208" size="0x4">
-      <BitField name="QEI_TYPE23" start="18" size="2"/>
-      <BitField name="QEI_TYPE01" start="16" size="2"/>
       <BitField name="SWSYNCT" start="0" size="4"/>
     </Register>
   </RegisterGroup>
@@ -3559,8 +3557,6 @@
       <BitField name="CH0RLDEN" start="0" size="1"/>
     </Register>
     <Register name="GCR" start="+0x208" size="0x4">
-      <BitField name="QEI_TYPE23" start="18" size="2"/>
-      <BitField name="QEI_TYPE01" start="16" size="2"/>
       <BitField name="SWSYNCT" start="0" size="4"/>
     </Register>
   </RegisterGroup>
@@ -3814,8 +3810,6 @@
       <BitField name="CH0RLDEN" start="0" size="1"/>
     </Register>
     <Register name="GCR" start="+0x208" size="0x4">
-      <BitField name="QEI_TYPE23" start="18" size="2"/>
-      <BitField name="QEI_TYPE01" start="16" size="2"/>
       <BitField name="SWSYNCT" start="0" size="4"/>
     </Register>
   </RegisterGroup>
@@ -4069,8 +4063,6 @@
       <BitField name="CH0RLDEN" start="0" size="1"/>
     </Register>
     <Register name="GCR" start="+0x208" size="0x4">
-      <BitField name="QEI_TYPE23" start="18" size="2"/>
-      <BitField name="QEI_TYPE01" start="16" size="2"/>
       <BitField name="SWSYNCT" start="0" size="4"/>
     </Register>
   </RegisterGroup>
@@ -4324,8 +4316,6 @@
       <BitField name="CH0RLDEN" start="0" size="1"/>
     </Register>
     <Register name="GCR" start="+0x208" size="0x4">
-      <BitField name="QEI_TYPE23" start="18" size="2"/>
-      <BitField name="QEI_TYPE01" start="16" size="2"/>
       <BitField name="SWSYNCT" start="0" size="4"/>
     </Register>
   </RegisterGroup>
@@ -4579,8 +4569,6 @@
       <BitField name="CH0RLDEN" start="0" size="1"/>
     </Register>
     <Register name="GCR" start="+0x208" size="0x4">
-      <BitField name="QEI_TYPE23" start="18" size="2"/>
-      <BitField name="QEI_TYPE01" start="16" size="2"/>
       <BitField name="SWSYNCT" start="0" size="4"/>
     </Register>
   </RegisterGroup>
@@ -25815,8 +25803,11 @@
       <BitField name="MAC_SPEED" start="30" size="1"/>
       <BitField name="PHY_OFFSET_VAL" start="24" size="5"/>
       <BitField name="PORT2_RMII_EN" start="23" size="1"/>
+      <BitField name="PORT2_TX_SHIFT" start="16" size="2"/>
       <BitField name="PORT1_RMII_EN" start="15" size="1"/>
+      <BitField name="PORT1_TX_SHIFT" start="8" size="2"/>
       <BitField name="PORT0_RMII_EN" start="7" size="1"/>
+      <BitField name="PORT0_TX_SHIFT" start="0" size="2"/>
     </Register>
     <Register name="PHY_CFG1" start="+0x1f014" size="0x4">
       <BitField name="RMII_REFCLK_SEL" start="8" size="3"/>

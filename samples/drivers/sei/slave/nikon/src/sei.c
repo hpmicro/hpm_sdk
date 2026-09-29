@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -152,7 +152,7 @@ int main(void)
 
     /* [3] instructions */
     instr_idx = 0;
-    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_2, 3);  /* Recv Sink Code */
+    sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV, 0, SEI_DAT_0, SEI_DAT_2, 3);      /* Recv Sink Code */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_3, SEI_DAT_5, 5);  /* Recv CDF0.EA */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_3, SEI_DAT_CMD, 5);/* Recv CDF0.CC */
     sei_set_instr(BOARD_SEI, instr_idx++, SEI_INSTR_OP_RECV_WDG, 0, SEI_DAT_0, SEI_DAT_3, 3);  /* Recv CDF0.CRC */
@@ -307,19 +307,31 @@ void isr_sei(void)
     if ((irq_flag & sei_irq_latch1_event) != 0) {
         sample_latch_tm1 = sei_get_latch_time(BOARD_SEI, BOARD_SEI_CTRL, SEI_LATCH_0);
         delta = (sample_latch_tm1 > sample_latch_tm2) ? (sample_latch_tm1 - sample_latch_tm2) : (sample_latch_tm1 - sample_latch_tm2 + 0xFFFFFFFFu);
-        printf("EAX:%#x, CC:%#x, ST:%#x, MT:%#x, CRC:%#x, sample_tm1:%u, sample_tm2:%u, sample_interval:%d us\n",
+        printf("EAX:%#x, CC:%#x, ST:%#x, MT:%#x, CRC:%#x, sample_interval:%d us\n",
                 sei_get_data_value(BOARD_SEI, SEI_DAT_4) & 0x3F,
                 (sei_get_data_value(BOARD_SEI, SEI_DAT_4) >> 6) & 0x3F,
                 sei_get_data_value(BOARD_SEI, SEI_DAT_7),
                 sei_get_data_value(BOARD_SEI, SEI_DAT_8),
                 sei_get_crc_value(BOARD_SEI, SEI_DAT_9),
-                sample_latch_tm1, sample_latch_tm2, delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
+                delta / (clock_get_frequency(BOARD_MOTOR_CLK_NAME) / 1000000));
         sample_latch_tm2 = sample_latch_tm1;
     }
 
     if ((irq_flag & sei_irq_wdog_event) != 0) {
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, false);
+        sei_set_engine_rewind(BOARD_SEI, BOARD_SEI_CTRL);
         sei_set_command_rewind(BOARD_SEI, BOARD_SEI_CTRL);
         sei_set_data_rewind(BOARD_SEI, SEI_DAT_2);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_3);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_4);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_5);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_6);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_7);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_8);
+        sei_set_data_rewind(BOARD_SEI, SEI_DAT_9);
+        sei_restart_asynchronous_xcvr(BOARD_SEI, BOARD_SEI_CTRL);
+        sei_set_engine_enable(BOARD_SEI, BOARD_SEI_CTRL, true);
+        printf("WDG Active!\n");
     }
 
     if ((irq_flag & sei_irq_trx_err_event) != 0) {

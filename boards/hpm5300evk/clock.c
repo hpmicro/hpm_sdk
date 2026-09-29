@@ -106,7 +106,6 @@ void init_adc0_bus_clock(void)
 {
     /* Generate clk_top_adc0 code */
     clock_set_adc_source(clock_adc0, clk_adc_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 2);
 
     clock_add_to_group(clock_adc0, 0);
 }
@@ -124,7 +123,6 @@ void init_adc1_bus_clock(void)
 {
     /* Generate clk_top_adc1 code */
     clock_set_adc_source(clock_adc1, clk_adc_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 2);
 
     clock_add_to_group(clock_adc1, 0);
 }
@@ -142,7 +140,6 @@ void init_dac0_ahb_clock(void)
 {
     /* Generate clk_top_dac0 code */
     clock_set_dac_source(clock_dac0, clk_dac_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 2);
 
     clock_add_to_group(clock_dac0, 0);
 }
@@ -151,7 +148,7 @@ void init_dac0_analog_clock(void)
 {
     /* Generate clk_top_dac0 code */
     clock_set_dac_source(clock_dac0, clk_dac_src_ana2);
-    clock_set_source_divider(clock_ana2, clk_src_pll0_clk1, 2);
+    clock_set_source_divider(clock_ana2, clk_src_pll1_clk2, 3);
 
     clock_add_to_group(clock_dac0, 0);
 }
@@ -160,7 +157,6 @@ void init_dac1_ahb_clock(void)
 {
     /* Generate clk_top_dac1 code */
     clock_set_dac_source(clock_dac1, clk_dac_src_ahb0);
-    clock_set_source_divider(clock_cpu0, clk_src_pll0_clk0, 2);
 
     clock_add_to_group(clock_dac1, 0);
 }
@@ -169,7 +165,7 @@ void init_dac1_analog_clock(void)
 {
     /* Generate clk_top_dac1 code */
     clock_set_dac_source(clock_dac1, clk_dac_src_ana3);
-    clock_set_source_divider(clock_ana3, clk_src_pll0_clk1, 2);
+    clock_set_source_divider(clock_ana3, clk_src_pll1_clk2, 3);
 
     clock_add_to_group(clock_dac1, 0);
 }

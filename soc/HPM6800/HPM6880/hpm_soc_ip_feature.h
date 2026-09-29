@@ -32,6 +32,9 @@
 /* ADC16 related feature */
 #define HPM_IP_FEATURE_ADC16_SEQ_HCFG_EN 1
 
+/* I2S related feature */
+#define HPM_IP_FEATURE_I2S_HAS_SOFTWARE_RESET_STATUS 1
+
 /* DAO related feature */
 #define HPM_IP_FEATURE_DAO_DATA_FORMAT_CONFIG 1
 #define HPM_IP_FEATURE_DAO_AUDIO_MONO_FIX 1

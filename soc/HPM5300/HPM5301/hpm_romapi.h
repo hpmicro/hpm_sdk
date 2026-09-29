@@ -529,11 +529,15 @@ static inline hpm_stat_t rom_xpi_nor_read(XPI_Type *base,
  * @param [in] cfg_option XPI NOR configuration option
  * @return API execution status
  */
+ATTR_RAMFUNC
 static inline hpm_stat_t rom_xpi_nor_auto_config(XPI_Type *base,
                                                  xpi_nor_config_t *config,
                                                  xpi_nor_config_option_t *cfg_option)
 {
-    return ROM_API_TABLE_ROOT->xpi_nor_driver_if->auto_config(base, config, cfg_option);
+    hpm_stat_t status;
+    status = ROM_API_TABLE_ROOT->xpi_nor_driver_if->auto_config(base, config, cfg_option);
+    fencei();
+    return status;
 }
 
 /**

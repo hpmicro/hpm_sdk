@@ -18,13 +18,13 @@ CAM_DVP示例工程展示了使用CAM DVP接口获取摄像头设备采集的图
 ------------
 
 对于这个工程，用户需要在CMakeList.txt设置正在使用的摄像头型号
-1. 如果使用ov7725摄像头， 在CMakeList.txt配置`set(CONFIG_CAMERA "ov7725")`
-2. 如果使用ov5640摄像头， 在CMakeList.txt配置`set(CONFIG_CAMERA "ov5640")`
+1. 如果使用ov7725摄像头， 在CMakeList.txt配置 `set(CONFIG_CAMERA "ov7725")`
+2. 如果使用ov5640摄像头， 在CMakeList.txt配置 `set(CONFIG_CAMERA "ov5640")`
 
 注意事项
 ------------
 
-当使用ov5640摄像头时， 由于其`framebuffer`太大了，不能支持ram和flash_xip方式， 请使用flash_sdram_xip方式。
+当使用ov5640摄像头时， 由于其 `framebuffer` 太大了，不能支持ram和flash_xip方式， 请使用flash_sdram_xip方式。
 
 运行现象
 ------------

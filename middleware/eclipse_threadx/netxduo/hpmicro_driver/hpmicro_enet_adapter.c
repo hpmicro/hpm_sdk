@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -130,8 +130,14 @@ static INT enet_mac_init(ENET_Type *ptr, enet_mac_config_t *config, enet_inf_typ
         ptr->MACCFG &= ~ENET_MACCFG_PS_MASK;
     } else if (inf_type == enet_inf_rmii) {
         ptr->MACCFG |= ENET_MACCFG_PS_MASK | ENET_MACCFG_FES_MASK;
-    } else {
-        return status_invalid_argument;
+    }
+#if defined(HPM_IP_FEATURE_ENET_HAS_MII_MODE) && HPM_IP_FEATURE_ENET_HAS_MII_MODE
+    else if (inf_type == enet_inf_mii) {
+        ptr->MACCFG |= ENET_MACCFG_PS_MASK | ENET_MACCFG_FES_MASK;
+    }
+#endif
+    else {
+        return false;
     }
 
     ptr->MACCFG |= ENET_MACCFG_DM_MASK;
@@ -212,6 +218,8 @@ static void enet_dma_rx_desc_chain_netx_init(ENET_Type *ptr, enet_desc_t_netx *d
 
     /* set the rx_desc_list_cur pointer with the first one of the dma_rx_desc_tab list */
     desc->rx_desc_list_cur = desc->rx_desc_list_head;
+    /* bind ENET base for rx frame info so HW checksum drop can read MACCFG.IPC */
+    desc->rx_frame_info.base = ptr;
     /* fill each dma_rx_desc descriptor with the right values */
     for (i = 0; i < ENET_RX_BUFF_COUNT; i++) {
         /* get the pointer on the ith member of the Rx desc list */
@@ -248,11 +256,17 @@ static void enet_dma_rx_desc_chain_netx_init(ENET_Type *ptr, enet_desc_t_netx *d
 
 static INT enet_dma_netx_init(ENET_Type *ptr, enet_desc_t_netx *desc, UINT intr, UCHAR pbl)
 {
+    uint32_t retry_cnt = 0;
+
     /* generate software reset */
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_SWR_MASK;
 
     /* wait for the completion of reset process */
     while (ENET_DMA_BUS_MODE_SWR_GET(ptr->DMA_BUS_MODE)) {
+        if (retry_cnt++ > ENET_RETRY_DMA_INIT_CNT) {
+            /* If DMA initialization fails, check RX clock. */
+            return false;
+        }
     }
 
     /* initialize bus mode register */
@@ -264,7 +278,7 @@ static INT enet_dma_netx_init(ENET_Type *ptr, enet_desc_t_netx *desc, UINT intr,
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_PBLX8_MASK;
 
     /* set programmable burst length */
-    ptr->DMA_BUS_MODE &= ~ENET_DMA_BUS_MODE_PBL_SHIFT;
+    ptr->DMA_BUS_MODE &= ~ENET_DMA_BUS_MODE_PBL_MASK;
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_PBL_SET(pbl);
 
     /* disable separate pbl */
@@ -300,19 +314,39 @@ static INT enet_dma_netx_init(ENET_Type *ptr, enet_desc_t_netx *desc, UINT intr,
 
 INT enet_controller_netx_init(ENET_Type *ptr, enet_inf_type_t inf_type, enet_desc_t_netx *desc, enet_mac_config_t *config, enet_int_config_t *int_config)
 {
+    enet_hw_checksum_config_t hw_checksum_cfg;
+
     /* select an interface */
     enet_intf_selection(ptr, inf_type);
 
     /* initialize DMA */
-    enet_dma_netx_init(ptr, desc, int_config->int_enable, config->dma_pbl);
+    if (enet_dma_netx_init(ptr, desc, int_config->int_enable, config->dma_pbl) == false) {
+        return status_fail;
+    }
 
     /* Initialize MAC */
-    enet_mac_init(ptr, config, inf_type);
+    if (enet_mac_init(ptr, config, inf_type) == false) {
+        return status_fail;
+    }
+
+    enet_get_default_hw_checksum_config(&hw_checksum_cfg, true);
+    if (enet_set_hw_checksum_config(ptr, &desc->tx_control_config, &hw_checksum_cfg) != status_success) {
+        return status_fail;
+    }
 
     /* Mask the specified interrupts */
     enet_mask_interrupt_event(ptr, int_config->int_mask);
 
-    return true;
+    /* mask the mmc rx interrupts */
+    enet_mask_mmc_rx_interrupt_event(ptr, int_config->mmc_intr_mask_rx);
+
+    /* mask the mmc tx interrupts */
+    enet_mask_mmc_tx_interrupt_event(ptr, int_config->mmc_intr_mask_tx);
+
+    /* mask the mmc ipc rx interrupts */
+    enet_mask_mmc_ipc_rx_interrupt_event(ptr, int_config->mmc_ipc_intr_mask_rx);
+
+    return status_success;
 }
 
 ATTR_RAMFUNC VOID enet_dma_rx_desc_set_ch_buffer(ENET_Type *ptr, enet_desc_t_netx *desc, UCHAR ch, VOID *buf, size_t bytes)

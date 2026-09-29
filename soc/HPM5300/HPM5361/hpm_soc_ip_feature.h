@@ -42,6 +42,13 @@
 /* PWM related feature */
 #define HPM_IP_FEATURE_PWM_COUNTER_RESET 1
 
+/* SYNT related feature */
+#define HPM_IP_FEATURE_SYNT_TIMESTAMP 1
+
+/* SEI related feature */
+#define HPM_IP_FEATURE_SEI_ERRATA_E00047 1
+#define HPM_IP_FEATURE_SEI_ERRATA_E00048 1
+
 /* TRGM related feature */
 #define HPM_IP_FEATURE_TRGM_HAS_TRGM_IN_OUT_STATUS 1
 

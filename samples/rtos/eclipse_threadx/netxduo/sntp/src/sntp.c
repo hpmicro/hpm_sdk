@@ -84,7 +84,7 @@ UCHAR network_mask[4];
 #define PACKET_SIZE 1536
 #define PACKET_COUNT 30
 #define PACKET_POOL_SIZE ((PACKET_SIZE + sizeof(NX_PACKET)) * PACKET_COUNT)
-#define IP_STACK_SIZE 2048
+#define IP_STACK_SIZE 4096
 #define ARP_POOL_SIZE 1024
 
 TX_THREAD thread_0;

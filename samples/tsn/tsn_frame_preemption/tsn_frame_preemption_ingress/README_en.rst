@@ -1,25 +1,32 @@
 .. _tsn_frame_preemption_ingress:
 
 tsn_frame_preemption_ingress
-========================================================
+======================================================
 
 Overview
 --------
 
-This example shows TSN frame preemption(IEEE802.1 Qbu) output
+This example shows TSN preemption (IEEE802.1 Qbu)  input
 
-- Observe the value of  fragment tx counter from MMS
+- Observe the receiving sequence of data frames at the receiving end
 
-  - Increment indicates that the preemptible traffic is successfully sent.
+  - The sender sends the preemtible traffic first, then the express traffic, and the receiver receives the express traffic first, then the preemtible traffic.
 
-- On the receiving end, run the sample tsn_frame_preemption_egress on another development board and observe the order of the receiving frame and the value of  assembly ok counter.
+    Note: The receiving order is from the CPU point of view.
+- Observe FPE and RX-Time at the receiving end
+
+  - PFE is 1 and RX-Time is 0 for the preemtible traffic,  while FPE is 0 and RX-Time is non-zero for the express traffic.
+
+- Observe whether the value of the FPE Assembly Ok Counter is incremented synchronously with the sender
+
+  - Synchronous increment indicates successful receipt of preemptible traffic.
 
 Board Settings
 --------------
 
 - Connect a USB port on PC to the PWR DEBUG port on the development board with a USB Type-C cable
 
-- Connect RGMII ports on the two development board with an Ethernet cable
+- Connect an Ethernet port on PC to a RGMII port on the development board with an Ethernet cable
 
 Project Configurations
 ----------------------
@@ -42,21 +49,16 @@ Run Example
      Link Status: Up
      Link Speed:  1000Mbps
      Link Duplex: Full duplex
-     FPE MMS Fragment Tx Counter: 1
-     ==================================================================
-     FPE MMS Fragment Tx Counter: 2
-     ==================================================================
-     FPE MMS Fragment Tx Counter: 3
-     ==================================================================
-     FPE MMS Fragment Tx Counter: 4
-     ==================================================================
-     FPE MMS Fragment Tx Counter: 5
-     ==================================================================
-     FPE MMS Fragment Tx Counter: 6
-     ==================================================================
-     FPE MMS Fragment Tx Counter: 7
-     ==================================================================
-     FPE MMS Fragment Tx Counter: 8
-     ==================================================================
+     FPE: 0, RX-Time: 3.399945890
+     Rx Frame Length: 60
+     ff ff ff ff ff ff 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+     FPE Assembly Ok Counter: 2
+     ==============================================================================================================================================================================================================
+     FPE: 1, RX-Time: 0.000000000
+     Rx Frame Length: 512
+     ff ff ff ff ff ff 98 2c bc b1 9f 17 08 06 00 01 08 00 06 04 00 01 98 2c bc b1 9f 17 c0 a8 64 0a 00 00 00 00 00 00 c0 a8 64 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+     FPE Assembly Ok Counter: 2
+     ==============================================================================================================================================================================================================
+
 
 

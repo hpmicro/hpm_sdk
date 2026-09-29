@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 HPMicro
+# Copyright (c) 2023-2024,2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.13)
@@ -26,18 +26,20 @@ sdk_compile_definitions(-D__DISABLE_AUTO_NEGO=0)
 sdk_compile_definitions(-D__ENABLE_ENET_RECEIVE_INTERRUPT=0)
 sdk_compile_definitions(-DLWIP_DHCP=0)
 sdk_compile_definitions(-DMODBUS_TCP_SLAVE)
+sdk_compile_definitions(-DLWIP_SUPPORT_CUSTOM_PBUF=1)
 
 sdk_inc(../../common/network/eth)
 sdk_inc(../../common/network/lwip)
 sdk_inc(../../common/network/lwip/arch)
 sdk_inc(../../common/network/lwip/feature)
 sdk_inc(../../../lwip/common)
+sdk_inc(../../../lwip/common/single)
 sdk_inc(../../common/network/lwip/inc)
 sdk_inc(../../common/network/tcp)
 
 sdk_app_src(../../common/network/lwip/arch/ethernetif.c)
 sdk_app_src(../../common/network/lwip/arch/sys_arch.c)
-sdk_app_src(../../common/network/lwip/feature/common_lwip.c)
+sdk_app_src(../../../lwip/common/single/common.c)
 sdk_app_src(../../../lwip/common/enet_phy_adaptive_lwip.c)
 sdk_app_src(../../common/network/eth/netconf.c)
 sdk_app_src(../../common/network/eth/network.c)

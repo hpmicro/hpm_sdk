@@ -490,6 +490,72 @@ hpm_stat_t es8389_set_volume(codec_control_t *control, es8389_module_t module, u
     return stat;
 }
 
+hpm_stat_t es8389_get_volume_db_range(es8389_module_t module, float *min_db, float *max_db)
+{
+    assert((min_db != NULL) && (max_db != NULL));
+
+    switch (module) {
+    case es8389_adc1:
+    case es8389_adc2:
+    case es8389_dac1:
+    case es8389_dac2:
+        /* All supported modules share the same range: -95.5dB to +32dB */
+        *min_db = -95.5f;
+        *max_db = 32.0f;
+        return status_success;
+    default:
+        return status_invalid_argument;
+    }
+}
+
+hpm_stat_t es8389_set_volume_db(codec_control_t *control, es8389_module_t module, float volume_db)
+{
+    /* Volume register maps -95.5dB (0x00) to +32dB (0xFF), 0.5dB per step, rounded to nearest step */
+    float min_db;
+    float max_db;
+
+    if (es8389_get_volume_db_range(module, &min_db, &max_db) != status_success) {
+        return status_invalid_argument;
+    }
+    if ((volume_db < min_db) || (volume_db > max_db)) {
+        return status_invalid_argument;
+    }
+
+    uint8_t volume = (uint8_t) (volume_db * 2.0f + 191.0f + 0.5f);
+    return es8389_set_volume(control, module, volume);
+}
+
+hpm_stat_t es8389_clamp_volume_db(es8389_module_t module, float volume_db, float *clamped_db)
+{
+    hpm_stat_t stat = status_success;
+    float min_db;
+    float max_db;
+
+    assert(clamped_db != NULL);
+
+    HPM_CHECK_RET(es8389_get_volume_db_range(module, &min_db, &max_db));
+
+    if (volume_db < min_db) {
+        *clamped_db = min_db;
+    } else if (volume_db > max_db) {
+        *clamped_db = max_db;
+    } else {
+        *clamped_db = volume_db;
+    }
+    return stat;
+}
+
+hpm_stat_t es8389_set_volume_percent(codec_control_t *control, es8389_module_t module, int8_t volume_percent)
+{
+    /* Volume register maps -95.5dB (0x00) to +32dB (0xFF) with uniform 0.5dB steps */
+    if ((volume_percent < 0) || (volume_percent > 100)) {
+        return status_invalid_argument;
+    }
+
+    uint8_t volume = (uint8_t) ((255 * volume_percent + 50) / 100);
+    return es8389_set_volume(control, module, volume);
+}
+
 hpm_stat_t es8389_mute(codec_control_t *control, es8389_module_t module, bool mute)
 {
     hpm_stat_t stat = status_success;

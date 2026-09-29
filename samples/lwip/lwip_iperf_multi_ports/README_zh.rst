@@ -32,7 +32,7 @@ lwip_iperf_multi_ports
 
 - 以太网DHCP配置
 
-  - lwIP sample:  在`CMakeLists.txt`中，支持如下配置:
+  - lwIP sample:  在 `CMakeLists.txt` 中，支持如下配置:
 
     - sdk_compile_definitions(-DLWIP_DHCP=0): 禁用DHCP功能
 
@@ -41,7 +41,8 @@ lwip_iperf_multi_ports
 - 构建配置
 
   - 设置HPM_BUILD_TYPE为flash_xip
-  - 设置CMAKE_BUILD_TYPE为release
+  - 本示例在CMakeLists中通过 ``sdk_compile_options(-O3)`` 固定优化等级（GCC ``-O3`` / SES Level 3，Debug与Release均生效）
+  - 吞吐测试请保持该优化设置；勿去掉 ``-O3`` 后用无优化配置测吞吐
 
 - 编译配置
 

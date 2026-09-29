@@ -47,12 +47,27 @@ SEI Slave: Simulate HIPERFACE Encoder
    ----------------------------------------------------------------------
    SEI slave hiperface sample
    Started sei engine!
-   ADDR:0x40, CMD:0x42, POS:0xa5a5, CRC:0x40, sample_tm1:301346678, sample_tm2:0, sample_interval:1883416 us
-   ADDR:0x40, CMD:0x42, POS:0xa5a6, CRC:0x80, sample_tm1:333346343, sample_tm2:301346678, sample_interval:199997 us
-   ADDR:0x40, CMD:0x42, POS:0xa5a7, CRC:0x0, sample_tm1:365346007, sample_tm2:333346343, sample_interval:199997 us
-   ADDR:0x40, CMD:0x42, POS:0xa5a8, CRC:0xf0, sample_tm1:397345672, sample_tm2:365346007, sample_interval:199997 us
-   ADDR:0x40, CMD:0x42, POS:0xa5a9, CRC:0x70, sample_tm1:429345337, sample_tm2:397345672, sample_interval:199997 us
-   ADDR:0x40, CMD:0x42, POS:0xa5aa, CRC:0xb0, sample_tm1:461345002, sample_tm2:429345337, sample_interval:199997 us
-   ADDR:0x40, CMD:0x42, POS:0xa5ab, CRC:0x30, sample_tm1:493344667, sample_tm2:461345002, sample_interval:199997 us
-   ADDR:0x40, CMD:0x42, POS:0xa5ac, CRC:0xd0, sample_tm1:525344332, sample_tm2:493344667, sample_interval:199997 us
-
+   ADDR:0x40, CMD:0x42, POS:0xa5a5, CRC:0x2, sample_interval:1514121 us
+   ADDR:0x40, CMD:0x42, POS:0xa5a6, CRC:0x1, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5a7, CRC:0x0, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5a8, CRC:0xf, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5a9, CRC:0xe, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5aa, CRC:0xd, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5ab, CRC:0xc, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5ac, CRC:0xb, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5ad, CRC:0xa, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5ae, CRC:0x9, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5af, CRC:0x8, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b0, CRC:0x17, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b1, CRC:0x16, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b2, CRC:0x15, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b3, CRC:0x14, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b4, CRC:0x13, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b5, CRC:0x12, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b6, CRC:0x11, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b7, CRC:0x10, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b8, CRC:0x1f, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5b9, CRC:0x1e, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5ba, CRC:0x1d, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5bb, CRC:0x1c, sample_interval:199996 us
+   ADDR:0x40, CMD:0x42, POS:0xa5bc, CRC:0x1b, sample_interval:199996 us

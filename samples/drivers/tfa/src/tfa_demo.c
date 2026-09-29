@@ -20,13 +20,13 @@ void tfa_inv_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = 1.0f/calculate_val;
+    result_val_math = 1.0f / calculate_val;
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
@@ -45,13 +45,13 @@ void tfa_sqrt_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = sqrt(calculate_val);
+    result_val_math = sqrtf(calculate_val);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
@@ -70,13 +70,13 @@ void tfa_sin_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = sin(HPM_2_PI * calculate_val);
+    result_val_math = sinf(HPM_2_PI * calculate_val);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
@@ -95,13 +95,13 @@ void tfa_cos_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = cos(HPM_2_PI * calculate_val);
+    result_val_math = cosf(HPM_2_PI * calculate_val);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
@@ -120,13 +120,13 @@ void tfa_pow2_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = pow(2, calculate_val);
+    result_val_math = powf(2.0f, calculate_val);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
@@ -145,13 +145,13 @@ void tfa_log2_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = log(calculate_val)/log(2);
+    result_val_math = logf(calculate_val)/logf(2.0f);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
@@ -170,18 +170,18 @@ void tfa_atan_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = atan(calculate_val);
+    result_val_math = atanf(calculate_val) /  HPM_2_PI;
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
     start_time_tfa = read_csr(CSR_MCYCLE);
-    result_val_tfa = hpm_tfa_atan_f32(calculate_val) * HPM_2_PI;
+    result_val_tfa = hpm_tfa_atan_f32(calculate_val);
     end_time_tfa = read_csr(CSR_MCYCLE);
 
     printf("tfa and math diff value:%f, math calculation time:%d ticks, tfa calculation time:%d ticks.\n",
@@ -195,13 +195,13 @@ void tfa_invsqrt_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = 1.0f/sqrt(calculate_val);
+    result_val_math = 1.0f / sqrtf(calculate_val);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
@@ -221,17 +221,17 @@ void tfa_atanpu2_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float x_val_in = 20.44f;
-    float y_val_in = 1.66f;
+    volatile float x_val_in = 20.44f;
+    volatile float y_val_in = 1.66f;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    float result_val_math = atan2(y_val_in, x_val_in);
+    volatile float result_val_math = atan2f(y_val_in, x_val_in) / HPM_2_PI;
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
     start_time_tfa = read_csr(CSR_MCYCLE);
-    float result_val_tfa = hpm_tfa_atanpu2_f32(y_val_in, x_val_in);
+    volatile float result_val_tfa = hpm_tfa_atanpu2_f32(y_val_in, x_val_in);
     end_time_tfa = read_csr(CSR_MCYCLE);
 
     printf("tfa and math diff value:%f, math calculation time:%d ticks, tfa calculation time:%d ticks.\n",
@@ -249,18 +249,18 @@ void tfa_cordic32_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    int32_t x_val_in = 98;
-    int32_t y_val_in = 12;
+    volatile int32_t x_val_in = 98;
+    volatile int32_t y_val_in = 12;
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    double result_math_angle = atan2((double)y_val_in, (double)x_val_in) * (180 / M_PI);
-    double result_math_mod = sqrt((double)x_val_in * (double)x_val_in + (double)y_val_in * (double)y_val_in);
+    volatile float result_math_angle = atan2f((float)y_val_in, (float)x_val_in) * (180 / M_PI);
+    volatile float result_math_mod = sqrtf((float)x_val_in * (float)x_val_in + (float)y_val_in * (float)y_val_in);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */
     start_time_tfa = read_csr(CSR_MCYCLE);
-    cordic_res_t result_tfa_cordic = hpm_tfa_cordic_f32(x_val_in, y_val_in);
+    volatile cordic_res_t result_tfa_cordic = hpm_tfa_cordic_f32(x_val_in, y_val_in);
     end_time_tfa = read_csr(CSR_MCYCLE);
 
     printf("math angle value:%f, tfa angle value:%f, tfa and math angle diff value:%f,"
@@ -281,16 +281,16 @@ void tfa_mixed_test(void)
     uint32_t end_time_math = 0;
     uint32_t end_time_tfa = 0;
 
-    float calculate_val = 0.778f;
-    float result_val_math = 0.0f;
-    float result_val_tfa = 0.0f;
+    volatile float calculate_val = 0.778f;
+    volatile float result_val_math = 0.0f;
+    volatile float result_val_tfa = 0.0f;
 
     /* calculate f(x) = sin(2pi*x) + cos(2pi*x) + log2(inv(2^x)) */
 
     /* calculate math value and record the time */
     start_time_math = read_csr(CSR_MCYCLE);
-    result_val_math = sin(HPM_2_PI * calculate_val) + cos(HPM_2_PI * calculate_val) +
-    log(1.0 / (pow(2, calculate_val)))/log(2);
+    result_val_math = sinf(HPM_2_PI * calculate_val) + cosf(HPM_2_PI * calculate_val) +
+    logf(1.0f / (powf(2.0f, calculate_val)))/logf(2.0f);
     end_time_math = read_csr(CSR_MCYCLE);
 
     /* calculate math value and record the time */

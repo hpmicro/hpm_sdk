@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 HPMicro
+ * Copyright (c) 2025-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -55,7 +55,7 @@
 /* Define time wait for IPv6 DAD process.  */
 #define SAMPLE_DAD_WAIT (3 * NX_IP_PERIODIC_RATE)
 /* Define IP stack size.   */
-#define IP_STACK_SIZE 2048
+#define IP_STACK_SIZE 4096
 /* Define IP thread priority.  */
 #define IP_THREAD_PRIORITY 1
 /* Define ARP pool.  */

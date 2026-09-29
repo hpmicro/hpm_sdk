@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 HPMicro
+ * Copyright (c) 2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -48,11 +48,6 @@ int main(void)
         while (1) {
         };
     }
-    if (network_tcp_client_init() != status_success) {
-        printf("network tcp client init fail\n");
-        while (1) {
-        };
-    }
     timer_init();
     if (timer_register(&timer) != status_success) {
         printf("timer register fail\n");
@@ -65,6 +60,15 @@ int main(void)
         enet_common_handler(&gnetif);
         if (time_flag == true) {
             time_flag = false;
+            if (!tcp_client_connect_state()) {
+                /* ip4_route() requires an administratively up interface with a PHY link. */
+                if (netif_is_link_up(&gnetif) && !tcp_client_is_connecting()) {
+                    if (network_tcp_client_init() != status_success) {
+                        printf("network tcp client init fail\n");
+                    }
+                }
+                continue;
+            }
             if ((tcp_client_connect_state() == true) && (count < APP_BEGIN_PROCESS_MS)) {
                 count++;
                 continue;

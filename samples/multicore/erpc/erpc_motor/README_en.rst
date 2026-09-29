@@ -193,5 +193,7 @@ After the project runs correctly, the serial terminal will output the following 
    IPv4 Netmask: 255.255.255.0
    IPv4 Gateway: 192.168.100.1
 
-   eRPC request is sent to the server
+   target speed change to 0.000000
+
+   target speed change to 5.000000
 

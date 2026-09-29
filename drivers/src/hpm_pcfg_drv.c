@@ -11,6 +11,7 @@
 #define PCFG_CURRENT_MEASUREMENT_STEP (50U)
 #define HPM_PMU_DRV_RETRY_COUNT (5000U)
 #define PCFG_RC24M_FREQ (24000000UL)
+#define DCDC_STABLE_TIMEOUT (500000U)
 
 hpm_stat_t pcfg_ldo1p1_set_voltage(PCFG_Type *ptr, uint16_t mv)
 {
@@ -113,13 +114,20 @@ hpm_stat_t pcfg_dcdc_set_lpmode_voltage(PCFG_Type *ptr, uint16_t mv)
 
 void pcfg_dcdc_switch_to_dcm_mode(PCFG_Type *ptr)
 {
-    const uint8_t pcfc_dcdc_min_duty_cycle[] = {
+    const uint8_t pcfc_dcdc_min_duty_pre[] = {
+        0x6A, 0x6A, 0x6A, 0x6C, 0x6C, 0x6C, 0x6C, 0x6C,
+        0x6E, 0x6E, 0x6E, 0x6E, 0x70, 0x70, 0x70, 0x70,
+        0x70, 0x72, 0x72, 0x72, 0x72, 0x74, 0x74, 0x74,
+        0x74, 0x74, 0x76, 0x76, 0x76, 0x76, 0x78, 0x78
+    };
+    const uint8_t pcfc_dcdc_min_duty_after[] = {
         0x6E, 0x6E, 0x70, 0x70, 0x70, 0x70, 0x72, 0x72,
         0x72, 0x72, 0x74, 0x74, 0x74, 0x74, 0x76, 0x76,
         0x76, 0x78, 0x78, 0x78, 0x78, 0x7A, 0x7A, 0x7A,
         0x7A, 0x7C, 0x7C, 0x7C, 0x7E, 0x7E, 0x7E, 0x7E
     };
     uint16_t voltage;
+    volatile uint32_t timeout;
 
     ptr->DCDC_MODE |= 0x77000u;
     ptr->DCDC_ADVMODE = (ptr->DCDC_ADVMODE & ~0x73F0067u) | 0x4120067u;
@@ -128,21 +136,38 @@ void pcfg_dcdc_switch_to_dcm_mode(PCFG_Type *ptr)
     ptr->DCDC_MISC = 0x100000u;
     voltage = PCFG_DCDC_MODE_VOLT_GET(ptr->DCDC_MODE);
     voltage = (voltage - 600) / 25;
-    ptr->DCDC_ADVPARAM = (ptr->DCDC_ADVPARAM & ~PCFG_DCDC_ADVPARAM_MIN_DUT_MASK) | PCFG_DCDC_ADVPARAM_MIN_DUT_SET(pcfc_dcdc_min_duty_cycle[voltage]);
+    ptr->DCDC_ADVPARAM = (ptr->DCDC_ADVPARAM & ~PCFG_DCDC_ADVPARAM_MIN_DUT_MASK) | PCFG_DCDC_ADVPARAM_MIN_DUT_SET(pcfc_dcdc_min_duty_pre[voltage]);
+    timeout = 0;
     while (!pcfg_dcdc_is_stable(ptr)) {
-        NOP();
+        timeout++;
+        if (timeout >= DCDC_STABLE_TIMEOUT) {
+            break;
+        }
+    }
+
+    ptr->DCDC_ADVPARAM = (ptr->DCDC_ADVPARAM & ~PCFG_DCDC_ADVPARAM_MIN_DUT_MASK) | PCFG_DCDC_ADVPARAM_MIN_DUT_SET(pcfc_dcdc_min_duty_after[voltage]);
+    timeout = 0;
+    while (!pcfg_dcdc_is_stable(ptr)) {
+        timeout++;
+        if (timeout >= DCDC_STABLE_TIMEOUT) {
+            break;
+        }
     }
 }
 
 void pcfg_dcdc_switch_to_ccm_mode(PCFG_Type *ptr)
 {
+    volatile uint32_t timeout = 0;
     /* Attention: Need first switch to dcm */
     pcfg_dcdc_switch_to_dcm_mode(ptr);
 
     ptr->DCDC_MODE = (ptr->DCDC_MODE & ~0x77000u) | 0x11000u;
     ptr->DCDC_ADVPARAM = (ptr->DCDC_ADVPARAM & ~PCFG_DCDC_ADVPARAM_MIN_DUT_MASK) | PCFG_DCDC_ADVPARAM_MIN_DUT_SET(0x6A);
     while (!pcfg_dcdc_is_stable(ptr)) {
-        NOP();
+        timeout++;
+        if (timeout >= DCDC_STABLE_TIMEOUT) {
+            break;
+        }
     }
 }
 
@@ -156,6 +181,7 @@ void pcfg_dcdc_set_voltage_dcm_mode(PCFG_Type *ptr, uint16_t voltage)
 
 void pcfg_dcdc_set_voltage_ccm_mode(PCFG_Type *ptr, uint16_t voltage)
 {
+    volatile uint32_t timeout = 0;
     uint8_t mode = PCFG_DCDC_MODE_MODE_GET(ptr->DCDC_MODE);
     ptr->DCDC_MODE = (ptr->DCDC_MODE & ~(PCFG_DCDC_MODE_VOLT_MASK | 0xF000)) | PCFG_DCDC_MODE_VOLT_SET(voltage) | (mode << 12u);
 
@@ -164,7 +190,10 @@ void pcfg_dcdc_set_voltage_ccm_mode(PCFG_Type *ptr, uint16_t voltage)
     } else {
         ptr->DCDC_ADVPARAM = (ptr->DCDC_ADVPARAM & ~PCFG_DCDC_ADVPARAM_MIN_DUT_MASK) | PCFG_DCDC_ADVPARAM_MIN_DUT_SET(0x6A);
         while (!pcfg_dcdc_is_stable(ptr)) {
-            NOP();
+            timeout++;
+            if (timeout >= DCDC_STABLE_TIMEOUT) {
+                break;
+            }
         }
     }
 }

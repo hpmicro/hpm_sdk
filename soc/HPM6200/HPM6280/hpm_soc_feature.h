@@ -120,6 +120,7 @@
 #define ADC16_SOC_MAX_CH_NUM                       (15U)
 #define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 #define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
+#define ADC16_SOC_CONV_CLK_FREQ_MAX                (50000000UL)
 /* WDOG: Do not set INT_EN in adc16_init_channel. Use adc16_enable_wdog_interrupt() after in-window conversion. */
 #define ADC16_SOC_WDOG_INT_EN_DEFERRED             (1U)
 
@@ -159,6 +160,7 @@
 #define DAC_SOC_MAX_DATA          (4095U)
 #define DAC_SOC_MAX_BUFF_COUNT    (65536U)
 #define DAC_SOC_MAX_OUTPUT_FREQ   (1000000UL)
+#define DAC_SOC_ANA_CLK_FREQ_MAX  (100000000UL)
 
 
 /*

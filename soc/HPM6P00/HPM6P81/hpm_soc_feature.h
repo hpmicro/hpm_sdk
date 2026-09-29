@@ -149,6 +149,7 @@
 #define ADC16_SOC_MAX_CH_NUM                       (15U)
 #define ADC16_SOC_MAX_SAMPLE_VALUE                 (65535U)
 #define ADC16_SOC_MAX_CONV_CLK_NUM                 (21U)
+#define ADC16_SOC_CONV_CLK_FREQ_MAX                (50000000UL)
 
 /*
  * SYSCTL Section
@@ -180,6 +181,7 @@
 #define DAC_SOC_MAX_DATA          (4095U)
 #define DAC_SOC_MAX_BUFF_COUNT    (65536U)
 #define DAC_SOC_MAX_OUTPUT_FREQ   (1000000UL)
+#define DAC_SOC_ANA_CLK_FREQ_MAX  (100000000UL)
 
 /*
  * SPI Section
@@ -235,12 +237,6 @@
 #define EWDG_SOC_CLK_DIV_VAL_MAX        (32U)
 #define EWDG_SOC_OVERTIME_REG_WIDTH     (32U)
 #define EWDG_TIMEOUT_INTERRUPT_REQUIRE_EDGE_TRIGGER (0)
-
-/*
- * Sync Timer Section
- */
-#define SYNT_SOC_HAS_TIMESTAMP             (1U)
-#define SYNT_SOC_HAS_EXTENSION_CMP         (1U)
 
 /**
  * @brief FFA Section

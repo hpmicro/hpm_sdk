@@ -8,7 +8,7 @@ OpENer Erpc Motor
 
 OpENer Erpc Motor双核例程用于演示使用OpENer通过Ethernet/IP(EIP)协议实现远程控制电机转速的功能。其中core0运行FreeRTOS+Lwip+OpENer，core1用于控制电机转动，core0和core1之间通过erpc协议进行通信。
 
-Erpc的使用参考`middleware/samples/multicore/erpc/erpc_matrix_multiply_rpmsg_bm/README_zh.md`
+Erpc的使用参考 `middleware/samples/multicore/erpc/erpc_matrix_multiply_rpmsg_bm/README_zh.md`
 
 2. 准备
 ---------
@@ -195,5 +195,7 @@ Erpc的使用参考`middleware/samples/multicore/erpc/erpc_matrix_multiply_rpmsg
    IPv4 Netmask: 255.255.255.0
    IPv4 Gateway: 192.168.100.1
 
-   eRPC request is sent to the server
+   target speed change to 0.000000
+
+   target speed change to 5.000000
 

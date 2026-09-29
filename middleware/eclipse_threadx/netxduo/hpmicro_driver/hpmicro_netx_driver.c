@@ -96,6 +96,9 @@
                                  NX_INTERFACE_CAPABILITY_IGMP_TX_CHECKSUM |   \
                                  NX_INTERFACE_CAPABILITY_IGMP_RX_CHECKSUM)
 
+#ifndef ENET_RETRY_CONTROLLER_INIT_CNT
+#define ENET_RETRY_CONTROLLER_INIT_CNT   (3U) /**< Enet retry count for controller initialization */
+#endif
 #if (NETX_RX_DATA_COPY_ALGORITHM == NETX_DATA_DIRECT)
 
 #define RX_POOL_PACKET_NUM (2 * ENET_RX_BUFF_COUNT)
@@ -214,7 +217,7 @@ VOID isr_enet(ENET_Type *ptr)
 SDK_DECLARE_EXT_ISR_M(IRQn_ENET0, isr_enet0)
 VOID isr_enet0(VOID)
 {
-    isr_enet(ENET);
+    isr_enet(HPM_ENET0);
 }
 #endif
 
@@ -222,7 +225,7 @@ VOID isr_enet0(VOID)
 SDK_DECLARE_EXT_ISR_M(IRQn_ENET1, isr_enet1)
 VOID isr_enet1(VOID)
 {
-    isr_enet(ENET);
+    isr_enet(HPM_ENET1);
 }
 #endif
 
@@ -498,15 +501,6 @@ static UINT _nx_driver_hardware_initialize(NX_IP_DRIVER *driver_req_ptr)
     if (_hardware_get_mac_address(mac)) {
         return NX_DRIVER_ERROR;
     }
-
-    /* Initialize phy */
-    if (board_init_enet_phy(ENET) == status_success) {
-        printf("Enet phy init passed !\n");
-        return status_success;
-    } else {
-        printf("Enet phy init failed !\n");
-        return status_fail;
-    }
     /* Return success!  */
     return (NX_SUCCESS);
 }
@@ -629,7 +623,9 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
 {
     NX_PARAMETER_NOT_USED(driver_req_ptr);
 
+    hpm_stat_t stat;
     enet_phy_status_t status;
+    uint8_t init_retry_cnt = 0;
     enet_int_config_t int_config = {.int_enable = 0, .int_mask = 0};
     enet_mac_config_t enet_config;
 
@@ -659,10 +655,21 @@ static UINT _nx_driver_hardware_enable(NX_IP_DRIVER *driver_req_ptr)
 
     /* Initialize enet controller */
 
-    enet_controller_netx_init(ENET, ENET_INF_TYPE, &nx_driver_information.desc, &enet_config, &int_config);
+    do {
+        stat = enet_controller_netx_init(ENET, ENET_INF_TYPE, &nx_driver_information.desc, &enet_config, &int_config);
+    } while ((stat != status_success && init_retry_cnt++ <= ENET_RETRY_CONTROLLER_INIT_CNT));
 
     /* Disable LPI interrupt */
     enet_disable_lpi_interrupt(ENET);
+
+    /* Initialize phy */
+    if (board_init_enet_phy(ENET) == status_success) {
+        printf("Enet phy init passed !\n");
+        return status_success;
+    } else {
+        printf("Enet phy init failed !\n");
+        return status_fail;
+    }
 
     while (1) {
         board_get_enet_phy_status(0, &status);

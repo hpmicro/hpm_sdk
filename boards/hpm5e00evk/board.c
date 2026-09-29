@@ -571,6 +571,7 @@ hpm_stat_t board_reset_enet_phy(ENET_Type *ptr)
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);
         gpio_write_pin(BOARD_ENET_RGMII_RST_GPIO, BOARD_ENET_RGMII_RST_GPIO_INDEX, BOARD_ENET_RGMII_RST_GPIO_PIN, 1);
+        board_delay_ms(BOARD_ENET_RGMII_RST_DELAY_MS);
     #elif defined (HPM_ENET_RMII) && HPM_ENET_RMII
         gpio_write_pin(BOARD_ENET_RMII_RST_GPIO, BOARD_ENET_RMII_RST_GPIO_INDEX, BOARD_ENET_RMII_RST_GPIO_PIN, 0);
         board_delay_ms(1);

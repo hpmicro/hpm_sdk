@@ -88,6 +88,7 @@ RISCV_MEIE_MTIE     DEFINE  0x880
 /*                                                                        */
 /*  09-30-2020     William E. Lamie         Initial Version 6.1           */
 /*  01-24-2024     Zihan Xu                 Add D extend support          */
+/*  08-25-2026     Zihan Xu                 Fix D extend load error       */
 /*                                                                        */
 /**************************************************************************/
 /* VOID   _tx_thread_schedule(VOID)
@@ -209,38 +210,38 @@ _tx_thread_ready:
     lw      t0, 0x110(sp)                               ; Recover fcsr
     csrw    fcsr, t0                                    ;
 #elif __riscv_flen == 64
-    flw     f0, 0x90(sp)                                ; Recover ft0
-    flw     f1, 0x98(sp)                                ; Recover ft1
-    flw     f2, 0xA0(sp)                                ; Recover ft2
-    flw     f3, 0xA8(sp)                                ; Recover ft3
-    flw     f4, 0xB0(sp)                                ; Recover ft4
-    flw     f5, 0xB8(sp)                                ; Recover ft5
-    flw     f6, 0xC0(sp)                                ; Recover ft6
-    flw     f7, 0xC8(sp)                                ; Recover ft7
-    flw     f8, 0xD0(sp)                                ; Recover fs0
-    flw     f9, 0xD8(sp)                                ; Recover fs1
-    flw     f10,0xE0(sp)                                ; Recover fa0
-    flw     f11,0xE8(sp)                                ; Recover fa1
-    flw     f12,0xF0(sp)                                ; Recover fa2
-    flw     f13,0xF8(sp)                                ; Recover fa3
-    flw     f14,0x100(sp)                               ; Recover fa4
-    flw     f15,0x108(sp)                               ; Recover fa5
-    flw     f16,0x110(sp)                               ; Recover fa6
-    flw     f17,0x118(sp)                               ; Recover fa7
-    flw     f18,0x120(sp)                               ; Recover fs2
-    flw     f19,0x128(sp)                               ; Recover fs3
-    flw     f20,0x130(sp)                               ; Recover fs4
-    flw     f21,0x138(sp)                               ; Recover fs5
-    flw     f22,0x140(sp)                               ; Recover fs6
-    flw     f23,0x148(sp)                               ; Recover fs7
-    flw     f24,0x150(sp)                               ; Recover fs8
-    flw     f25,0x158(sp)                               ; Recover fs9
-    flw     f26,0x160(sp)                               ; Recover fs10
-    flw     f27,0x168(sp)                               ; Recover fs11
-    flw     f28,0x170(sp)                               ; Recover ft8
-    flw     f29,0x178(sp)                               ; Recover ft9
-    flw     f30,0x180(sp)                               ; Recover ft10
-    flw     f31,0x188(sp)                               ; Recover ft11
+    fld     f0, 0x90(sp)                                ; Recover ft0
+    fld     f1, 0x98(sp)                                ; Recover ft1
+    fld     f2, 0xA0(sp)                                ; Recover ft2
+    fld     f3, 0xA8(sp)                                ; Recover ft3
+    fld     f4, 0xB0(sp)                                ; Recover ft4
+    fld     f5, 0xB8(sp)                                ; Recover ft5
+    fld     f6, 0xC0(sp)                                ; Recover ft6
+    fld     f7, 0xC8(sp)                                ; Recover ft7
+    fld     f8, 0xD0(sp)                                ; Recover fs0
+    fld     f9, 0xD8(sp)                                ; Recover fs1
+    fld     f10,0xE0(sp)                                ; Recover fa0
+    fld     f11,0xE8(sp)                                ; Recover fa1
+    fld     f12,0xF0(sp)                                ; Recover fa2
+    fld     f13,0xF8(sp)                                ; Recover fa3
+    fld     f14,0x100(sp)                               ; Recover fa4
+    fld     f15,0x108(sp)                               ; Recover fa5
+    fld     f16,0x110(sp)                               ; Recover fa6
+    fld     f17,0x118(sp)                               ; Recover fa7
+    fld     f18,0x120(sp)                               ; Recover fs2
+    fld     f19,0x128(sp)                               ; Recover fs3
+    fld     f20,0x130(sp)                               ; Recover fs4
+    fld     f21,0x138(sp)                               ; Recover fs5
+    fld     f22,0x140(sp)                               ; Recover fs6
+    fld     f23,0x148(sp)                               ; Recover fs7
+    fld     f24,0x150(sp)                               ; Recover fs8
+    fld     f25,0x158(sp)                               ; Recover fs9
+    fld     f26,0x160(sp)                               ; Recover fs10
+    fld     f27,0x168(sp)                               ; Recover fs11
+    fld     f28,0x170(sp)                               ; Recover ft8
+    fld     f29,0x178(sp)                               ; Recover ft9
+    fld     f30,0x180(sp)                               ; Recover ft10
+    fld     f31,0x188(sp)                               ; Recover ft11
     lw      t0, 0x190(sp)                               ; Recover fcsr
     csrw    fcsr, t0                                    ;    
 #endif

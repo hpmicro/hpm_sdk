@@ -72,6 +72,7 @@
 /*                                                                        */
 /*  09-30-2020      William E. Lamie        Initial Version 6.1           */
 /*  01-24-2024      Zihan Xu                Add D extend support          */
+/*  08-25-2026      Zihan Xu                Fix D extend frame offset     */
 /*                                                                        */
 /**************************************************************************/
 /* VOID   _tx_thread_stack_build(TX_THREAD *thread_ptr, VOID (*function_ptr)(VOID))
@@ -303,8 +304,8 @@ If floating point support:
     sw      x0, (372+20)(t0)                            ; Inital ft11
     sw      x0, (376+20)(t0)                            ; Inital ft11
     csrr    a1, fcsr                                    ; Read fcsr and use it for initial value for each thread
-    sw      a1, (384+20)(t0)                            ; Initial fscr
-    sw      x0, (388+20)(t0)                            ; Reserved word (0)
+    sw      a1, (380+20)(t0)                            ; Initial fscr
+    sw      x0, (384+20)(t0)                            ; Reserved word (0)
 #endif
 #else
     sw      x0, (124+20)(t0)                            ; Reserved word (0)

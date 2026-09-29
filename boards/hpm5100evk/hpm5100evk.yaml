@@ -1,0 +1,23 @@
+# Copyright (c) 2026 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    soc: HPM5151            # the name of SOC used on this board
+    device: HPM5151xPEx     # device name used for jlink connection
+    openocd-soc: hpm5100    # used for openocd soc config file name: hpm5100.cfg
+    openocd-probe: cmsis_dap    # used for openocd probe config file name: ft2232.cfg
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 1M             # the size of on-board flash which will be used in linker script
+    feature:
+      - board_gpt_pin
+      - board_motor_control
+      - board_wkup_pin
+      - board_clk_ref_pin
+      - board_usb_otg
+      - board_audio_codec
+      - board_codec_es8389 # CMake will set(CONFIG_CODEC_NAME "es8389") based on this
+      - board_spi_nor_flash
+      - board_adc16_diff
+    excluded_samples:
+      - samples/motor_ctrl/bldc_block

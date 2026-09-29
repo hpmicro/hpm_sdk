@@ -1,15 +1,15 @@
 {
-  "clientKey": "3cfcc9ddb2158d92ec93378de5723a95",
-  "secretKey": "48aebc575f188f5c589a4bb61ff6ace6",
+  "clientKey": "db216d65c299c344d2cbb8a6de6fc9c9",
+  "secretKey": "1df248b16e217515dd87c55b822ed993",
   "content": {
-    "pid": "ed93e88a-fc02-4356-b2f3-4c271efe3e77",
+    "pid": "466c9cd9-ae70-4b38-a611-daa25cade80d",
     "info": {
       "projectName": "tool_config",
       "sdkName": "1.12.0",
       "socName": "HPM6280",
       "packageName": "LQFP144",
       "createTime": 1781447047718,
-      "updateTime": 1781447049271,
+      "updateTime": 1789026216543,
       "vscodePid": "0dbb862a-e111-4cd4-b2f2-00dcebf7b453"
     },
     "pinmux": {
@@ -865,6 +865,10 @@
             "srcClocks": [],
             "funcClocks": [
               "clk_top_adc0"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc0"
             ]
           },
           "enableClocks": {
@@ -902,6 +906,10 @@
             "srcClocks": [],
             "funcClocks": [
               "clk_top_adc1"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc1"
             ]
           },
           "enableClocks": {
@@ -938,6 +946,10 @@
           "selectClocks": {
             "srcClocks": [],
             "funcClocks": [
+              "clk_top_adc2"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
               "clk_top_adc2"
             ]
           },
@@ -1100,6 +1112,10 @@
             "srcClocks": [],
             "funcClocks": [
               "clk_top_dac0"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_dac0"
             ]
           },
           "enableClocks": {
@@ -1136,6 +1152,10 @@
           "selectClocks": {
             "srcClocks": [],
             "funcClocks": [
+              "clk_top_dac1"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
               "clk_top_dac1"
             ]
           },

@@ -13,7 +13,7 @@ TinyUF2这个示例提供了一个UF2 bootloader。
 构建在UF2容器中的一个应用，通过拖拽将其放入枚举到的u盘中。TinyUF2将把该容器
 内的应用烧写进板载的flash中，烧写完成之后，将直接跳转至刚刚写入的应用。
 
-* 启动模式, 可以通过按住TinyUF2按键(请确认具体开发板 {ref}`按键 <board_resource>` 部分描述)同时reset板子，进入bootloader模式，也可以直接跳转到已经通过TinyUF2
+* 启动模式, 可以通过按住TinyUF2按键(请确认具体开发板 :ref:`按键 <board_resource>` 部分描述)同时reset板子，进入bootloader模式，也可以直接跳转到已经通过TinyUF2
 
 写入的flash镜像，若无镜像，将直接退回到bootloader模式。
 

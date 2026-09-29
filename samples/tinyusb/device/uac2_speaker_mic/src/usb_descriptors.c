@@ -90,7 +90,7 @@ uint8_t const desc_fs_configuration[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
 
     /* Interface number, string index, EP Out & EP In address, EP size */
-    TUD_AUDIO20_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80, 1)
+    TUD_AUDIO20_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80, CFG_TUD_AUDIO_EP_INTERVAL_FS)
 };
 
 TU_VERIFY_STATIC(sizeof(desc_fs_configuration) == CONFIG_TOTAL_LEN, "Incorrect size");
@@ -101,7 +101,7 @@ uint8_t const desc_hs_configuration[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
 
     /* Interface number, string index, EP Out & EP In address, EP size */
-    TUD_AUDIO20_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80, 4)
+    TUD_AUDIO20_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80, CFG_TUD_AUDIO_EP_INTERVAL_HS)
 };
 
 TU_VERIFY_STATIC(sizeof(desc_hs_configuration) == CONFIG_TOTAL_LEN, "Incorrect size");

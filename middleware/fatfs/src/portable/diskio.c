@@ -256,19 +256,17 @@ DRESULT disk_read(
         }
         if (((UINT)buff & (HPM_L1C_CACHELINE_SIZE - 1)) != 0) {
             for (UINT i = 0; i < count; i++) {
+                l1c_dc_invalidate(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)_aligned_buf), sector_size);
                 res = disk_read_private(pdrv, (BYTE *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)_aligned_buf), sector + i, 1);
                 if (res == RES_OK) {
-                    l1c_dc_invalidate(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)_aligned_buf), sector_size);
                     memcpy(buff + (i * sector_size), _aligned_buf, sector_size);
                 } else {
                     break;
                 }
             }
         } else {
+            l1c_dc_invalidate(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)buff), sector_size * count);
             res = disk_read_private(pdrv, (BYTE *)core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)buff), sector, count);
-            if (res == RES_OK) {
-                l1c_dc_invalidate(core_local_mem_to_sys_address(BOARD_RUNNING_CORE, (UINT)buff), sector_size * count);
-            }
         }
     }
 #else

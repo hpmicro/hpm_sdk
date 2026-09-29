@@ -1,15 +1,15 @@
 {
-  "clientKey": "5fbe3c9f65ef7d97d8b35441f011d49c",
-  "secretKey": "b6c1198d98b7a068c9763edc9b80acbd",
+  "clientKey": "b9415309f16f11a37f3b7948b2640b67",
+  "secretKey": "dbe2cea6ff507a4e551ea8584bacef23",
   "content": {
-    "pid": "560dc37d-5e28-4274-8f38-5f9c0ccdfdea",
+    "pid": "4f3bed50-f93c-461b-b27e-babfdccf03e9",
     "info": {
       "projectName": "tool_config",
       "sdkName": "1.12.0",
       "socName": "HPM5301",
       "packageName": "QFN48",
       "createTime": 1781446951444,
-      "updateTime": 1781446954124,
+      "updateTime": 1789025871688,
       "vscodePid": "66927f38-37ed-42b1-8491-934af04e0eeb"
     },
     "pinmux": {
@@ -521,6 +521,9 @@
             "pllVcoClocks": [
               "pll0",
               "pll1"
+            ],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc0"
             ]
           },
           "enableClocks": {

@@ -1,10 +1,9 @@
-# Copyright (c) 2021-2025 HPMicro
+# Copyright (c) 2021-2026 HPMicro
 # SPDX-License-Identifier: BSD-3-Clause
 
 import os
 import re
 import sys
-import yaml
 import subprocess
 import shutil
 import hashlib
@@ -12,26 +11,10 @@ import ctypes
 
 sys.path.append(os.path.dirname(sys.argv[0]))
 import get_board_info
+import get_app_info
 
-APP_DEPENDENCY="dependency"
 SOC_IP_FEATURE_FILE_NAME="hpm_soc_ip_feature.h"
 SOC_IP_FEATURE_PREFIX="HPM_IP_FEATURE_"
-
-def parse_app_yml(app_yml):
-    app_info = None
-    with open(app_yml, "r", encoding='utf-8', errors='ignore') as stream:
-        try:
-            app_info = yaml.safe_load(stream)
-        except yaml.YAMLError as e:
-            pass
-    stream.close()
-    return app_info
-
-def get_app_dep(app_info):
-    app_dep = None
-    if not app_info is None and APP_DEPENDENCY in app_info.keys():
-        app_dep = app_info[APP_DEPENDENCY]
-    return app_dep
 
 def is_sdk_sample(sdk_base, app_path):
     return re.match(r'^' + re.escape(sdk_base) + r'/samples/', re.sub(r'\\', '/', app_path))
@@ -58,8 +41,7 @@ def check_ip_dependency(sdk_base, soc_name, app_dependency):
     for d in app_dependency:
         if not re.match('ip_feature_', d):
             # process OR logic
-            m = re.match(r'||', d)
-            if not m is None:
+            if '||' in d:
                 or_list = d.split('||')
                 found = False
                 for d in or_list:
@@ -107,11 +89,11 @@ if __name__ == "__main__":
             # if application is not on the same drive with sdk_base, skip checking
             pass
 
-    app_info = parse_app_yml(app_yml)
+    app_info = get_app_info.parse_app_yml(app_yml)
 
     # Check app dependency and IP dependency first
-    app_dep = get_app_dep(app_info)
-    if app_dep is None:
+    app_dep = get_app_info.get_dependencies(app_info)
+    if not app_dep:
         sys.exit(0)
 
     if not check_ip_dependency(sdk_base, soc_name, app_dep):

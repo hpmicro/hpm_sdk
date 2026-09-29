@@ -55,6 +55,9 @@
 /* ACMP related feature */
 #define HPM_IP_FEATURE_ACMP_DAC_MATRIX 1
 
+/* I2S related feature */
+#define HPM_IP_FEATURE_I2S_HAS_SOFTWARE_RESET_STATUS 1
+
 /* DAO related feature */
 #define HPM_IP_FEATURE_DAO_DATA_FORMAT_CONFIG 1
 #define HPM_IP_FEATURE_DAO_AUDIO_MONO_FIX 1
@@ -75,9 +78,12 @@
 /* PLB related feature */
 #define HPM_IP_FEATURE_PLB_COUNTER_READ_REAL_TIME 1
 
+/* SYNT related feature */
+#define HPM_IP_FEATURE_SYNT_TIMESTAMP 1
+#define HPM_IP_FEATURE_SYNT_ONESHOT_MODE 1
+#define HPM_IP_FEATURE_SYNT_CHAN16 1
+
 /* SEI related feature */
-#define HPM_IP_FEATURE_SEI_RX_LATCH_FEATURE 1
-#define HPM_IP_FEATURE_SEI_ASYNCHRONOUS_MODE_V2 1
 #define HPM_IP_FEATURE_SEI_LATCH_REWIND_CMD 1
 
 /* TRGM related feature */

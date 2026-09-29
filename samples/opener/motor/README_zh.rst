@@ -183,5 +183,15 @@ IO操作
    IPv4 Address: 192.168.100.10
    IPv4 Netmask: 255.255.255.0
    IPv4 Gateway: 192.168.100.1
-   Mesaage receieved from host!
+   Message received from host!
+
+当主机改变电机速度时，将根据控制信息打印以下信息。
+
+.. code-block:: console
+
+   motor speed change to: 10.000000.
+   motor speed change to: 20.000000.
+   motor speed change to: 30.000000.
+   motor speed change to: 35.000000.
+   motor speed change to: 0.000000.
 

@@ -30,43 +30,43 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
   - 电机控制接口
   - Raspberry PI IO扩展接口
 
-.. note::
+  .. note::
 
-   开发板sdram的地址引脚和电机接口J26的15-20pin存在复用，所以电机接口和sdram不能同时使用。
+     开发板sdram的地址引脚和电机接口J26的15-20pin存在复用，所以电机接口和sdram不能同时使用。
 
 拨码开关 S1
 -----------
 
 - Bit 1，2控制启动模式
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - Bit[2:1]
-     - 功能描述
-   * - OFF, OFF
-     - Quad SPI NOR flash 启动
-   * - OFF, ON
-     - 串行启动
-   * - ON, OFF
-     - 在系统编程
+     * - Bit[2:1]
+       - 功能描述
+     * - OFF, OFF
+       - Quad SPI NOR flash 启动
+     * - OFF, ON
+       - 串行启动
+     * - ON, OFF
+       - 在系统编程
 
 .. _hpm6300evk_buttons:
 
 按键
 ----
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 名称
-     - 功能
-   * - PBUTN (SW1)
-     - 电源按键, TinyUF2 Boot按键, GPIO 按键
-   * - WBUTN (SW2)
-     - WAKE UP 按键
-   * - RESETN (SW3)
-     - Reset 按键
+     * - 名称
+       - 功能
+     * - PBUTN (SW1)
+       - 电源按键, TinyUF2 Boot按键, GPIO 按键
+     * - WBUTN (SW2)
+       - WAKE UP 按键
+     * - RESETN (SW3)
+       - Reset 按键
 
 插件
 ----
@@ -271,31 +271,31 @@ HPM6300EVK提供了HPM6300微控制器大部分外设的接口，包括1个SD卡
 
 - ESP-HOSTED 引脚接口
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-     - 备注
-   * - PA07
-     - J28[11]
-     - RESET引脚
-   * - PC13
-     - J28[13]
-     - HANDSHAKE引脚
-   * - PC14
-     - J28[15]
-     - DATA_READY引脚
+     * - 功能
+       - 位置
+       - 备注
+     * - PA07
+       - J28[11]
+       - RESET引脚
+     * - PC13
+       - J28[13]
+       - HANDSHAKE引脚
+     * - PC14
+       - J28[15]
+       - DATA_READY引脚
 
 - BROWNOUT中断指示引脚
 
-.. list-table::
-   :header-rows: 1
+  .. list-table::
+     :header-rows: 1
 
-   * - 功能
-     - 位置
-   * - PA07
-     - J28[11]
+     * - 功能
+       - 位置
+     * - PA07
+       - J28[11]
 
 .. _hpm6300evk_known_issues:
 

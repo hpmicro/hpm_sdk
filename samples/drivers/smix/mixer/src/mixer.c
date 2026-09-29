@@ -120,7 +120,10 @@ hpm_stat_t board_i2s_init(audio_data_t *audio_data, uint32_t mclk_freq)
     /* Config I2S interface to CODEC */
     i2s_get_default_config(CODEC_I2S, &i2s_config);
     i2s_config.enable_mclk_out = true;
-    i2s_init(CODEC_I2S, &i2s_config);
+    stat = i2s_init(CODEC_I2S, &i2s_config);
+    if (stat != status_success) {
+        return status_fail;
+    }
     i2s_invert_fclk_out = i2s_config.invert_fclk_out;
 
     i2s_get_default_transfer_config(&transfer);
@@ -197,7 +200,7 @@ hpm_stat_t mixer_play_one_sound(audio_data_t *sound)
     mixer_dst.src_ch_mask = 0x1; /* enable source channel 0 as input */
     smix_mixer_config_dst_ch(SMIX, 0, &mixer_dst);
 
-    i2s_reset_tx(CODEC_I2S);
+    /* fill tx dummy data to tx fifo to prevent underflow when TX starts if DMA not transfer data without I2S start */
     if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, sound->channel_num) != status_success) {
         printf("I2S error occurred during playing\n");
         return status_fail;
@@ -212,6 +215,13 @@ hpm_stat_t mixer_play_one_sound(audio_data_t *sound)
     smix_mixer_dst_disable(SMIX);
     smix_mixer_dst_disable_source_channel(SMIX, 0, 1);
     i2s_stop(CODEC_I2S); /* stop I2S */
+
+    /* reset I2S TX function and clear remaining data in TX FIFO */
+    if (i2s_reset_tx(CODEC_I2S) != status_success) {
+        printf("I2S error occurred during playing\n");
+        return status_fail;
+    }
+    i2s_enable_tx_line(CODEC_I2S, CODEC_I2S_TX_DATA_LINE); /*Enable I2S TX */
 
     if (smix_mixer_check_dst_cal_saturation_error(SMIX, 0)
         || smix_mixer_check_source_cal_saturation_error(SMIX, 0)
@@ -307,7 +317,7 @@ hpm_stat_t mixer_play_two_sound(audio_data_t *sound0, audio_data_t *sound1)
     mixer_dst.src_ch_mask = 0x3;
     smix_mixer_config_dst_ch(SMIX, 0, &mixer_dst);
 
-    i2s_reset_tx(CODEC_I2S);
+    /* fill tx dummy data to tx fifo to prevent underflow when TX starts if DMA not transfer data without I2S start */
     if (i2s_fill_tx_dummy_data(CODEC_I2S, CODEC_I2S_TX_DATA_LINE, sound0->channel_num) != status_success) {
         printf("I2S error occurred during playing\n");
         return status_fail;
@@ -322,6 +332,12 @@ hpm_stat_t mixer_play_two_sound(audio_data_t *sound0, audio_data_t *sound1)
     smix_mixer_dst_disable(SMIX);
     smix_mixer_dst_disable_source_channel(SMIX, 0, 3);
     i2s_stop(CODEC_I2S); /* stop I2S */
+
+    /* reset I2S TX function and clear remaining data in TX FIFO */
+    if (i2s_reset_tx(CODEC_I2S) != status_success) {
+        return status_fail;
+    }
+    i2s_enable_tx_line(CODEC_I2S, CODEC_I2S_TX_DATA_LINE); /*Enable I2S TX */
 
     if (smix_mixer_check_dst_cal_saturation_error(SMIX, 0)
         || smix_mixer_check_source_cal_saturation_error(SMIX, 0)

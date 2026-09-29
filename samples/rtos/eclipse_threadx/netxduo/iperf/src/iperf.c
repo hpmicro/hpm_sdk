@@ -20,7 +20,7 @@
 #define DEMO_STACK_SIZE 2048
 #define HTTP_STACK_SIZE 2048
 #define IPERF_STACK_SIZE 2048
-#define IP_STACK_SIZE 2048
+#define IP_STACK_SIZE 4096
 #define ARP_POOL_SIZE 1024
 
 /* Define sample IP address.  */

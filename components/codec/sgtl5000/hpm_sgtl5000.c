@@ -415,6 +415,129 @@ hpm_stat_t sgtl_set_volume(codec_control_t *context, sgtl_module_t module, uint3
     return stat;
 }
 
+hpm_stat_t sgtl_get_volume_db_range(sgtl_module_t module, float *min_db, float *max_db)
+{
+    assert((min_db != NULL) && (max_db != NULL));
+
+    switch (module) {
+    case sgtl_module_adc:
+        /* ADC_VOL: 0x0 = 0dB to 0xF = +22.5dB, 1.5dB per step */
+        *min_db = 0.0f;
+        *max_db = 22.5f;
+        return status_success;
+    case sgtl_module_dac:
+        /* DAC_VOL: 0x3C = 0dB to 0xF0 = -90dB, 0.5dB per step; codes below 0x3C are reserved */
+        *min_db = -90.0f;
+        *max_db = 0.0f;
+        return status_success;
+    case sgtl_module_hp:
+        /* HP_VOL: 0x00 = +12dB to 0x7F = -51.5dB, 0.5dB per step */
+        *min_db = -51.5f;
+        *max_db = 12.0f;
+        return status_success;
+    case sgtl_module_lineout:
+        /*
+         * LO_VOL: 0.5dB per step, higher codes have more attenuation. Per datasheet the
+         * full-scale (0dB) reference code is 40*log(VAG_VAL/LO_VAGCNTRL) + 15; VAG_VAL and
+         * LO_VAGCNTRL both reset to 0.8V and are never changed by this driver, so it is 0x0F.
+         */
+        *min_db = -8.0f;
+        *max_db = 7.5f;
+        return status_success;
+    default:
+        return status_invalid_argument;
+    }
+}
+
+hpm_stat_t sgtl_set_volume_db(codec_control_t *context, sgtl_module_t module, float volume_db)
+{
+    uint32_t volume;
+    float min_db;
+    float max_db;
+
+    if (sgtl_get_volume_db_range(module, &min_db, &max_db) != status_success) {
+        return status_invalid_argument;
+    }
+    if ((volume_db < min_db) || (volume_db > max_db)) {
+        return status_invalid_argument;
+    }
+
+    switch (module) {
+    case sgtl_module_adc:
+        /* ADC_VOL: 0x0 = 0dB to 0xF = +22.5dB, 1.5dB per step, rounded to nearest step */
+        volume = (uint32_t) (volume_db / 1.5f + 0.5f);
+        break;
+    case sgtl_module_dac:
+        /* DAC_VOL: 0x3C = 0dB, 0.5dB attenuation per code step, 0xF0 = -90dB; codes below 0x3C are reserved */
+        volume = (uint32_t) (SGTL5000_DAC_MIN_VOLUME_VALUE - 2.0f * volume_db + 0.5f);
+        break;
+    case sgtl_module_hp:
+        /* HP_VOL: 0x00 = +12dB to 0x7F = -51.5dB, 0.5dB per step */
+        volume = (uint32_t) (24.0f - 2.0f * volume_db + 0.5f);
+        break;
+    case sgtl_module_lineout:
+        /* LO_VOL: 0.5dB per step, higher codes have more attenuation, 0x0F = 0dB */
+        volume = (uint32_t) (15.0f - 2.0f * volume_db + 0.5f);
+        break;
+    default:
+        return status_invalid_argument;
+    }
+
+    return sgtl_set_volume(context, module, volume);
+}
+
+hpm_stat_t sgtl_clamp_volume_db(sgtl_module_t module, float volume_db, float *clamped_db)
+{
+    hpm_stat_t stat = status_success;
+    float min_db;
+    float max_db;
+
+    assert(clamped_db != NULL);
+
+    HPM_CHECK_RET(sgtl_get_volume_db_range(module, &min_db, &max_db));
+
+    if (volume_db < min_db) {
+        *clamped_db = min_db;
+    } else if (volume_db > max_db) {
+        *clamped_db = max_db;
+    } else {
+        *clamped_db = volume_db;
+    }
+    return stat;
+}
+
+hpm_stat_t sgtl_set_volume_percent(codec_control_t *context, sgtl_module_t module, int8_t volume_percent)
+{
+    uint32_t volume;
+
+    if ((volume_percent < 0) || (volume_percent > 100)) {
+        return status_invalid_argument;
+    }
+
+    switch (module) {
+    case sgtl_module_adc:
+        /* ADC_VOL: 0x0 = 0dB (minimum) to 0xF = +22.5dB (maximum), 1.5dB per step */
+        volume = (15U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    case sgtl_module_dac:
+        /* DAC_VOL: 0xF0 = -90dB (minimum) to 0x3C = 0dB (maximum), 0.5dB per step, higher codes have more attenuation */
+        volume = 240U - (180U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    case sgtl_module_hp:
+        /* HP_VOL: 0x7F = -51.5dB (minimum) to 0x00 = +12dB (maximum), 0.5dB per step, higher codes have more attenuation */
+        volume = 127U - (127U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    case sgtl_module_lineout:
+        /* LO_VOL: 0x1F = -8dB (minimum) to 0x00 = +7.5dB (maximum), 0.5dB per step, higher codes have more attenuation */
+        volume = 31U - (31U * (uint32_t) volume_percent + 50U) / 100U;
+        break;
+    default:
+        return status_invalid_argument;
+    }
+
+    return sgtl_set_volume(context, module, volume);
+}
+
 uint32_t sgtl_get_volume(codec_control_t *context, sgtl_module_t module)
 {
     uint16_t vol = 0;

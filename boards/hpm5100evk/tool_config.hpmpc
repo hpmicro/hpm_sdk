@@ -1,0 +1,1204 @@
+{
+  "clientKey": "4ff591e7d7dce7c24480eedea755f1e1",
+  "secretKey": "aa8835856a2009b79622eed21755f916",
+  "content": {
+    "pid": "8941ed70-09aa-4c34-abba-1d466022c1d5",
+    "info": {
+      "projectName": "tool_config",
+      "sdkName": "1.13.0",
+      "socName": "HPM5151",
+      "packageName": "LQFP100",
+      "createTime": 1789034221559,
+      "updateTime": 1789034224771,
+      "vscodePid": "513f7628-efd5-4219-996a-86ad1f5c8931"
+    },
+    "pinmux": {
+      "functions": {
+        "init_acmp_pins": {
+          "selectPins": {
+            "PC00": {
+              "signal": "ACMP0_CH0.A.INN1",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_adc16_diff_pins": {
+          "selectPins": {
+            "PB11": {
+              "signal": "ADC3.A.IN11",
+              "padCtls": {}
+            },
+            "PB12": {
+              "signal": "ADC2.A.IN09",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_adc_bldc_pins": {
+          "selectPins": {
+            "PB11": {
+              "signal": "ADC3.A.IN11",
+              "padCtls": {}
+            },
+            "PB12": {
+              "signal": "ADC2.A.IN09",
+              "padCtls": {}
+            },
+            "PA24": {
+              "signal": "ADC1.A.IN12",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_adc_pins": {
+          "selectPins": {
+            "PC05": {
+              "signal": "ADC0.A.IN02",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_adc_qeiv2_pins": {
+          "selectPins": {
+            "PA24": {
+              "signal": "ADC1.A.IN12",
+              "padCtls": {}
+            },
+            "PB11": {
+              "signal": "ADC3.A.IN11",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_brownout_indicate_pin": {
+          "selectPins": {
+            "PA27": {
+              "signal": "GPIO.A.A[27]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_butn_pins": {
+          "selectPins": {
+            "PA15": {
+              "signal": "GPIO.A.A[15]",
+              "padCtls": {
+                "PE": "1",
+                "PS": "1",
+                "HYS": "1"
+              }
+            }
+          }
+        },
+        "init_clk_ref_pin": {
+          "selectPins": {
+            "PB01": {
+              "signal": "SOC.A.REF1",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_gpio_pins": {
+          "selectPins": {
+            "PA15": {
+              "signal": "GPIO.A.A[15]",
+              "padCtls": {
+                "SR": "1",
+                "SPD": "3"
+              }
+            }
+          }
+        },
+        "init_gptmr0_channel0_pin_as_capture": {
+          "selectPins": {
+            "PC10": {
+              "signal": "GPTMR0.E.CAPT[0]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_gptmr0_channel0_pin_as_output": {
+          "selectPins": {
+            "PC15": {
+              "signal": "GPTMR0.E.COMP[0]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_gptmr0_channel1_pin_as_output": {
+          "selectPins": {
+            "PC13": {
+              "signal": "GPTMR0.E.COMP[1]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_gptmr0_channel3_pin_as_output": {
+          "selectPins": {
+            "PC11": {
+              "signal": "GPTMR0.E.COMP[3]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_gptmr0_pins": {
+          "selectPins": {
+            "PC10": {
+              "signal": "GPTMR0.E.CAPT[0]",
+              "padCtls": {}
+            },
+            "PC15": {
+              "signal": "GPTMR0.E.COMP[0]",
+              "padCtls": {}
+            },
+            "PC13": {
+              "signal": "GPTMR0.E.COMP[1]",
+              "padCtls": {}
+            },
+            "PC11": {
+              "signal": "GPTMR0.E.COMP[3]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_i2c0_pins": {
+          "selectPins": {
+            "PY01": {
+              "signal": "I2C0.I.SCL",
+              "padCtls": {
+                "LOOP_BACK": "1",
+                "PE": "1",
+                "PS": "1",
+                "OD": "1"
+              }
+            },
+            "PY00": {
+              "signal": "I2C0.I.SDA",
+              "padCtls": {
+                "PE": "1",
+                "PS": "1",
+                "OD": "1",
+                "LOOP_BACK": "1"
+              }
+            }
+          }
+        },
+        "init_i2c1_pins": {
+          "selectPins": {
+            "PY03": {
+              "signal": "I2C1.I.SCL",
+              "padCtls": {
+                "LOOP_BACK": "1",
+                "PE": "1",
+                "PS": "1",
+                "OD": "1"
+              }
+            },
+            "PY02": {
+              "signal": "I2C1.I.SDA",
+              "padCtls": {
+                "PE": "1",
+                "PS": "1",
+                "OD": "1"
+              }
+            }
+          }
+        },
+        "init_i2c2_pins": {
+          "selectPins": {
+            "PA23": {
+              "signal": "I2C2.B.SCL",
+              "padCtls": {
+                "LOOP_BACK": "1",
+                "PE": "0",
+                "OD": "1"
+              }
+            },
+            "PA22": {
+              "signal": "I2C2.B.SDA",
+              "padCtls": {
+                "PE": "0",
+                "OD": "1"
+              }
+            }
+          }
+        },
+        "init_i2s0_pins": {
+          "selectPins": {
+            "PB09": {
+              "signal": "I2S0.B.BCLK",
+              "padCtls": {}
+            },
+            "PB10": {
+              "signal": "I2S0.B.FCLK",
+              "padCtls": {}
+            },
+            "PB04": {
+              "signal": "I2S0.AB.MCLK",
+              "padCtls": {}
+            },
+            "PB08": {
+              "signal": "I2S0.AB.RXD[3]",
+              "padCtls": {}
+            },
+            "PB00": {
+              "signal": "I2S0.AB.TXD[0]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_led_pins_as_gpio": {
+          "selectPins": {
+            "PA18": {
+              "signal": "GPIO.A.A[18]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_led_pins_as_pwm": {
+          "selectPins": {}
+        },
+        "init_mcan0_pins": {
+          "selectPins": {
+            "PA20": {
+              "signal": "MCAN0.E.RXD",
+              "padCtls": {}
+            },
+            "PA19": {
+              "signal": "MCAN0.E.TXD",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_opamp_pins": {
+          "selectPins": {
+            "PB02": {
+              "signal": "OPA3.A.INN1",
+              "padCtls": {}
+            },
+            "PB03": {
+              "signal": "OPA3.A.INP1",
+              "padCtls": {}
+            },
+            "PC09": {
+              "signal": "OPA3.A.OUT0",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_pwm0_pins": {
+          "selectPins": {
+            "PC14": {
+              "signal": "PWM0.C.P[6]",
+              "padCtls": {}
+            },
+            "PC13": {
+              "signal": "PWM0.C.P[5]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_pwm1_pins": {
+          "selectPins": {
+            "PC10": {
+              "signal": "PWM1.C.P[6]",
+              "padCtls": {}
+            },
+            "PC11": {
+              "signal": "PWM1.C.P[7]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_pwm2_pins": {
+          "selectPins": {
+            "PB01": {
+              "signal": "PWM2.B.P[1]",
+              "padCtls": {}
+            },
+            "PB05": {
+              "signal": "PWM2.B.P[5]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_pwm3_pins": {
+          "selectPins": {
+            "PA16": {
+              "signal": "PWM3.A.P[0]",
+              "padCtls": {}
+            },
+            "PA17": {
+              "signal": "PWM3.A.P[1]",
+              "padCtls": {}
+            },
+            "PA28": {
+              "signal": "PWM3.A.P[4]",
+              "padCtls": {}
+            },
+            "PA29": {
+              "signal": "PWM3.A.P[5]",
+              "padCtls": {}
+            },
+            "PA30": {
+              "signal": "PWM3.A.P[6]",
+              "padCtls": {}
+            },
+            "PA31": {
+              "signal": "PWM3.A.P[7]",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_spi3_pins": {
+          "selectPins": {
+            "PC06": {
+              "signal": "SPI3.C.CS[0]",
+              "padCtls": {
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PC10": {
+              "signal": "SPI3.C.SCLK",
+              "padCtls": {
+                "LOOP_BACK": "1",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PC15": {
+              "signal": "SPI3.C.MISO",
+              "padCtls": {
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PC13": {
+              "signal": "SPI3.C.MOSI",
+              "padCtls": {
+                "SR": "1",
+                "SPD": "3"
+              }
+            }
+          }
+        },
+        "init_spi3_pins_with_gpio_as_cs": {
+          "selectPins": {
+            "PC06": {
+              "signal": "GPIO.A.C[06]",
+              "padCtls": {
+                "SR": "1",
+                "SPD": "3",
+                "DS": "7"
+              }
+            },
+            "PC10": {
+              "signal": "SPI3.C.SCLK",
+              "padCtls": {
+                "LOOP_BACK": "1",
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PC13": {
+              "signal": "SPI3.C.MOSI",
+              "padCtls": {
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PC15": {
+              "signal": "SPI3.C.MISO",
+              "padCtls": {
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            }
+          }
+        },
+        "init_spi_nor_flash_pins": {
+          "selectPins": {
+            "PA14": {
+              "signal": "SPI0.A.DAT2",
+              "padCtls": {
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PA09": {
+              "signal": "SPI0.A.DAT3",
+              "padCtls": {
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PA12": {
+              "signal": "SPI0.A.MISO",
+              "padCtls": {
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PA13": {
+              "signal": "SPI0.A.MOSI",
+              "padCtls": {
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PA10": {
+              "signal": "SPI0.A.SCLK",
+              "padCtls": {
+                "LOOP_BACK": "1",
+                "DS": "7",
+                "SR": "1",
+                "SPD": "3"
+              }
+            },
+            "PA11": {
+              "signal": "GPIO.A.A[11]",
+              "padCtls": {}
+            }
+          },
+          "managers": {
+            "gpiom": {
+              "PA11": {
+                "direction": "1",
+                "gpioController": "1",
+                "outputLevel": "1",
+                "gpioControllerHide": "[]"
+              }
+            }
+          }
+        },
+        "init_trgm_gptmr0_cap2_invert_pins": {
+          "selectPins": {
+            "PC02": {
+              "signal": "TRGM.E.P[02]",
+              "padCtls": {},
+              "options": {
+                "trgmOptionKey": [
+                  "trgm0_p2:gptmr0_in2"
+                ]
+              }
+            }
+          },
+          "managers": {
+            "trgm": {
+              "0": {
+                "io": {
+                  "trgm0_p2:gptmr0_in2": {
+                    "input": "trgm0_p2",
+                    "inputPin": "PC02",
+                    "output": "gptmr0_in2",
+                    "type": "0",
+                    "invert": "1"
+                  }
+                },
+                "filter": {},
+                "dma": {}
+              }
+            }
+          }
+        },
+        "init_uart0_pins": {
+          "selectPins": {
+            "PA01": {
+              "signal": "UART0.A.RXD",
+              "padCtls": {}
+            },
+            "PA00": {
+              "signal": "UART0.A.TXD",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_uart2_pins": {
+          "selectPins": {
+            "PY06": {
+              "signal": "UART2.G.RXD",
+              "padCtls": {}
+            },
+            "PY07": {
+              "signal": "UART2.G.TXD",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_uart3_pin_as_gpio": {
+          "selectPins": {
+            "PC05": {
+              "signal": "GPIO.A.C[05]",
+              "padCtls": {
+                "PE": "1",
+                "PS": "1"
+              }
+            },
+            "PC00": {
+              "signal": "GPIO.A.C[00]",
+              "padCtls": {
+                "PE": "1",
+                "PS": "1"
+              }
+            }
+          }
+        },
+        "init_uart3_pins": {
+          "selectPins": {
+            "PC05": {
+              "signal": "UART3.E.RXD",
+              "padCtls": {}
+            },
+            "PC00": {
+              "signal": "UART3.E.TXD",
+              "padCtls": {}
+            }
+          }
+        },
+        "init_uart_break_signal_pin": {
+          "selectPins": {
+            "PC14": {
+              "signal": "GPIO.A.C[14]",
+              "padCtls": {
+                "PE": "1",
+                "PS": "1"
+              }
+            }
+          }
+        },
+        "init_usb0_pins": {
+          "selectPins": {
+            "PB13": {
+              "signal": "USB0.A.ID",
+              "padCtls": {}
+            },
+            "PB15": {
+              "signal": "USB0.A.OC",
+              "padCtls": {}
+            },
+            "PB14": {
+              "signal": "USB0.A.PWR",
+              "padCtls": {}
+            }
+          }
+        }
+      },
+      "sorter": [
+        "init_uart0_pins",
+        "init_uart2_pins",
+        "init_uart3_pins",
+        "init_uart3_pin_as_gpio",
+        "init_i2c0_pins",
+        "init_i2c1_pins",
+        "init_i2c2_pins",
+        "init_i2s0_pins",
+        "init_spi3_pins",
+        "init_spi3_pins_with_gpio_as_cs",
+        "init_gptmr0_pins",
+        "init_gpio_pins",
+        "init_butn_pins",
+        "init_acmp_pins",
+        "init_pwm0_pins",
+        "init_pwm1_pins",
+        "init_pwm2_pins",
+        "init_pwm3_pins",
+        "init_adc_pins",
+        "init_adc16_diff_pins",
+        "init_adc_bldc_pins",
+        "init_adc_qeiv2_pins",
+        "init_usb0_pins",
+        "init_mcan0_pins",
+        "init_led_pins_as_gpio",
+        "init_led_pins_as_pwm",
+        "init_opamp_pins",
+        "init_uart_break_signal_pin",
+        "init_gptmr0_channel0_pin_as_output",
+        "init_gptmr0_channel1_pin_as_output",
+        "init_gptmr0_channel3_pin_as_output",
+        "init_gptmr0_channel0_pin_as_capture",
+        "init_clk_ref_pin",
+        "init_brownout_indicate_pin",
+        "init_trgm_gptmr0_cap2_invert_pins",
+        "init_spi_nor_flash_pins"
+      ]
+    },
+    "clock": {
+      "functions": {
+        "init_acmp0_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_acmp0": 0
+          }
+        },
+        "init_acmp0_clock_group1": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_acmp0": 1
+          }
+        },
+        "init_adc0_analog_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc0",
+              "clk_top_ana0"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc0": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc0": {
+              "from": "clk_top_ana0"
+            },
+            "clk_top_ana0": {
+              "from": "clk0_pll1",
+              "divFactor": 2
+            }
+          }
+        },
+        "init_adc0_bus_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc0"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc0"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc0": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc0": {
+              "from": "clk_top_ahb0"
+            }
+          }
+        },
+        "init_adc1_analog_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc1",
+              "clk_top_ana1"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc1": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc1": {
+              "from": "clk_top_ana1"
+            },
+            "clk_top_ana1": {
+              "from": "clk0_pll1",
+              "divFactor": 2
+            }
+          }
+        },
+        "init_adc1_bus_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc1"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc1"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc1": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc1": {
+              "from": "clk_top_ahb0"
+            }
+          }
+        },
+        "init_adc2_analog_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc2",
+              "clk_top_ana2"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc2": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc2": {
+              "from": "clk_top_ana2"
+            },
+            "clk_top_ana2": {
+              "from": "clk0_pll1",
+              "divFactor": 2
+            }
+          }
+        },
+        "init_adc2_bus_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc2"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc2"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc2": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc2": {
+              "from": "clk_top_ahb0"
+            }
+          }
+        },
+        "init_adc3_analog_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc3",
+              "clk_top_ana3"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc3": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc3": {
+              "from": "clk_top_ana3"
+            },
+            "clk_top_ana3": {
+              "from": "clk0_pll1",
+              "divFactor": 2
+            }
+          }
+        },
+        "init_adc3_bus_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_adc3"
+            ],
+            "pllVcoClocks": [],
+            "selfOnlyFuncClocks": [
+              "clk_top_adc3"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_adc3": 0
+          },
+          "funcClkConfig": {
+            "clk_top_adc3": {
+              "from": "clk_top_ahb0"
+            }
+          }
+        },
+        "init_board_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_cpu0": 0,
+            "clk_top_ahb0": 0,
+            "clk_lmm0": 0,
+            "clk_top_mct0": 0,
+            "clk_rom": 0,
+            "clk_gpio": 0,
+            "clk_hdma0": 0,
+            "clk_hdma1": 0,
+            "clk_top_xpi0": 0,
+            "clk_ptpc": 0,
+            "clk_emds": 0,
+            "clk_pwm0": 0,
+            "clk_pwm1": 0,
+            "clk_pwm2": 0,
+            "clk_pwm3": 0
+          },
+          "funcClkConfig": {
+            "clk_top_cpu0": {
+              "from": "clk0_pll1",
+              "divFactor": 1
+            }
+          },
+          "pllClkConfig": {
+            "pll0": {
+              "params": {
+                "mfd": 240000000,
+                "mfi": 33,
+                "mfn": 80000000,
+                "frequency": 800000000
+              }
+            }
+          },
+          "srcClkConfig": {
+            "clk0_pll0": {
+              "divFactor": 0
+            }
+          }
+        },
+        "init_can0_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_can0"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_can0": 0
+          },
+          "funcClkConfig": {
+            "clk_top_can0": {
+              "from": "clk0_pll1",
+              "divFactor": 5
+            }
+          }
+        },
+        "init_cpu_clock": {
+          "selectClocks": {
+            "srcClocks": [
+              "clk0_pll0"
+            ],
+            "funcClocks": [
+              "clk_top_cpu0"
+            ],
+            "pllVcoClocks": [
+              "pll0"
+            ]
+          },
+          "enableClocks": {},
+          "funcClkConfig": {
+            "clk_top_mct0": {
+              "from": "osc24m",
+              "divFactor": 1
+            },
+            "clk_top_cpu0": {
+              "from": "clk0_pll0",
+              "divFactor": 2
+            }
+          },
+          "pllClkConfig": {
+            "pll0": {
+              "params": {
+                "mfd": 240000000,
+                "mfi": 33,
+                "mfn": 80000000,
+                "frequency": 800000000
+              }
+            }
+          },
+          "srcClkConfig": {
+            "clk0_pll0": {
+              "divFactor": 0
+            }
+          }
+        },
+        "init_gptmr0_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_tmr0": 0
+          }
+        },
+        "init_gptmr0_clock_group1": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_tmr0": 1
+          }
+        },
+        "init_gptmr1_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_tmr1": 0
+          }
+        },
+        "init_gptmr1_clock_group1": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_tmr1": 1
+          }
+        },
+        "init_i2c0_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_i2c0": 0
+          }
+        },
+        "init_i2c1_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_i2c1": 0
+          }
+        },
+        "init_i2c2_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_i2c2": 0
+          }
+        },
+        "init_i2s0_clock_22050": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_i2s0",
+              "clk_top_aud0"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s0": 0
+          },
+          "funcClkConfig": {
+            "clk_top_i2s0": {
+              "from": "clk_top_aud0"
+            },
+            "clk_top_aud0": {
+              "from": "clk1_pll2",
+              "divFactor": 20
+            }
+          }
+        },
+        "init_i2s0_clock_default": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_i2s0",
+              "clk_top_aud0"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s0": 0
+          },
+          "funcClkConfig": {
+            "clk_top_i2s0": {
+              "from": "clk_top_aud0"
+            },
+            "clk_top_aud0": {
+              "from": "clk0_pll2",
+              "divFactor": 21
+            }
+          }
+        },
+        "init_i2s1_clock_22050": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_i2s1",
+              "clk_top_aud1"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s1": 0
+          },
+          "funcClkConfig": {
+            "clk_top_i2s1": {
+              "from": "clk_top_aud1"
+            },
+            "clk_top_aud1": {
+              "from": "clk1_pll2",
+              "divFactor": 20
+            }
+          }
+        },
+        "init_i2s1_clock_default": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": [
+              "clk_top_i2s1",
+              "clk_top_aud1"
+            ]
+          },
+          "enableClocks": {
+            "clk_top_i2s1": 0
+          },
+          "funcClkConfig": {
+            "clk_top_i2s1": {
+              "from": "clk_top_aud1"
+            },
+            "clk_top_aud1": {
+              "from": "clk0_pll2",
+              "divFactor": 21
+            }
+          }
+        },
+        "init_mchtmr_clock": {
+          "selectClocks": {
+            "srcClocks": [
+              "osc32k",
+              "osc24m"
+            ],
+            "funcClocks": [
+              "clk_top_mct0"
+            ],
+            "pllVcoClocks": [
+              "pll0",
+              "pll1",
+              "pll2"
+            ]
+          },
+          "enableClocks": {}
+        },
+        "init_ptmr_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_ptmr": 0
+          }
+        },
+        "init_ptmr_clock_group1": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_ptmr": 1
+          }
+        },
+        "init_spi0_clock": {
+          "selectClocks": {
+            "srcClocks": [
+              "osc32k",
+              "osc24m"
+            ],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_spi0": "0"
+          }
+        },
+        "init_spi3_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_spi3": 0
+          }
+        },
+        "init_uart0_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_urt0": 0
+          }
+        },
+        "init_uart1_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_urt1": 0
+          }
+        },
+        "init_uart2_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_urt2": 0
+          }
+        },
+        "init_uart3_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_top_urt3": 0
+          }
+        },
+        "init_usb0_clock": {
+          "selectClocks": {
+            "srcClocks": [],
+            "funcClocks": []
+          },
+          "enableClocks": {
+            "clk_usb0": 0
+          }
+        }
+      },
+      "sorter": [
+        "init_board_clock",
+        "init_cpu_clock",
+        "init_mchtmr_clock",
+        "init_usb0_clock",
+        "init_spi0_clock",
+        "init_spi3_clock",
+        "init_adc0_bus_clock",
+        "init_adc0_analog_clock",
+        "init_adc1_bus_clock",
+        "init_adc1_analog_clock",
+        "init_adc2_bus_clock",
+        "init_adc2_analog_clock",
+        "init_adc3_bus_clock",
+        "init_adc3_analog_clock",
+        "init_acmp0_clock",
+        "init_acmp0_clock_group1",
+        "init_can0_clock",
+        "init_uart0_clock",
+        "init_uart1_clock",
+        "init_uart2_clock",
+        "init_uart3_clock",
+        "init_i2c0_clock",
+        "init_i2c1_clock",
+        "init_i2c2_clock",
+        "init_gptmr0_clock",
+        "init_gptmr0_clock_group1",
+        "init_gptmr1_clock",
+        "init_gptmr1_clock_group1",
+        "init_ptmr_clock",
+        "init_ptmr_clock_group1",
+        "init_i2s0_clock_22050",
+        "init_i2s0_clock_default",
+        "init_i2s1_clock_22050",
+        "init_i2s1_clock_default"
+      ]
+    }
+  }
+}

@@ -12,12 +12,189 @@
 #include "hpm_enet_drv.h"
 #include "hpm_enet_soc_drv.h"
 
-#define ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, enet_ptr) do { \
+/* Max TX segments one prepare_* call may program (gather path, fixed slot size). */
+#ifndef ENET_TX_DESC_SEGMENT_MAX
+#define ENET_TX_DESC_SEGMENT_MAX (64U)
+#endif
+
+#define ENET_TX_DESC_SET_OWN(dma_tx_desc) do { \
     __asm volatile("fence w, w" ::: "memory"); \
     (dma_tx_desc)->tdes0_bm.own = 1; \
+} while (0)
+
+#define ENET_TX_DESC_KICK_DMA(enet_ptr) do { \
     __asm volatile("fence w, o" ::: "memory"); \
     (enet_ptr)->DMA_TX_POLL_DEMAND = 1; \
 } while (0)
+
+static uint32_t enet_tx_calc_buf_count(uint16_t frame_length, uint16_t tx_buff_size)
+{
+    uint32_t buf_count;
+
+    if (frame_length > tx_buff_size) {
+        buf_count = frame_length / tx_buff_size;
+        if (frame_length % tx_buff_size) {
+            buf_count++;
+        }
+    } else {
+        buf_count = 1;
+    }
+
+    return buf_count;
+}
+
+/*
+ * Give multi-segment descriptors to DMA: set OWN on subsequent descriptors
+ * first, then on the first descriptor; kick once after all OWN bits are set.
+ */
+void enet_tx_desc_handoff_segments(ENET_Type *ptr, enet_tx_desc_t **seg_desc, uint32_t seg_count)
+{
+    uint32_t i;
+
+    if ((ptr == NULL) || (seg_desc == NULL) || (seg_count == 0)) {
+        return;
+    }
+
+    for (i = seg_count; i > 0; i--) {
+        ENET_TX_DESC_SET_OWN(seg_desc[i - 1]);
+    }
+    ENET_TX_DESC_KICK_DMA(ptr);
+}
+
+void enet_tx_desc_fill_segment(enet_tx_desc_t *desc, const enet_tx_control_config_t *config,
+                               uint32_t buffer, uint16_t size, bool is_first, bool is_last)
+{
+    if ((desc == NULL) || (config == NULL)) {
+        return;
+    }
+
+    desc->tdes0_bm.own = 0;
+    desc->tdes0_bm.fs = 0;
+    desc->tdes0_bm.ls = 0;
+    desc->tdes0_bm.ic = 0;
+    desc->tdes0_bm.dc = 0;
+    desc->tdes0_bm.dp = 0;
+    desc->tdes0_bm.crcr = 0;
+    desc->tdes0_bm.cic = 0;
+    desc->tdes0_bm.vlic = 0;
+    desc->tdes0_bm.ttse = 0;
+    desc->tdes1_bm.saic = 0;
+
+    desc->tdes2_bm.buffer1 = buffer;
+    desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
+
+    if (is_first) {
+        /* TTSE and first-segment offload controls are valid only with FS. */
+        desc->tdes0_bm.fs = 1;
+        desc->tdes0_bm.dc = config->disable_crc;
+        desc->tdes0_bm.dp = config->disable_pad;
+        desc->tdes0_bm.crcr = config->enable_crcr;
+        desc->tdes0_bm.cic = config->cic;
+        desc->tdes0_bm.vlic = config->vlic;
+        desc->tdes0_bm.ttse = config->enable_ttse;
+        desc->tdes1_bm.saic = config->saic;
+    }
+
+    if (is_last) {
+        desc->tdes0_bm.ls = 1;
+        desc->tdes0_bm.ic = config->enable_ioc;
+    }
+}
+
+static uint32_t enet_tx_wait_desc_done(volatile enet_tx_desc_t *dma_tx_desc)
+{
+    uint32_t retry_cnt = ENET_RETRY_CNT;
+
+    do {
+    } while ((dma_tx_desc->tdes0_bm.own == 1) && (retry_cnt-- > 0));
+
+    if (retry_cnt == 0) {
+        return ENET_ERROR;
+    }
+
+    return ENET_SUCCESS;
+}
+
+/*
+ * TTSS is valid only on the last segment (LS). When set, TDES6/TDES7 hold the
+ * captured timestamp (enhanced descriptor format).
+ */
+static uint32_t enet_tx_wait_timestamp_ready(volatile enet_tx_desc_t *last_desc)
+{
+    uint32_t retry_cnt = ENET_RETRY_CNT;
+
+    if (enet_tx_wait_desc_done(last_desc) != ENET_SUCCESS) {
+        return ENET_ERROR;
+    }
+
+    if (last_desc->tdes0_bm.ls == 0) {
+        return ENET_ERROR;
+    }
+
+    do {
+    } while ((last_desc->tdes0_bm.ttss == 0) && (retry_cnt-- > 0));
+
+    if (retry_cnt == 0) {
+        return ENET_ERROR;
+    }
+
+    return ENET_SUCCESS;
+}
+
+static void enet_release_rx_frame_to_dma(enet_rx_frame_info_t *rx_frame_info)
+{
+    enet_rx_desc_t *dma_rx_desc;
+    uint32_t i;
+
+    if ((rx_frame_info->seg_count == 0) || (rx_frame_info->fs_rx_desc == NULL)) {
+        return;
+    }
+
+    dma_rx_desc = rx_frame_info->fs_rx_desc;
+    for (i = 0; i < rx_frame_info->seg_count; i++) {
+        dma_rx_desc->rdes0_bm.own = 1;
+        dma_rx_desc = (enet_rx_desc_t *)(dma_rx_desc->rdes3_bm.next_desc);
+    }
+
+    rx_frame_info->seg_count = 0;
+    rx_frame_info->fs_rx_desc = NULL;
+    rx_frame_info->ls_rx_desc = NULL;
+}
+
+/* Drop RX frames with IPC checksum errors via rdes4 when DT is set */
+static bool enet_rx_checksum_drop_frame(enet_rx_frame_info_t *rx_frame_info, const enet_rx_desc_t *ls_desc)
+{
+#if ENET_SOC_ALT_EHD_DES_LEN == ENET_SOC_ALT_EHD_DES_MAX_LEN
+    ENET_Type *ptr = rx_frame_info->base;
+
+    if ((ptr == NULL) || ((ptr->MACCFG & ENET_MACCFG_IPC_MASK) == 0)) {
+        return false;
+    }
+
+    /* DT clear: MAC drops IPC checksum-error frames; nothing to drop in driver */
+    if ((ptr->DMA_OP_MODE & ENET_DMA_OP_MODE_DT_MASK) == 0) {
+        return false;
+    }
+
+    if (ls_desc->rdes4_bm.ipv4_pkt_received == 0) {
+        return false;
+    }
+
+    if (ls_desc->rdes4_bm.ip_chksum_bypassed != 0) {
+        return false;
+    }
+
+    if ((ls_desc->rdes4_bm.ip_header_err != 0) || (ls_desc->rdes4_bm.ip_payload_err != 0)) {
+        /* IPv4 header or L4 payload checksum error */
+        return true;
+    }
+#else
+    (void)rx_frame_info;
+    (void)ls_desc;
+#endif
+
+    return false;
+}
 
 /*---------------------------------------------------------------------
  * Internal API
@@ -31,7 +208,7 @@ static void enet_mode_init(ENET_Type *ptr, uint32_t intr)
     /* enable hardware flow control */
     ptr->DMA_OP_MODE |= ENET_DMA_OP_MODE_EFC_MASK;
 
-    /* enable error frame and undersized good frame forwarding */
+    /* Forward MAC-layer error frames (CRC/giant/watchdog etc.) to DMA; independent of IPC/DT */
     ptr->DMA_OP_MODE |= ENET_DMA_OP_MODE_FEF_MASK;
 
     /* disable osf mode */
@@ -81,7 +258,7 @@ static int enet_dma_init(ENET_Type *ptr, enet_desc_t *desc, uint32_t intr, uint8
     ptr->DMA_BUS_MODE &= ~ENET_DMA_BUS_MODE_ATDS_MASK;
 #elif ENET_SOC_ALT_EHD_DES_LEN == ENET_SOC_ALT_EHD_DES_MAX_LEN
     ptr->DMA_BUS_MODE |= ENET_DMA_BUS_MODE_ATDS_MASK;
-    #endif
+#endif
 
     /* set the maximum enabled burst length */
     if (ENET_DMA_BUS_MODE_FB_GET(ptr->DMA_BUS_MODE) == 0) {
@@ -362,6 +539,14 @@ enet_frame_t enet_get_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, e
     uint32_t frame_length = 0;
     enet_frame_t frame = {0};
     enet_rx_desc_t *rx_desc_list_cur = *parent_rx_desc_list_cur;
+    enet_rx_desc_t *ls_desc = rx_desc_list_cur;
+
+    if (enet_rx_checksum_drop_frame(rx_frame_info, ls_desc)) {
+        enet_release_rx_frame_to_dma(rx_frame_info);
+        rx_desc_list_cur = (enet_rx_desc_t *)(ls_desc->rdes3_bm.next_desc);
+        *parent_rx_desc_list_cur = rx_desc_list_cur;
+        return frame;
+    }
 
     /* get the frame length of the received packet: substruct 4 bytes of the CRC */
     frame_length = rx_desc_list_cur->rdes0_bm.fl - 4;
@@ -369,6 +554,7 @@ enet_frame_t enet_get_received_frame(enet_rx_desc_t **parent_rx_desc_list_cur, e
 
     /* get the address of the first frame descriptor and the buffer start address */
     frame.rx_desc = rx_frame_info->fs_rx_desc;
+    frame.ls_rx_desc = rx_frame_info->ls_rx_desc;
     frame.buffer = rx_frame_info->fs_rx_desc->rdes2_bm.buffer1;
     frame.seg = rx_frame_info->seg_count;
 
@@ -422,6 +608,13 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
                 rx_frame_info->fs_rx_desc = rx_desc_list_cur;
             }
 
+            if (enet_rx_checksum_drop_frame(rx_frame_info, rx_desc_list_cur)) {
+                enet_release_rx_frame_to_dma(rx_frame_info);
+                rx_desc_list_cur = (enet_rx_desc_t *)(rx_desc_list_cur->rdes3_bm.next_desc);
+                *parent_rx_desc_list_cur = rx_desc_list_cur;
+                return frame;
+            }
+
             /* get the frame length of the received packet: substruct 4 bytes of the crc */
             frame.length = rx_desc_list_cur->rdes0_bm.fl - 4;
 
@@ -435,6 +628,7 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
 
             frame.seg = rx_frame_info->seg_count;
             frame.rx_desc = rx_frame_info->fs_rx_desc;
+            frame.ls_rx_desc = rx_frame_info->ls_rx_desc;
 
             rx_desc_list_cur = (enet_rx_desc_t *)(rx_desc_list_cur->rdes3_bm.next_desc);
             *parent_rx_desc_list_cur = rx_desc_list_cur;
@@ -444,6 +638,50 @@ enet_frame_t enet_get_received_frame_interrupt(enet_rx_desc_t **parent_rx_desc_l
     }
 
     return frame;
+}
+
+hpm_stat_t enet_get_rx_timestamp(const enet_rx_desc_t *ls_rx_desc, enet_ptp_ts_system_t *timestamp)
+{
+    if ((ls_rx_desc == NULL) || (timestamp == NULL)) {
+        return status_invalid_argument;
+    }
+
+    if (ls_rx_desc->rdes0_bm.ls == 0) {
+        return status_fail;
+    }
+
+#if ENET_SOC_ALT_EHD_DES_LEN == ENET_SOC_ALT_EHD_DES_MAX_LEN
+    /* Advanced Timestamp: RDES0[7] means Timestamp Available on last descriptor */
+    if (ls_rx_desc->rdes0_bm.ts_ip_gf == 0) {
+        return status_fail;
+    }
+    if (ls_rx_desc->rdes4_bm.ts_dp != 0) {
+        return status_fail;
+    }
+
+    timestamp->sec = ls_rx_desc->rdes7_bm.rtsh;
+    timestamp->nsec = ls_rx_desc->rdes6_bm.rtsl;
+    return status_success;
+#else
+    (void) timestamp;
+    return status_fail;
+#endif
+}
+
+uint32_t enet_get_tx_timestamp(enet_tx_desc_t *ls_tx_desc, enet_ptp_ts_system_t *timestamp)
+{
+    if ((ls_tx_desc == NULL) || (timestamp == NULL)) {
+        return ENET_ERROR;
+    }
+
+    if (enet_tx_wait_timestamp_ready(ls_tx_desc) != ENET_SUCCESS) {
+        return ENET_ERROR;
+    }
+
+    timestamp->sec = ls_tx_desc->tdes7_bm.ttsh;
+    timestamp->nsec = ls_tx_desc->tdes6_bm.ttsl;
+
+    return ENET_SUCCESS;
 }
 
 void enet_get_default_tx_control_config(ENET_Type *ptr, enet_tx_control_config_t *config)
@@ -457,6 +695,83 @@ void enet_get_default_tx_control_config(ENET_Type *ptr, enet_tx_control_config_t
     config->cic         = enet_cic_ip_pseudoheader;
     config->vlic        = enet_vlic_disable;
     config->saic        = enet_saic_disable;
+}
+
+void enet_tx_control_set_hw_crc_mode(ENET_Type *ptr, enet_tx_control_config_t *config, enet_tx_hw_crc_mode_t mode)
+{
+    (void) ptr;
+
+    if (config == NULL) {
+        return;
+    }
+
+    if (mode == enet_tx_hw_crc_append) {
+        /* MAC appends FCS after the payload */
+        config->disable_crc = false;
+        config->enable_crcr = false;
+    } else if (mode == enet_tx_hw_crc_replace) {
+        /* MAC replaces the last 4 bytes with FCS */
+        config->disable_crc = true;
+        config->enable_crcr = true;
+    } else {
+        /* MAC does not append or replace FCS */
+        config->disable_crc = true;
+        config->enable_crcr = false;
+    }
+}
+
+void enet_get_default_hw_checksum_config(enet_hw_checksum_config_t *cfg, bool enable)
+{
+    if (cfg == NULL) {
+        return;
+    }
+
+    cfg->tx_checksum_offload = enable;
+    cfg->rx_checksum_offload = enable;
+    cfg->drop_tcp_udp_err = enable;
+}
+
+hpm_stat_t enet_set_hw_checksum_config(ENET_Type *ptr, enet_tx_control_config_t *tx_cfg, const enet_hw_checksum_config_t *cfg)
+{
+    if ((ptr == NULL) || (tx_cfg == NULL) || (cfg == NULL)) {
+        return status_invalid_argument;
+    }
+
+    /* TX CIC: HW insert IP/L4 checksum or disable for stack SW checksum */
+    tx_cfg->cic = cfg->tx_checksum_offload ? enet_cic_ip_pseudoheader : enet_cic_disable;
+
+    if (cfg->rx_checksum_offload) {
+        ptr->MACCFG |= ENET_MACCFG_IPC_MASK;
+        if (cfg->drop_tcp_udp_err) {
+            /* DT clear: MAC drops IPC checksum-error frames before DMA */
+            ptr->DMA_OP_MODE &= ~ENET_DMA_OP_MODE_DT_MASK;
+        } else {
+            /* DT set: checksum-error frames reach DMA; driver drops via rdes4 */
+            ptr->DMA_OP_MODE |= ENET_DMA_OP_MODE_DT_MASK;
+        }
+    } else {
+        /* IPC off: DT is reserved; drop_tcp_udp_err has no effect */
+        ptr->MACCFG &= ~ENET_MACCFG_IPC_MASK;
+    }
+
+    return status_success;
+}
+
+void enet_get_rx_checksum_status(const enet_rx_desc_t *desc, enet_rx_checksum_status_t *status)
+{
+    if ((desc == NULL) || (status == NULL)) {
+        return;
+    }
+
+#if ENET_SOC_ALT_EHD_DES_LEN == ENET_SOC_ALT_EHD_DES_MAX_LEN
+    status->ipv4_received = (desc->rdes4_bm.ipv4_pkt_received != 0);
+    status->header_err = (desc->rdes4_bm.ip_header_err != 0);
+    status->payload_err = (desc->rdes4_bm.ip_payload_err != 0);
+    status->chksum_bypassed = (desc->rdes4_bm.ip_chksum_bypassed != 0);
+#else
+    (void)desc;
+    (void)status;
+#endif
 }
 
 void enet_get_default_interrupt_config(ENET_Type *ptr, enet_int_config_t *config)
@@ -480,262 +795,167 @@ uint32_t enet_prepare_tx_desc_with_ts_record(ENET_Type *ptr,
                                              uint16_t frame_length, uint16_t tx_buff_size,
                                              enet_ptp_ts_system_t *timestamp)
 {
-    uint32_t buf_count = 0, size = 0, i = 0;
-    uint32_t retry_cnt = ENET_RETRY_CNT;
-    volatile enet_tx_desc_t *dma_tx_desc;
+    uint32_t buf_count = 0;
+    uint32_t size = 0;
+    uint32_t i = 0;
     enet_tx_desc_t *tx_desc_list_cur = *parent_tx_desc_list_cur;
+    enet_tx_desc_t *dma_tx_desc;
+    enet_tx_desc_t *seg_desc[ENET_TX_DESC_SEGMENT_MAX];
+    enet_tx_desc_t *last_desc;
 
-    if (tx_buff_size == 0) {
+    if ((tx_buff_size == 0) || (config == NULL) || (parent_tx_desc_list_cur == NULL) || (tx_desc_list_cur == NULL)) {
         return ENET_ERROR;
     }
-    /* check if the descriptor is owned by the Ethernet DMA (when set) or CPU (when reset) */
+
+    buf_count = enet_tx_calc_buf_count(frame_length, tx_buff_size);
+    if ((buf_count == 0) || (buf_count > ENET_TX_DESC_SEGMENT_MAX)) {
+        return ENET_ERROR;
+    }
 
     dma_tx_desc = tx_desc_list_cur;
-
-    if (frame_length > tx_buff_size) {
-        buf_count = frame_length / tx_buff_size;
-        if (frame_length % tx_buff_size) {
-            buf_count++;
+    for (i = 0; i < buf_count; i++) {
+        if (dma_tx_desc->tdes0_bm.own != 0) {
+            return ENET_ERROR;
         }
-    } else {
-        buf_count = 1;
-    }
-
-    if (buf_count == 1) {
-        /*set the last and the first segment */
-        dma_tx_desc->tdes0_bm.own  = 0;
-        dma_tx_desc->tdes0_bm.fs   = 1;
-        dma_tx_desc->tdes0_bm.ls   = 1;
-        dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
-        dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
-        dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
-        dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
-        dma_tx_desc->tdes0_bm.cic  = config->cic;
-        dma_tx_desc->tdes0_bm.vlic = config->vlic;
-        dma_tx_desc->tdes0_bm.ttse = config->enable_ttse;
-        dma_tx_desc->tdes1_bm.saic = config->saic;
-        /* set the frame size */
-        dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
-        /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-        ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
-
-        if (dma_tx_desc->tdes0_bm.ttse == true) {
-            do {
-
-            } while (dma_tx_desc->tdes0_bm.own == 1 && retry_cnt-- > 0);
-
-            if (retry_cnt == 0) {
-                return ENET_ERROR;
-            }
-
-            timestamp->sec  = dma_tx_desc->tdes7_bm.ttsh;
-            timestamp->nsec = dma_tx_desc->tdes6_bm.ttsl;
-        }
-
+        seg_desc[i] = dma_tx_desc;
         dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
-    } else {
-        for (i = 0; i < buf_count; i++) {
-            /* get the next available tx descriptor */
-            dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
+    }
 
-            /* clear first and last segment bits */
-            dma_tx_desc->tdes0_bm.fs = 0;
-            dma_tx_desc->tdes0_bm.ls = 0;
-
-            if (i == 0) {
-                /* setting the first segment bit */
-                dma_tx_desc->tdes0_bm.fs = 1;
-                dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
-                dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
-                dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
-                dma_tx_desc->tdes0_bm.cic  = config->cic;
-                dma_tx_desc->tdes0_bm.vlic = config->vlic;
-                dma_tx_desc->tdes0_bm.ttse = config->enable_ttse;
-                dma_tx_desc->tdes1_bm.saic = config->saic;
-
-                if (dma_tx_desc->tdes0_bm.ttse == true) {
-                    do {
-
-                    } while (dma_tx_desc->tdes0_bm.own == 1 && retry_cnt-- > 0);
-
-                    if (retry_cnt == 0) {
-                        return ENET_ERROR;
-                    }
-
-                    timestamp->sec  = dma_tx_desc->tdes7_bm.ttsh;
-                    timestamp->nsec = dma_tx_desc->tdes6_bm.ttsl;
-                }
-            }
-
-            /* set the buffer 1 size */
-            dma_tx_desc->tdes1_bm.tbs1 = (tx_buff_size & ENET_DMATxDesc_TBS1);
-
-            if (i == (buf_count - 1)) {
-                /* set the last segment bit */
-                dma_tx_desc->tdes0_bm.ls = 1;
-                dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
+    for (i = 0; i < buf_count; i++) {
+        dma_tx_desc = seg_desc[i];
+        if (i == (buf_count - 1)) {
+            if (buf_count == 1) {
+                size = frame_length;
+            } else {
                 size = frame_length - (buf_count - 1) * tx_buff_size;
-                dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
-
-                /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-                ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
             }
+        } else {
+            size = tx_buff_size;
+        }
+        enet_tx_desc_fill_segment(dma_tx_desc, config, dma_tx_desc->tdes2_bm.buffer1, (uint16_t)size,
+                                  (i == 0), (i == (buf_count - 1)));
+    }
+
+    last_desc = seg_desc[buf_count - 1];
+    enet_tx_desc_handoff_segments(ptr, seg_desc, buf_count);
+
+    if (config->enable_ttse == true) {
+        if (enet_get_tx_timestamp(last_desc, timestamp) != ENET_SUCCESS) {
+            return ENET_ERROR;
         }
     }
 
-    tx_desc_list_cur = (enet_tx_desc_t *)dma_tx_desc;
-    *parent_tx_desc_list_cur = tx_desc_list_cur;
+    *parent_tx_desc_list_cur = (enet_tx_desc_t *)(last_desc->tdes3_bm.next_desc);
 
     return ENET_SUCCESS;
 }
 
 uint32_t enet_prepare_tx_desc(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, enet_tx_control_config_t *config, uint16_t frame_length, uint16_t tx_buff_size)
 {
-    uint32_t buf_count = 0, size = 0, i = 0;
-    volatile enet_tx_desc_t *dma_tx_desc;
+    uint32_t buf_count = 0;
+    uint32_t size = 0;
+    uint32_t i = 0;
     enet_tx_desc_t *tx_desc_list_cur = *parent_tx_desc_list_cur;
+    enet_tx_desc_t *dma_tx_desc;
+    enet_tx_desc_t *seg_desc[ENET_TX_DESC_SEGMENT_MAX];
+    enet_tx_desc_t *last_desc;
 
-    if (tx_buff_size == 0) {
+    if ((tx_buff_size == 0) || (config == NULL) || (parent_tx_desc_list_cur == NULL) || (tx_desc_list_cur == NULL)) {
         return ENET_ERROR;
     }
-    /* check if the descriptor is owned by the Ethernet DMA (when set) or CPU (when reset) */
+
+    buf_count = enet_tx_calc_buf_count(frame_length, tx_buff_size);
+    if ((buf_count == 0) || (buf_count > ENET_TX_DESC_SEGMENT_MAX)) {
+        return ENET_ERROR;
+    }
+
     dma_tx_desc = tx_desc_list_cur;
-    if (frame_length > tx_buff_size) {
-        buf_count = frame_length / tx_buff_size;
-        if (frame_length % tx_buff_size) {
-            buf_count++;
+    for (i = 0; i < buf_count; i++) {
+        if (dma_tx_desc->tdes0_bm.own != 0) {
+            return ENET_ERROR;
         }
-    } else {
-        buf_count = 1;
-    }
-
-    if (buf_count == 1) {
-        /*set the last and the first segment */
-        dma_tx_desc->tdes0_bm.own  = 0;
-        dma_tx_desc->tdes0_bm.fs   = 1;
-        dma_tx_desc->tdes0_bm.ls   = 1;
-        dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
-        dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
-        dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
-        dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
-        dma_tx_desc->tdes0_bm.cic  = config->cic;
-        dma_tx_desc->tdes0_bm.vlic = config->vlic;
-        dma_tx_desc->tdes1_bm.saic = config->saic;
-        /* set the frame size */
-        dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
-        /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-        ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
-
+        seg_desc[i] = dma_tx_desc;
         dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
-    } else {
-        for (i = 0; i < buf_count; i++) {
-            /* clear first and last segment bits */
-            dma_tx_desc->tdes0_bm.fs = 0;
-            dma_tx_desc->tdes0_bm.ls = 0;
-
-            if (i == 0) {
-                /* setting the first segment bit */
-                dma_tx_desc->tdes0_bm.fs = 1;
-                dma_tx_desc->tdes0_bm.dc   = config->disable_crc;
-                dma_tx_desc->tdes0_bm.dp   = config->disable_pad;
-                dma_tx_desc->tdes0_bm.crcr = config->enable_crcr;
-                dma_tx_desc->tdes0_bm.cic  = config->cic;
-                dma_tx_desc->tdes0_bm.vlic = config->vlic;
-                dma_tx_desc->tdes1_bm.saic = config->saic;
-            }
-
-            /* set the buffer 1 size */
-            dma_tx_desc->tdes1_bm.tbs1 = (tx_buff_size & ENET_DMATxDesc_TBS1);
-
-            if (i == (buf_count - 1)) {
-                /* set the last segment bit */
-                dma_tx_desc->tdes0_bm.ls = 1;
-                dma_tx_desc->tdes0_bm.ic   = config->enable_ioc;
-                size = frame_length - (buf_count - 1) * tx_buff_size;
-                dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
-
-                /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-                ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
-            }
-
-            dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
-        }
     }
 
-    tx_desc_list_cur = (enet_tx_desc_t *)dma_tx_desc;
-    *parent_tx_desc_list_cur = tx_desc_list_cur;
+    for (i = 0; i < buf_count; i++) {
+        dma_tx_desc = seg_desc[i];
+        if (i == (buf_count - 1)) {
+            if (buf_count == 1) {
+                size = frame_length;
+            } else {
+                size = frame_length - (buf_count - 1) * tx_buff_size;
+            }
+        } else {
+            size = tx_buff_size;
+        }
+        enet_tx_desc_fill_segment(dma_tx_desc, config, dma_tx_desc->tdes2_bm.buffer1, (uint16_t)size,
+                                  (i == 0), (i == (buf_count - 1)));
+    }
+
+    last_desc = seg_desc[buf_count - 1];
+    enet_tx_desc_handoff_segments(ptr, seg_desc, buf_count);
+    *parent_tx_desc_list_cur = (enet_tx_desc_t *)(last_desc->tdes3_bm.next_desc);
 
     return ENET_SUCCESS;
 }
 
 uint32_t enet_prepare_transmission_descriptors(ENET_Type *ptr, enet_tx_desc_t **parent_tx_desc_list_cur, uint16_t frame_length, uint16_t tx_buff_size)
 {
-    uint32_t buf_count = 0, size = 0, i = 0;
-    volatile enet_tx_desc_t *dma_tx_desc;
-    enet_tx_desc_t  *tx_desc_list_cur = *parent_tx_desc_list_cur;
+    uint32_t buf_count = 0;
+    uint32_t size = 0;
+    uint32_t i = 0;
+    enet_tx_desc_t *tx_desc_list_cur = *parent_tx_desc_list_cur;
+    enet_tx_desc_t *dma_tx_desc;
+    enet_tx_desc_t *seg_desc[ENET_TX_DESC_SEGMENT_MAX];
+    enet_tx_desc_t *last_desc;
+    enet_tx_control_config_t legacy_cfg;
 
-    if (tx_buff_size == 0) {
+    if ((tx_buff_size == 0) || (parent_tx_desc_list_cur == NULL) || (tx_desc_list_cur == NULL)) {
         return ENET_ERROR;
     }
-    /* check if the descriptor is owned by the Ethernet DMA (when set) or CPU (when reset) */
+
+    buf_count = enet_tx_calc_buf_count(frame_length, tx_buff_size);
+    if ((buf_count == 0) || (buf_count > ENET_TX_DESC_SEGMENT_MAX)) {
+        return ENET_ERROR;
+    }
+
+    legacy_cfg.disable_crc = true;
+    legacy_cfg.disable_pad = false;
+    legacy_cfg.enable_crcr = true;
+    legacy_cfg.enable_ttse = false;
+    legacy_cfg.enable_ioc = false;
+    legacy_cfg.cic = 3;
+    legacy_cfg.saic = 2;
+    legacy_cfg.vlic = 0;
+
     dma_tx_desc = tx_desc_list_cur;
-    if (frame_length > tx_buff_size) {
-        buf_count = frame_length / tx_buff_size;
-        if (frame_length % tx_buff_size) {
-            buf_count++;
+    for (i = 0; i < buf_count; i++) {
+        if (dma_tx_desc->tdes0_bm.own != 0) {
+            return ENET_ERROR;
         }
-    } else {
-        buf_count = 1;
-    }
-
-    if (buf_count == 1) {
-        /*set the last and the first segment */
-        dma_tx_desc->tdes0_bm.own = 0;
-        dma_tx_desc->tdes0_bm.ic = 0;
-        dma_tx_desc->tdes0_bm.fs = 1;
-        dma_tx_desc->tdes0_bm.ls = 1;
-        dma_tx_desc->tdes0_bm.dc = 1;
-        dma_tx_desc->tdes0_bm.dp = 0;
-        dma_tx_desc->tdes0_bm.crcr = 1;
-        dma_tx_desc->tdes0_bm.cic = 3;
-        dma_tx_desc->tdes1_bm.saic = 2;
-
-        /* set the frame size */
-        dma_tx_desc->tdes1_bm.tbs1 = (frame_length & ENET_DMATxDesc_TBS1);
-        /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-        ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
-
+        seg_desc[i] = dma_tx_desc;
         dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
-    } else {
-        for (i = 0; i < buf_count; i++) {
-            /* clear first and last segment bits */
-            dma_tx_desc->tdes0_bm.fs = 0;
-            dma_tx_desc->tdes0_bm.ls = 0;
-
-            if (i == 0) {
-                /* setting the first segment bit */
-                dma_tx_desc->tdes0_bm.fs = 1;
-            }
-
-            /* set the buffer 1 size */
-            dma_tx_desc->tdes1_bm.tbs1 = (tx_buff_size & ENET_DMATxDesc_TBS1);
-
-            if (i == (buf_count - 1)) {
-                /* set the last segment bit */
-                dma_tx_desc->tdes0_bm.ls = 1;
-                size = frame_length - (buf_count - 1) * tx_buff_size;
-                dma_tx_desc->tdes1_bm.tbs1 = (size & ENET_DMATxDesc_TBS1);
-
-                /* set own bit of the Tx descriptor status: gives the buffer back to Ethernet DMA */
-                ENET_TX_DESC_RELEASE_TO_DMA(dma_tx_desc, ptr);
-            }
-
-            dma_tx_desc = (enet_tx_desc_t *)(dma_tx_desc->tdes3_bm.next_desc);
-        }
     }
 
-    tx_desc_list_cur = (enet_tx_desc_t *)dma_tx_desc;
-    *parent_tx_desc_list_cur = tx_desc_list_cur;
+    for (i = 0; i < buf_count; i++) {
+        dma_tx_desc = seg_desc[i];
+        if (i == (buf_count - 1)) {
+            if (buf_count == 1) {
+                size = frame_length;
+            } else {
+                size = frame_length - (buf_count - 1) * tx_buff_size;
+            }
+        } else {
+            size = tx_buff_size;
+        }
+        enet_tx_desc_fill_segment(dma_tx_desc, &legacy_cfg, dma_tx_desc->tdes2_bm.buffer1, (uint16_t)size,
+                                  (i == 0), (i == (buf_count - 1)));
+    }
+
+    last_desc = seg_desc[buf_count - 1];
+    enet_tx_desc_handoff_segments(ptr, seg_desc, buf_count);
+    *parent_tx_desc_list_cur = (enet_tx_desc_t *)(last_desc->tdes3_bm.next_desc);
 
     return ENET_SUCCESS;
 }
@@ -757,8 +977,13 @@ void enet_dma_tx_desc_chain_init(ENET_Type *ptr, enet_desc_t *desc)
         /* set second address chained bit */
         dma_tx_desc->tdes0_bm.tch = 1;
 
-        /* set buffer 1 address pointer */
-        dma_tx_desc->tdes2_bm.buffer1 = (uint32_t)(&((uint8_t *)desc->tx_buff_cfg.buffer)[i * desc->tx_buff_cfg.size]);
+        /*
+         * Set buffer1 when a TX ring buffer is provided. If buffer is 0,
+         * leave buffer1 unset so zero-copy TX can fill it per frame.
+         */
+        if (desc->tx_buff_cfg.buffer != 0) {
+            dma_tx_desc->tdes2_bm.buffer1 = (uint32_t)(&((uint8_t *)desc->tx_buff_cfg.buffer)[i * desc->tx_buff_cfg.size]);
+        }
 
         /* link all Tx descriptors */
         if (i < desc->tx_buff_cfg.count - 1) {
@@ -781,6 +1006,8 @@ void enet_dma_rx_desc_chain_init(ENET_Type *ptr,  enet_desc_t *desc)
 
     /* set the rx_desc_list_cur pointer with the first one of the dma_rx_desc_tab list */
     desc->rx_desc_list_cur = desc->rx_desc_list_head;
+    /* enet_rx_checksum_drop_frame reads MACCFG IPC and DMA DT */
+    desc->rx_frame_info.base = ptr;
     /* fill each dma_rx_desc descriptor with the right values */
     for (i = 0; i < desc->rx_buff_cfg.count; i++) {
         /* get the pointer on the ith member of the Rx desc list */

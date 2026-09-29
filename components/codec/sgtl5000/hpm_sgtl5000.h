@@ -945,6 +945,81 @@ void sgtl_set_master_mode(codec_control_t *context, bool master);
 hpm_stat_t sgtl_set_volume(codec_control_t *context, sgtl_module_t module, uint32_t volume);
 
 /*!
+ * @brief Get the valid volume range in dB for the specified module.
+ *
+ * This function returns the minimum and maximum volume in dB that the specified module accepts.
+ *
+ * sgtl_module_adc volume range:     0dB to +22.5dB (1.5dB per step).
+ * sgtl_module_dac volume range:     -90dB to 0dB (0.5dB per step).
+ * sgtl_module_hp volume range:      -51.5dB to +12dB (0.5dB per step).
+ * sgtl_module_lineout volume range: -8dB to +7.5dB (0.5dB per step). 0dB is the full-scale
+ *                                    setting of LO_VOL (0x0F), valid when VAG_VAL equals
+ *                                    LO_VAGCNTRL (both reset to 0.8V and kept unchanged).
+ *
+ * @param module Module to get the volume range for, it can be ADC, DAC, HP and lineout.
+ * @param min_db Pointer to store the minimum volume in dB.
+ * @param max_db Pointer to store the maximum volume in dB.
+ * @return status_success if successful, status_invalid_argument if module is invalid.
+ */
+hpm_stat_t sgtl_get_volume_db_range(sgtl_module_t module, float *min_db, float *max_db);
+
+/*!
+ * @brief Set the volume of different modules in sgtl5000, in decibels.
+ *
+ * This function converts the target volume in dB to the register value according
+ * to the datasheet, then sets the volume for the specified module.
+ * The function assumes that left channel and right channel have the same volume.
+ *
+ * sgtl_module_adc volume range:     0dB to +22.5dB (1.5dB per step).
+ * sgtl_module_dac volume range:     -90dB to 0dB (0.5dB per step).
+ * sgtl_module_hp volume range:      -51.5dB to +12dB (0.5dB per step).
+ * sgtl_module_lineout volume range: -8dB to +7.5dB (0.5dB per step). 0dB is the full-scale
+ *                                    setting of LO_VOL (0x0F), valid when VAG_VAL equals
+ *                                    LO_VAGCNTRL (both reset to 0.8V and kept unchanged).
+ *
+ * @param context Sgtl5000 context structure.
+ * @param module Module to set volume, it can be ADC, DAC, HP and lineout.
+ * @param volume_db Target volume in dB.
+ * @return status_success if successful, status_invalid_argument if module is invalid or volume_db is out of range.
+ */
+hpm_stat_t sgtl_set_volume_db(codec_control_t *context, sgtl_module_t module, float volume_db);
+
+/*!
+ * @brief Clamp the volume in dB to the valid range of the specified module.
+ *
+ * This function limits the input volume in dB to the valid range of the specified
+ * module and stores the clamped value via clamped_db. A typical usage is to clamp
+ * a desired volume before passing it to sgtl_set_volume_db().
+ *
+ * @param module Module to clamp the volume for, it can be ADC, DAC, HP and lineout.
+ * @param volume_db Desired volume in dB.
+ * @param clamped_db Pointer to store the volume in dB clamped to the valid range of the module.
+ * @return status_success if successful, status_invalid_argument if module is invalid.
+ */
+hpm_stat_t sgtl_clamp_volume_db(sgtl_module_t module, float volume_db, float *clamped_db);
+
+/*!
+ * @brief Set the volume of different modules in sgtl5000, in percent of the full volume range.
+ *
+ * This function converts the volume percent to the register value and sets the
+ * volume for the specified module. The percent maps linearly onto the module's
+ * full dB range: 0 percent is the minimum volume (not mute) and 100 percent is
+ * the maximum volume of the module. Use sgtl_set_mute() to mute a module.
+ * The function assumes that left channel and right channel have the same volume.
+ *
+ * sgtl_module_adc volume range:     0dB to +22.5dB (1.5dB per step).
+ * sgtl_module_dac volume range:     -90dB to 0dB (0.5dB per step).
+ * sgtl_module_hp volume range:      -51.5dB to +12dB (0.5dB per step).
+ * sgtl_module_lineout volume range: -8dB to +7.5dB (0.5dB per step).
+ *
+ * @param context Sgtl5000 context structure.
+ * @param module Module to set volume, it can be ADC, DAC, HP and lineout.
+ * @param volume_percent Volume in percent of the full volume range, valid range: 0 to 100.
+ * @return status_success if successful, status_invalid_argument if module is invalid or volume_percent is out of range.
+ */
+hpm_stat_t sgtl_set_volume_percent(codec_control_t *context, sgtl_module_t module, int8_t volume_percent);
+
+/*!
  * @brief Get the volume of different modules in sgtl5000.
  *
  * This function gets the volume of sgtl5000 modules. This interface get DAC module volume.

@@ -6251,14 +6251,14 @@ should set to (21-convert_clock_number+1).</description>
           <fields>
             <field>
               <name>SFTRST_RX</name>
-              <description>software reset the RX module if asserted to be 1'b1. Self-clear.</description>
+              <description>software reset the RX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.</description>
               <bitOffset>18</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
             </field>
             <field>
               <name>SFTRST_TX</name>
-              <description>software reset the TX module if asserted to be 1'b1. Self-clear.</description>
+              <description>software reset the TX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.</description>
               <bitOffset>17</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -6455,8 +6455,32 @@ This bit controls the generation of an interrupt when an error condition  (UD, O
           <addressOffset>0x10</addressOffset>
           <size>32</size>
           <resetValue>0x00000000</resetValue>
-          <resetMask>0xFFFFFFFF</resetMask>
+          <resetMask>0xFFC1FFFF</resetMask>
           <fields>
+            <field>
+              <name>SFTRST_RX_DONE</name>
+              <description>1：indicate that the software reset of CTRL[SFTRST_RX] is finished.
+0: cleared automatically when configuring  CTRL[SFTRST_RX]=1.</description>
+              <bitOffset>24</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>SFTRST_TX_DONE</name>
+              <description>1：indicate that the software reset of CTRL[SFTRST_TX] is finished.
+0: cleared automatically when configuring  CTRL[SFTRST_TX]=1.</description>
+              <bitOffset>23</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
+            <field>
+              <name>SFTRST_CLKGEN_DONE</name>
+              <description>1：indicate that the software reset of CTRL[SFTRST_CLKGEN] is finished.
+0: cleared automatically when configuring  CTRL[SFTRST_CLKGEN]=1.</description>
+              <bitOffset>22</bitOffset>
+              <bitWidth>1</bitWidth>
+              <access>read-only</access>
+            </field>
             <field>
               <name>TX_UD</name>
               <description>Asserted when tx fifo is underflow. Should be ANDed with CTRL[tx_en] the for correct value. Write 1 to any of these 4 bits will clear the underflow error.</description>
@@ -29959,7 +29983,7 @@ Only used in device operation mode.</description>
 SOF Received - R/WC.
 When the device controller detects a Start Of (micro) Frame, this bit will be set to a one.
 When a SOF is extremely late, the device controller will automatically set this bit to indicate that an SOF was expected.
-Therefore, this bit will be set roughly every 1ms in device FS mode and every 125ms in HS mode and will be synchronized to the actual SOF that is received.
+Therefore, this bit will be set roughly every 1ms in device FS mode and every 125us in HS mode and will be synchronized to the actual SOF that is received.
 Because the device controller is initialized to FS before connect, this bit will be set at an interval of 1ms during the prelude to connect and chirp.
 In host mode, this bit will be set every 125us and can be used by host controller driver as a time base.
 Software writes a 1 to this bit to clear it.</description>

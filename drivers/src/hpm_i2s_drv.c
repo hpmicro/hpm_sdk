@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023 HPMicro
+ * Copyright (c) 2021-2023,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -13,8 +13,29 @@
 #define HPM_I2S_BCLK_TOLERANCE (4U)
 #endif
 
+#ifndef HPM_I2S_SOFTWARE_RESET_DELAY
+#define HPM_I2S_SOFTWARE_RESET_DELAY (10000U)
+#endif
+
+/* Wrapper macros for resetting each sub-module. */
+#if defined(HPM_IP_FEATURE_I2S_HAS_SOFTWARE_RESET_STATUS) && (HPM_IP_FEATURE_I2S_HAS_SOFTWARE_RESET_STATUS)
+#define I2S_DO_TX_RESET(ptr)     i2s_do_software_reset(ptr, I2S_CTRL_SFTRST_TX_MASK,    I2S_STA_SFTRST_TX_DONE_MASK)
+#define I2S_DO_RX_RESET(ptr)     i2s_do_software_reset(ptr, I2S_CTRL_SFTRST_RX_MASK,    I2S_STA_SFTRST_RX_DONE_MASK)
+#define I2S_DO_CLKGEN_RESET(ptr) i2s_do_software_reset(ptr, I2S_CTRL_SFTRST_CLKGEN_MASK, I2S_STA_SFTRST_CLKGEN_DONE_MASK)
+#else
+#define I2S_DO_TX_RESET(ptr)     i2s_do_software_reset(ptr, I2S_CTRL_SFTRST_TX_MASK,    0U)
+#define I2S_DO_RX_RESET(ptr)     i2s_do_software_reset(ptr, I2S_CTRL_SFTRST_RX_MASK,    0U)
+#define I2S_DO_CLKGEN_RESET(ptr) i2s_do_software_reset(ptr, I2S_CTRL_SFTRST_CLKGEN_MASK, 0U)
+#endif
+
 #define HPM_I2S_SLOT_MASK I2S_TXDSLOT_EN_MASK /* TX/RX has same SLOT MASK */
 
+/* Clock configuration backup used during software reset */
+typedef struct {
+    uint32_t cfgr;
+    uint32_t misc_cfgr;
+    bool changed;
+} i2s_cfg_backup_t;
 
 static bool i2s_audio_depth_is_valid(uint8_t bits)
 {
@@ -32,6 +53,30 @@ static bool i2s_channel_length_is_valid(uint8_t bits)
         return true;
     }
     return false;
+}
+
+/* The software reset relies on a working internal BCLK */
+static bool i2s_internal_bclk_is_valid(I2S_Type *ptr)
+{
+    uint32_t cfgr = ptr->CFGR;
+    uint32_t misc_cfgr = ptr->MISC_CFGR;
+
+    /* Internal BCLK is valid when:
+     * - BCLK source is internal (BCLK_SEL_OP = 0)
+     * - BCLK is not gated off (BCLK_GATEOFF = 0)
+     * - MCLK is not gated off (MCLK_GATEOFF = 0, BCLK is derived from MCLK)
+     * - BCLK divider is non-zero
+     */
+    if ((cfgr & (I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK)) != 0U) {
+        return false;
+    }
+    if ((misc_cfgr & I2S_MISC_CFGR_MCLK_GATEOFF_MASK) != 0U) {
+        return false;
+    }
+    if (I2S_CFGR_BCLK_DIV_GET(cfgr) == 0U) {
+        return false;
+    }
+    return true;
 }
 
 /* work around: fill dummy data into TX fifo to avoid TX underflow during tx start */
@@ -55,28 +100,146 @@ hpm_stat_t i2s_fill_tx_dummy_data(I2S_Type *ptr, i2s_line_num_t data_line, uint8
     return status_success;
 }
 
-/* The I2S software reset function relies on a working BCLK */
-void i2s_reset_all(I2S_Type *ptr)
+
+/* Reset an I2S sub-module (TX/RX/CLKGEN) by software.
+ * If sta_mask is non-zero, poll STA[sta_mask] for self-clear; otherwise fall
+ * back to a fixed delay loop for SOCs without a software-reset-done bit.
+ */
+static hpm_stat_t i2s_do_software_reset(I2S_Type *ptr, uint32_t ctrl_mask, uint32_t sta_mask)
 {
-    uint32_t cfgr_temp, misc_cfgr_temp;
+    uint32_t retry = 0;
+
+    /* software reset */
+    ptr->CTRL |= ctrl_mask;
+    ptr->CTRL &= ~ctrl_mask;
+
+    if (sta_mask != 0U) {
+        while ((ptr->STA & sta_mask) == 0U) {
+            if (retry > HPM_I2S_DRV_DEFAULT_RETRY_COUNT) {
+                return status_timeout;
+            }
+            retry++;
+        }
+    } else {
+        /* No reset-done bit on this SOC, delay as fallback */
+        for (volatile uint32_t i = 0; i < HPM_I2S_SOFTWARE_RESET_DELAY; i++) {
+        }
+    }
+
+    return status_success;
+}
+
+/* Restore the clock configuration saved by i2s_prepare_bclk_for_reset */
+static void i2s_restore_clk_config(I2S_Type *ptr, const i2s_cfg_backup_t *backup)
+{
+    if (backup->changed) {
+        ptr->CFGR = backup->cfgr;
+        ptr->MISC_CFGR = backup->misc_cfgr;
+    }
+}
+
+/* The software reset relies on a valid BCLK. Save the current clock
+ * configuration and switch to internal BCLK if the current BCLK is not valid
+ */
+static hpm_stat_t i2s_prepare_bclk_for_reset(I2S_Type *ptr, i2s_cfg_backup_t *backup)
+{
+    hpm_stat_t status = status_success;
+    backup->changed = false;
+    if (i2s_internal_bclk_is_valid(ptr)) {
+        return status;
+    }
+    backup->changed = true;
+    backup->cfgr = ptr->CFGR;
+    backup->misc_cfgr = ptr->MISC_CFGR;
+    ptr->CFGR = 0x0020008d;
+
+    /* workaround for SFTRST_CLKGEN timing */
+    ptr->MISC_CFGR |= I2S_MISC_CFGR_MCLK_GATEOFF_MASK; /* gateoff MCLK */
+
+    for (volatile uint32_t i = 0; i < HPM_I2S_SOFTWARE_RESET_DELAY; i++) {  /* delay */
+    }
+
+    ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK; /* open MCLK */
+
+    status = I2S_DO_CLKGEN_RESET(ptr);
+
+    if (status != status_success) {
+        i2s_restore_clk_config(ptr, backup);
+        backup->changed = false;
+    }
+
+    return status;
+}
+
+
+hpm_stat_t i2s_reset_tx(I2S_Type *ptr)
+{
+    i2s_cfg_backup_t cfg_backup;
+    hpm_stat_t status = status_timeout;
+
+    /* disable I2S TX module */
+    ptr->CTRL &= ~I2S_CTRL_TX_EN_MASK;
+
+    /* Software reset relies on a valid BCLK, switch to internal BCLK if needed */
+     status = i2s_prepare_bclk_for_reset(ptr, &cfg_backup);
+
+    if (status == status_success) {
+        status = I2S_DO_TX_RESET(ptr);
+    }
+
+    i2s_restore_clk_config(ptr, &cfg_backup);
+
+    return status;
+}
+
+hpm_stat_t i2s_reset_rx(I2S_Type *ptr)
+{
+    i2s_cfg_backup_t cfg_backup;
+    hpm_stat_t status = status_timeout;
+
+    /* disable I2S RX module */
+    ptr->CTRL &= ~I2S_CTRL_RX_EN_MASK;
+
+    /* Software reset relies on a valid BCLK, switch to internal BCLK if needed */
+    status = i2s_prepare_bclk_for_reset(ptr, &cfg_backup);
+
+    if (status == status_success) {
+        status = I2S_DO_RX_RESET(ptr);
+    }
+
+    i2s_restore_clk_config(ptr, &cfg_backup);
+
+    return status;
+}
+
+hpm_stat_t i2s_reset_tx_rx(I2S_Type *ptr)
+{
+    return i2s_reset_all(ptr);
+}
+
+/* The I2S software reset function relies on a working BCLK */
+hpm_stat_t i2s_reset_all(I2S_Type *ptr)
+{
+    i2s_cfg_backup_t cfg_backup;
+    hpm_stat_t status = status_timeout;
 
     /* disable I2S */
     ptr->CTRL &= ~I2S_CTRL_I2S_EN_MASK;
 
-    /* enable internal clock for software reset function */
-    cfgr_temp = ptr->CFGR;
-    ptr->CFGR |= I2S_CFGR_BCLK_DIV_SET(1);
-    ptr->CFGR &= ~(I2S_CFGR_MCK_SEL_OP_MASK | I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_FCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK);
-    misc_cfgr_temp = ptr->MISC_CFGR;
-    ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
+    /* Software reset relies on a valid BCLK, switch to internal BCLK if needed */
+    status = i2s_prepare_bclk_for_reset(ptr, &cfg_backup);
 
-    /* reset function block and clear fifo */
-    ptr->CTRL |= (I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
-    ptr->CTRL &= ~(I2S_CTRL_TXFIFOCLR_MASK | I2S_CTRL_RXFIFOCLR_MASK | I2S_CTRL_SFTRST_CLKGEN_MASK | I2S_CTRL_SFTRST_TX_MASK | I2S_CTRL_SFTRST_RX_MASK);
+    /* Reset TX and RX sequentially, they cannot be asserted at the same time */
+    if (status == status_success) {
+        status = I2S_DO_TX_RESET(ptr);
+    }
+    if (status == status_success) {
+        status = I2S_DO_RX_RESET(ptr);
+    }
 
-    /* Restore the value of the register */
-    ptr->CFGR = cfgr_temp;
-    ptr->MISC_CFGR = misc_cfgr_temp;
+    i2s_restore_clk_config(ptr, &cfg_backup);
+
+    return status;
 }
 
 void i2s_get_default_config(I2S_Type *ptr, i2s_config_t *config)
@@ -97,9 +260,14 @@ void i2s_get_default_config(I2S_Type *ptr, i2s_config_t *config)
     config->rx_fifo_threshold = 4;
 }
 
-void i2s_init(I2S_Type *ptr, i2s_config_t *config)
+hpm_stat_t i2s_init(I2S_Type *ptr, i2s_config_t *config)
 {
-    i2s_reset_all(ptr);
+    hpm_stat_t status;
+
+    status = i2s_reset_all(ptr);
+    if (status != status_success) {
+        return status;
+    }
 
     ptr->CFGR = I2S_CFGR_INV_MCLK_OUT_SET(config->invert_mclk_out)
         | I2S_CFGR_INV_MCLK_IN_SET(config->invert_mclk_in)
@@ -122,6 +290,8 @@ void i2s_init(I2S_Type *ptr, i2s_config_t *config)
     /* make the buffer always frame aligned even in case of buffer underflow or overflow */
     ptr->CTRL |= I2S_CTRL_FRC_ALIGN_FBUF_MASK;
 #endif
+
+    return status;
 }
 
 static void i2s_config_cfgr(I2S_Type *ptr,
@@ -194,26 +364,9 @@ static hpm_stat_t _i2s_config_tx(I2S_Type *ptr, i2s_transfer_config_t *config)
 
     ptr->TXDSLOT[config->data_line] = config->channel_slot_mask;
 
-    /* work around: fill dummy data into TX fifo to avoid TX underflow during tx start */
-    if (!(config->master_mode)) { /* enable internal clock to fill dummy data in slave mode */
-        uint32_t cfgr_temp, misc_cfgr_temp;
-        cfgr_temp = ptr->CFGR;
-        ptr->CFGR |= I2S_CFGR_BCLK_DIV_SET(1);
-        ptr->CFGR &= ~(I2S_CFGR_MCK_SEL_OP_MASK | I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_FCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK);
-        misc_cfgr_temp = ptr->MISC_CFGR;
-        ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
-
-        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
-            return status_invalid_argument;
-        }
-
-        /* Restore the value of the CFGR and MISC_CFGR register in slave mode */
-        ptr->CFGR = cfgr_temp;
-        ptr->MISC_CFGR = misc_cfgr_temp;
-    } else { /* master mode */
-        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
-            return status_invalid_argument;
-        }
+    /* workaround: fill dummy data into TX fifo to avoid TX underflow during tx start */
+    if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
+        return status_invalid_argument;
     }
 
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_TX_EN_MASK))
@@ -261,26 +414,9 @@ static hpm_stat_t _i2s_config_transfer(I2S_Type *ptr, i2s_transfer_config_t *con
     ptr->RXDSLOT[config->data_line] = config->channel_slot_mask;
     ptr->TXDSLOT[config->data_line] = config->channel_slot_mask;
 
-    /* work around: fill dummy data into TX fifo to avoid TX underflow during tx start */
-    if (!(config->master_mode)) { /* enable internal clock to fill dummy data in slave mode */
-        uint32_t cfgr_temp, misc_cfgr_temp;
-        cfgr_temp = ptr->CFGR;
-        ptr->CFGR |= I2S_CFGR_BCLK_DIV_SET(1);
-        ptr->CFGR &= ~(I2S_CFGR_MCK_SEL_OP_MASK | I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_FCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK);
-        misc_cfgr_temp = ptr->MISC_CFGR;
-        ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
-
-        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
-            return status_invalid_argument;
-        }
-
-        /* Restore the value of the CFGR and MISC_CFGR register in slave mode */
-        ptr->CFGR = cfgr_temp;
-        ptr->MISC_CFGR = misc_cfgr_temp;
-    } else { /* master mode */
-        if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
-            return status_invalid_argument;
-        }
+    /* workaround: fill dummy data into TX fifo to avoid TX underflow during tx start */
+    if (i2s_fill_tx_dummy_data(ptr, config->data_line, config->channel_num_per_frame) != status_success) {
+        return status_invalid_argument;
     }
 
     ptr->CTRL = (ptr->CTRL & ~(I2S_CTRL_RX_EN_MASK | I2S_CTRL_TX_EN_MASK))
@@ -301,7 +437,7 @@ hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
         return status_invalid_argument;
     }
 
-    i2s_disable(ptr);
+    i2s_stop(ptr);
     i2s_config_cfgr(ptr, bclk_div, config);
 
     return _i2s_config_tx(ptr, config);
@@ -309,7 +445,7 @@ hpm_stat_t i2s_config_tx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
 
 hpm_stat_t i2s_config_tx_slave(I2S_Type *ptr, i2s_transfer_config_t *config)
 {
-    i2s_disable(ptr);
+    i2s_stop(ptr);
     i2s_config_cfgr_slave(ptr, config);
 
     return _i2s_config_tx(ptr, config);
@@ -326,7 +462,7 @@ hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
         return status_invalid_argument;
     }
 
-    i2s_disable(ptr);
+    i2s_stop(ptr);
     i2s_config_cfgr(ptr, bclk_div, config);
 
     return _i2s_config_rx(ptr, config);
@@ -334,7 +470,7 @@ hpm_stat_t i2s_config_rx(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_config
 
 hpm_stat_t i2s_config_rx_slave(I2S_Type *ptr, i2s_transfer_config_t *config)
 {
-    i2s_disable(ptr);
+    i2s_stop(ptr);
     i2s_config_cfgr_slave(ptr, config);
 
     return _i2s_config_rx(ptr, config);
@@ -351,7 +487,7 @@ hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_
         return status_invalid_argument;
     }
 
-    i2s_disable(ptr);
+    i2s_stop(ptr);
     i2s_config_cfgr(ptr, bclk_div, config);
 
     return _i2s_config_transfer(ptr, config);
@@ -359,7 +495,7 @@ hpm_stat_t i2s_config_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s_transfer_
 
 hpm_stat_t i2s_config_transfer_slave(I2S_Type *ptr, i2s_transfer_config_t *config)
 {
-    i2s_disable(ptr);
+    i2s_stop(ptr);
     i2s_config_cfgr_slave(ptr, config);
 
     return _i2s_config_transfer(ptr, config);
@@ -387,7 +523,7 @@ hpm_stat_t i2s_config_multiline_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s
         return status_invalid_argument;
     }
 
-    i2s_disable(ptr);
+    i2s_stop(ptr);
 
     if (config->master_mode) {
         i2s_gate_bclk(ptr);
@@ -419,31 +555,11 @@ hpm_stat_t i2s_config_multiline_transfer(I2S_Type *ptr, uint32_t mclk_in_hz, i2s
         }
     }
 
-    /* work around: fill dummy data into TX fifo to avoid TX underflow during tx start */
-    if (!(config->master_mode)) { /* enable internal clock to fill dummy data in slave mode */
-        uint32_t cfgr_temp, misc_cfgr_temp;
-        cfgr_temp = ptr->CFGR;
-        ptr->CFGR |= I2S_CFGR_BCLK_DIV_SET(1);
-        ptr->CFGR &= ~(I2S_CFGR_MCK_SEL_OP_MASK | I2S_CFGR_BCLK_SEL_OP_MASK | I2S_CFGR_FCLK_SEL_OP_MASK | I2S_CFGR_BCLK_GATEOFF_MASK);
-        misc_cfgr_temp = ptr->MISC_CFGR;
-        ptr->MISC_CFGR &= ~I2S_MISC_CFGR_MCLK_GATEOFF_MASK;
-
-        for (uint8_t i = 0; i < 4; i++) {
-            if (config->tx_data_line_en[i]) {
-                if (i2s_fill_tx_dummy_data(ptr, i, config->channel_num_per_frame) != status_success) {
-                    return status_invalid_argument;
-                }
-            }
-        }
-        /* Restore the value of the CFGR and MISC_CFGR register in slave mode */
-        ptr->CFGR = cfgr_temp;
-        ptr->MISC_CFGR = misc_cfgr_temp;
-    } else { /* master mode */
-        for (uint8_t i = 0; i < 4; i++) {
-            if (config->tx_data_line_en[i]) {
-                if (i2s_fill_tx_dummy_data(ptr, i, config->channel_num_per_frame) != status_success) {
-                    return status_invalid_argument;
-                }
+    /* workaround: fill dummy data into TX fifo to avoid TX underflow during tx start */
+    for (uint8_t i = 0; i < 4; i++) {
+        if (config->tx_data_line_en[i]) {
+            if (i2s_fill_tx_dummy_data(ptr, i, config->channel_num_per_frame) != status_success) {
+                return status_invalid_argument;
             }
         }
     }

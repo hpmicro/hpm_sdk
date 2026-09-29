@@ -28,7 +28,7 @@ lvgl_indev_usb_keyboard_mouse
 硬件配置
 ------------
 
-- 连接开发板支持的屏幕，默认使用RGB屏。如需连接其他类型的屏，需要同步修改`board/xxx/CMakeLists.txt`,选择对应的屏幕
+- 连接开发板支持的屏幕，默认使用RGB屏。如需连接其他类型的屏，需要同步修改 `board/xxx/CMakeLists.txt`,选择对应的屏幕
 - 连接键鼠设备到USB0端口上。
 
 编译类型

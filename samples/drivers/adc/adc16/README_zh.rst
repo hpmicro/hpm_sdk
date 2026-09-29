@@ -32,12 +32,15 @@ ADC16
   .. code-block:: console
 
    This is an ADC16 demo:
+   ADC16 clock: input=200000000 Hz, div=4, conv=50000000 Hz
+   ADC16 sample: cycle=20, convert=21, fs=1219512 Hz
    1. Oneshot    mode
    2. Period     mode
    3. Sequence   mode
    4. Preemption mode
    Please enter one of ADC conversion modes above (e.g. 1 or 2 ...):
 
+- 以上时钟与 ``ADC3`` 行为 ``hpm6750evk2`` 默认 AHB 200 MHz 的打印。其他板按本板 AHB 与 ``BOARD_APP_ADC16`` 实例显示（例如 ``hpm5300evk`` 为 160 MHz / 4 = 40 MHz；``hpm6e00evk`` 实例为 ADC0）。
 
 - 选择ADC转换模式，启动ADC转换，并观察转换结果
 
@@ -59,6 +62,7 @@ ADC16
     .. code-block:: console
 
      Please enter one of ADC conversion modes above (e.g. 1 or 2 ...): 2
+     ADC16 period: target=500000000 ns, actual=500695040 ns (prescale=17 prd=191)
      Period Mode - ADC3 [channel 2] - Result: 0xfff3
      Period Mode - ADC3 [channel 2] - Result: 0xfff5
      Period Mode - ADC3 [channel 2] - Result: 0xfff7

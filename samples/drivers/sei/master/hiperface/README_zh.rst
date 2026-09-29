@@ -35,16 +35,19 @@ SEI Master: Connect HIPERFACE Encoder
    ----------------------------------------------------------------------
    SEI master hiperface sample
    Started sei engine!
-   rev:0x272, pos:0x55100000, addr:0x40, CRC:0x8a, sample_tm:2683013340, update_tm:2684690833, TimeDelay:8387 us
-   rev:0x272, pos:0xa400000, addr:0x40, CRC:0x85, sample_tm:2723013856, update_tm:2724691348, TimeDelay:8387 us
-   rev:0x272, pos:0xa000000, addr:0x40, CRC:0xa5, sample_tm:2763013939, update_tm:2764691431, TimeDelay:8387 us
-   rev:0x271, pos:0xc0200000, addr:0x40, CRC:0xdc, sample_tm:2803013180, update_tm:2804690667, TimeDelay:8387 us
-   rev:0x271, pos:0x7f900000, addr:0x40, CRC:0xd3, sample_tm:2843013262, update_tm:2844690749, TimeDelay:8387 us
-   rev:0x271, pos:0x6f800000, addr:0x40, CRC:0xd3, sample_tm:2883012911, update_tm:2884690397, TimeDelay:8387 us
-   rev:0x271, pos:0x6f600000, addr:0x40, CRC:0xa3, sample_tm:2923014268, update_tm:2924691755, TimeDelay:8387 us
-   rev:0x271, pos:0x6fa00000, addr:0x40, CRC:0x93, sample_tm:2963013510, update_tm:2964690996, TimeDelay:8387 us
-   rev:0x271, pos:0x6f900000, addr:0x40, CRC:0x53, sample_tm:3003013158, update_tm:3004690645, TimeDelay:8387 us
-   rev:0x271, pos:0x6fa00000, addr:0x40, CRC:0x93, sample_tm:3043013784, update_tm:3044691270, TimeDelay:8387 us
-   rev:0x271, pos:0x6fa00000, addr:0x40, CRC:0x93, sample_tm:3083016146, update_tm:3084693633, TimeDelay:8387 us
-   rev:0x271, pos:0x6fa00000, addr:0x40, CRC:0x93, sample_tm:3123011969, update_tm:3124689456, TimeDelay:8387 us
-
+   rev:0xa, pos:0x5a500000, addr:0x40, CRC:0x2, TimeDelta:7760 us
+   rev:0xa, pos:0x5a600000, addr:0x40, CRC:0x1, TimeDelta:7760 us
+   rev:0xa, pos:0x5a700000, addr:0x40, CRC:0x0, TimeDelta:7760 us
+   rev:0xa, pos:0x5a800000, addr:0x40, CRC:0xf, TimeDelta:7760 us
+   rev:0xa, pos:0x5a900000, addr:0x40, CRC:0xe, TimeDelta:7760 us
+   rev:0xa, pos:0x5aa00000, addr:0x40, CRC:0xd, TimeDelta:7760 us
+   rev:0xa, pos:0x5ab00000, addr:0x40, CRC:0xc, TimeDelta:7760 us
+   rev:0xa, pos:0x5ac00000, addr:0x40, CRC:0xb, TimeDelta:7760 us
+   rev:0xa, pos:0x5ad00000, addr:0x40, CRC:0xa, TimeDelta:7760 us
+   rev:0xa, pos:0x5ae00000, addr:0x40, CRC:0x9, TimeDelta:7760 us
+   rev:0xa, pos:0x5af00000, addr:0x40, CRC:0x8, TimeDelta:7760 us
+   rev:0xa, pos:0x5b000000, addr:0x40, CRC:0x17, TimeDelta:7760 us
+   rev:0xa, pos:0x5b100000, addr:0x40, CRC:0x16, TimeDelta:7760 us
+   rev:0xa, pos:0x5b200000, addr:0x40, CRC:0x15, TimeDelta:7760 us
+   rev:0xa, pos:0x5b300000, addr:0x40, CRC:0x14, TimeDelta:7760 us
+   rev:0xa, pos:0x5b400000, addr:0x40, CRC:0x13, TimeDelta:7760 us

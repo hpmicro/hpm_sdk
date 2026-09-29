@@ -18,7 +18,7 @@ Netx Duo Sntp客户端
 
 - 以太网端口配置：参考 `以太网通用工程设置 <../../../../lwip/doc/Ethernet_Common_Project_Settings_zh.rst>`_
 
-- 可以通过`set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)`的语句来使能DHCP功能。
+- 可以通过 `set(CONFIG_ECLIPSE_THREADX_NETXDUO_ADDONS_DHCP 1)` 的语句来使能DHCP功能。
 
 运行现象
 ------------

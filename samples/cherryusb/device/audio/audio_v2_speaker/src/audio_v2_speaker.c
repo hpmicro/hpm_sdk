@@ -36,6 +36,12 @@ dao_config_t dao_config;
 #define EP_INTERVAL_HS 0x04
 #define EP_INTERVAL_FS 0x01
 
+/* bInterval -> packets/sec: HS 8000 / 2^(bInterval-1), FS 1000 / 2^(bInterval-1) */
+#define SPEAKER_HS_MICROFRAMES_PER_PACKET (1U << (EP_INTERVAL_HS - 1U))
+#define SPEAKER_HS_PACKETS_PER_SEC        (8000U / SPEAKER_HS_MICROFRAMES_PER_PACKET)
+#define SPEAKER_FS_FRAMES_PER_PACKET      (1U << (EP_INTERVAL_FS - 1U))
+#define SPEAKER_FS_PACKETS_PER_SEC        (1000U / SPEAKER_FS_FRAMES_PER_PACKET)
+
 #define AUDIO_OUT_EP 0x01
 
 #define AUDIO_VERSION 0x0200
@@ -79,8 +85,19 @@ dao_config_t dao_config;
 #define SPEAKER_DMA_CHANNEL 1U
 #define SPEAKER_DMAMUX_CHANNEL    DMA_SOC_CHN_TO_DMAMUX_CHN(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL)
 
+/* Buffer geometry */
+#define AUDIO_OUT_FRAME_SIZE    (OUT_CHANNEL_NUM * SPEAKER_SLOT_BYTE_SIZE)
+
+/* USB service slot sizes at the maximum sample rate */
+#define AUDIO_OUT_SLOT_HS       ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * AUDIO_OUT_FRAME_SIZE) / SPEAKER_HS_PACKETS_PER_SEC))
+#define AUDIO_OUT_SLOT_FS       ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * AUDIO_OUT_FRAME_SIZE) / SPEAKER_FS_PACKETS_PER_SEC))
+
+/* USB descriptor packet size = slot + 1 extra audio frame */
+#define AUDIO_OUT_PACKET_HS     (AUDIO_OUT_SLOT_HS + AUDIO_OUT_FRAME_SIZE)
+#define AUDIO_OUT_PACKET_FS     (AUDIO_OUT_SLOT_FS + AUDIO_OUT_FRAME_SIZE)
+#define AUDIO_OUT_PACKET_MAX    ((AUDIO_OUT_PACKET_HS) > (AUDIO_OUT_PACKET_FS) ? (AUDIO_OUT_PACKET_HS) : (AUDIO_OUT_PACKET_FS))
+
 #define AUDIO_BUFFER_COUNT      32
-#define AUDIO_OUT_PACKET        ((uint32_t)((SPEAKER_MAX_SAMPLE_FREQ * SPEAKER_SLOT_BYTE_SIZE * OUT_CHANNEL_NUM) / 1000) + (OUT_CHANNEL_NUM * SPEAKER_SLOT_BYTE_SIZE))
 
 #define USB_AUDIO_CONFIG_DESC_SIZ (9 +                                                     \
                                    AUDIO_V2_AC_DESCRIPTOR_LEN +                            \
@@ -107,7 +124,7 @@ static const uint8_t config_descriptor_hs[] = {
     AUDIO_V2_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x02, AUDIO_TERMINAL_STREAMING, AUDIO_OUT_CLOCK_ID, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, 0x0000),
     AUDIO_V2_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_OUT_FU_ID, 0x02, OUTPUT_CTRL),
     AUDIO_V2_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x04, AUDIO_OUTTERM_SPEAKER, AUDIO_OUT_FU_ID, AUDIO_OUT_CLOCK_ID, 0x0000),
-    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET, EP_INTERVAL_HS),
+    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET_HS, EP_INTERVAL_HS),
 };
 
 static const uint8_t config_descriptor_fs[] = {
@@ -117,7 +134,7 @@ static const uint8_t config_descriptor_fs[] = {
     AUDIO_V2_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x02, AUDIO_TERMINAL_STREAMING, AUDIO_OUT_CLOCK_ID, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, 0x0000),
     AUDIO_V2_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_OUT_FU_ID, 0x02, OUTPUT_CTRL),
     AUDIO_V2_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x04, AUDIO_OUTTERM_SPEAKER, AUDIO_OUT_FU_ID, AUDIO_OUT_CLOCK_ID, 0x0000),
-    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET, EP_INTERVAL_FS),
+    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET_FS, EP_INTERVAL_FS),
 };
 
 static const uint8_t device_quality_descriptor[] = {
@@ -131,7 +148,7 @@ static const uint8_t other_speed_config_descriptor_hs[] = {
     AUDIO_V2_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x02, AUDIO_TERMINAL_STREAMING, AUDIO_OUT_CLOCK_ID, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, 0x0000),
     AUDIO_V2_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_OUT_FU_ID, 0x02, OUTPUT_CTRL),
     AUDIO_V2_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x04, AUDIO_OUTTERM_SPEAKER, AUDIO_OUT_FU_ID, AUDIO_OUT_CLOCK_ID, 0x0000),
-    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET, EP_INTERVAL_FS),
+    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET_FS, EP_INTERVAL_FS),
 };
 
 static const uint8_t other_speed_config_descriptor_fs[] = {
@@ -141,7 +158,7 @@ static const uint8_t other_speed_config_descriptor_fs[] = {
     AUDIO_V2_AC_INPUT_TERMINAL_DESCRIPTOR_INIT(0x02, AUDIO_TERMINAL_STREAMING, AUDIO_OUT_CLOCK_ID, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, 0x0000),
     AUDIO_V2_AC_FEATURE_UNIT_DESCRIPTOR_INIT(AUDIO_OUT_FU_ID, 0x02, OUTPUT_CTRL),
     AUDIO_V2_AC_OUTPUT_TERMINAL_DESCRIPTOR_INIT(0x04, AUDIO_OUTTERM_SPEAKER, AUDIO_OUT_FU_ID, AUDIO_OUT_CLOCK_ID, 0x0000),
-    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET, EP_INTERVAL_HS),
+    AUDIO_V2_AS_DESCRIPTOR_INIT(0x01, 0x02, OUT_CHANNEL_NUM, OUTPUT_CH_ENABLE, SPEAKER_SLOT_BYTE_SIZE, SPEAKER_AUDIO_DEPTH, AUDIO_OUT_EP, 0x09, AUDIO_OUT_PACKET_HS, EP_INTERVAL_HS),
 };
 
 static const char *string_descriptors[] = {
@@ -219,17 +236,18 @@ static const uint8_t default_sampling_freq_table[] = {
 };
 
 /* Static Variables */
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_out_buffer[AUDIO_BUFFER_COUNT][AUDIO_OUT_PACKET];
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t s_speaker_out_buffer[AUDIO_BUFFER_COUNT][AUDIO_OUT_PACKET_MAX];
 static uint32_t s_speaker_out_buffer_size[AUDIO_BUFFER_COUNT];
 static volatile uint32_t s_speaker_i2s_mclk_hz;
 static volatile bool s_speaker_rx_flag;
 static volatile uint8_t s_speaker_out_buffer_front;
 static volatile uint8_t s_speaker_out_buffer_rear;
 static volatile bool s_speaker_dma_transfer_req;
-static volatile bool s_speaker_dma_transfer_done;
+static volatile uint8_t s_speaker_priming_count;
 static volatile uint32_t s_speaker_sample_rate;
-static volatile int32_t s_speaker_volume_percent;
+static volatile int32_t s_speaker_volume_db;
 static volatile bool s_speaker_mute;
+static volatile bool s_speaker_codec_update_pending;
 
 static struct usbd_interface intf0;
 static struct usbd_interface intf1;
@@ -254,8 +272,9 @@ struct audio_entity_info audio_entity_table[] = {
 };
 
 /* Static Functions Declaration */
-static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num);
+static hpm_stat_t speaker_config_i2s_playback(uint32_t sample_rate);
 static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size);
+static void speaker_apply_codec_state(void);
 static bool speaker_out_buff_is_empty(void);
 
 /* Extern Functions Definition */
@@ -298,8 +317,21 @@ void audio_v2_init(uint8_t busid, uint32_t reg_base)
 
 void speaker_init_i2s_dao_codec(void)
 {
+    i2s_config_t i2s_config;
+
     s_speaker_sample_rate = 16000;
-    (void)speaker_init_i2s_playback(s_speaker_sample_rate, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
+
+    i2s_get_default_config(TARGET_I2S, &i2s_config);
+#if defined(USING_CODEC) && USING_CODEC
+    i2s_config.enable_mclk_out = true;
+#endif
+    if (i2s_init(TARGET_I2S, &i2s_config) != status_success) {
+        printf("i2s_init failed\n");
+        while (1) {
+        }
+    }
+    i2s_invert_fclk_out = i2s_config.invert_fclk_out;
+    s_speaker_i2s_mclk_hz = clock_get_frequency(TARGET_I2S_CLK_NAME);
 
 #if defined(USING_CODEC) && USING_CODEC
 #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
@@ -367,52 +399,64 @@ void isr_dma(void)
 
     speaker_status = dma_check_transfer_status(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL);
     if (0 != (speaker_status & DMA_CHANNEL_STATUS_TC)) {
-        s_speaker_dma_transfer_done = true;
+        if (s_speaker_rx_flag) {
+            if (!speaker_out_buff_is_empty()) {
+                uint32_t front = s_speaker_out_buffer_front;
+                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
+                                               s_speaker_out_buffer_size[front]);
+                front++;
+                if (front >= AUDIO_BUFFER_COUNT) {
+                    front = 0;
+                }
+                s_speaker_out_buffer_front = front;
+            } else {
+                /* Buffer empty, set flag to retry when next USB packet arrives */
+                s_speaker_dma_transfer_req = true;
+            }
+
+        }
     }
 }
 
 void audio_v2_task(uint8_t busid)
 {
     (void)busid;
-    uint32_t front = s_speaker_out_buffer_front;  /* defined the order of volatile accesses */
 
-    if (s_speaker_rx_flag) {
-        if (!speaker_out_buff_is_empty()) {
-            if (s_speaker_dma_transfer_req) {
-                s_speaker_dma_transfer_req = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
-                                               s_speaker_out_buffer_size[front]);
-
-                front++;
-                if (front >= AUDIO_BUFFER_COUNT) {
-                    front = 0;
-                }
-            } else if (s_speaker_dma_transfer_done) {
-                s_speaker_dma_transfer_done = false;
-                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
-                                               s_speaker_out_buffer_size[front]);
-                front++;
-                if (front >= AUDIO_BUFFER_COUNT) {
-                    front = 0;
-                }
-            } else {
-                ;    /* Do Nothing */
-            }
-            s_speaker_out_buffer_front = front;
-        }
+    /* Apply deferred codec state update (I2C is slow, must not run in USB ISR context) */
+    if (s_speaker_codec_update_pending) {
+        s_speaker_codec_update_pending = false;
+        speaker_apply_codec_state();
     }
 }
 
 void usbd_audio_open(uint8_t busid, uint8_t intf)
 {
+    hpm_stat_t state;
+
     (void)intf;
 
+    i2s_reset_tx(TARGET_I2S);
+    state = speaker_config_i2s_playback(s_speaker_sample_rate);
+    if (state != status_success) {
+        USB_LOG_ERR("SPEAKER I2S config failed\r\n");
+        return;
+    }
+#if defined(USING_CODEC) && USING_CODEC
+    #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
+    wm8960_set_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, s_speaker_sample_rate, SPEAKER_AUDIO_DEPTH);
+    #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
+    sgtl_config_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, s_speaker_sample_rate, SPEAKER_AUDIO_DEPTH);
+    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
+    es8389_set_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, s_speaker_sample_rate, SPEAKER_AUDIO_DEPTH);
+    #endif
+#endif
     s_speaker_rx_flag = 1;
     s_speaker_out_buffer_front = 0;
     s_speaker_out_buffer_rear = 0;
     s_speaker_dma_transfer_req = true;
+    s_speaker_priming_count = 0;
     /* setup first out ep read transfer */
-    usbd_ep_start_read(busid, AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
+    usbd_ep_start_read(busid, AUDIO_OUT_EP, (uint8_t *)&s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET_MAX);
 #if defined(USING_DAO) && USING_DAO
     if (s_speaker_mute) {
         dao_stop(HPM_DAO);
@@ -420,7 +464,8 @@ void usbd_audio_open(uint8_t busid, uint8_t intf)
         dao_start(HPM_DAO);
     }
 #endif
-    USB_LOG_RAW("OPEN SPEAKER\r\n");
+    i2s_start(TARGET_I2S);
+    USB_LOG_RAW("OPEN SPEAKER, sample rate: %lu Hz\r\n", (unsigned long)s_speaker_sample_rate);
 }
 
 void usbd_audio_close(uint8_t busid, uint8_t intf)
@@ -429,41 +474,26 @@ void usbd_audio_close(uint8_t busid, uint8_t intf)
     (void)intf;
 
     s_speaker_rx_flag = 0;
+    /* Stop any ongoing DMA transfer to prevent stale TC after close */
+    dma_abort_channel(BOARD_APP_DMA1, 1u << SPEAKER_DMA_CHANNEL);
+    i2s_reset_tx(TARGET_I2S);
+    i2s_stop(TARGET_I2S);
 #if defined(USING_DAO) && USING_DAO
     dao_stop(HPM_DAO);
 #endif
     USB_LOG_RAW("CLOSE SPEAKER\r\n");
 }
 
-void usbd_audio_set_volume(uint8_t busid, uint8_t ep, uint8_t ch, int volume)
+void usbd_audio_set_volume(uint8_t busid, uint8_t ep, uint8_t ch, int volume_db)
 {
     (void)busid;
     (void)ch;
 
     if (ep == AUDIO_OUT_EP) {
-        s_speaker_volume_percent = volume;
-#if defined(USING_CODEC) && USING_CODEC
-    #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-        volume = 255 * s_speaker_volume_percent / 100;
-        if (wm8960_set_volume(&s_codec_control, wm8960_module_dac, volume) != status_success) {
-            USB_LOG_RAW("set volume Fail!\r\n");
-        }
-    #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
-        volume = SGTL5000_DAC_MAX_VOLUME_VALUE - (SGTL5000_DAC_MAX_VOLUME_VALUE - SGTL5000_DAC_MIN_VOLUME_VALUE) * s_speaker_volume_percent / 100;
-        if (sgtl_set_volume(&s_codec_control, sgtl_module_dac, volume) != status_success) {
-            USB_LOG_RAW("set volume Fail!\r\n");
-        }
-    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
-        /* ES8389 volume range: 0-255, where 191 (0xBF) represents 0dB */
-        volume = 255 * s_speaker_volume_percent / 100;
-        if (es8389_set_volume(&s_codec_control, es8389_dac1, volume) != status_success) {
-            USB_LOG_RAW("set volume Fail!\r\n");
-        }
-        if (es8389_set_volume(&s_codec_control, es8389_dac2, volume) != status_success) {
-            USB_LOG_RAW("set volume Fail!\r\n");
-        }
-    #endif
-#endif
+        /* CherryUSB passes volume in dB units (e.g., -30 for -30dB, 0 for 0dB) */
+        /* Defer I2C codec write to audio_v2_task to avoid blocking USB ISR */
+        s_speaker_volume_db = volume_db;
+        s_speaker_codec_update_pending = true;
     }
 }
 
@@ -475,7 +505,7 @@ int usbd_audio_get_volume(uint8_t busid, uint8_t ep, uint8_t ch)
     int volume = 0;
 
     if (ep == AUDIO_OUT_EP) {
-        volume = s_speaker_volume_percent;
+        volume = s_speaker_volume_db;
     }
 
     return volume;
@@ -486,40 +516,16 @@ void usbd_audio_set_mute(uint8_t busid, uint8_t ep, uint8_t ch, bool mute)
     (void)busid;
     (void)ch;
 
-#if defined(USING_CODEC) && USING_CODEC
-    uint32_t volume;
-#endif
-
     if (ep == AUDIO_OUT_EP) {
+        /* Defer I2C codec write to audio_v2_task to avoid blocking USB ISR */
         s_speaker_mute = mute;
-#if defined(USING_CODEC) && USING_CODEC
-    #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-        if (s_speaker_mute) {
-            wm8960_set_volume(&s_codec_control, wm8960_module_dac, 0);
-        } else {
-            volume = 255 * s_speaker_volume_percent / 100;
-            wm8960_set_volume(&s_codec_control, wm8960_module_dac, volume);
-        }
-    #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
-        if (sgtl_set_mute(&s_codec_control, sgtl_module_dac, s_speaker_mute) != status_success) {
-            USB_LOG_RAW("set mute Fail!\r\n");
-        }
-    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
-        if (es8389_mute(&s_codec_control, es8389_dac1, s_speaker_mute) != status_success) {
-            USB_LOG_RAW("set mute Fail!\r\n");
-        }
-        if (es8389_mute(&s_codec_control, es8389_dac2, s_speaker_mute) != status_success) {
-            USB_LOG_RAW("set mute Fail!\r\n");
-        }
-    #endif
-#elif defined(USING_DAO) && USING_DAO
+        s_speaker_codec_update_pending = true;
+#if defined(USING_DAO) && USING_DAO
         if (s_speaker_mute) {
             dao_stop(HPM_DAO);
         } else {
             dao_start(HPM_DAO);
         }
-#else
-    #error define USING_CODEC or USING_DAO
 #endif
     }
 }
@@ -538,31 +544,59 @@ bool usbd_audio_get_mute(uint8_t busid, uint8_t ep, uint8_t ch)
     return mute;
 }
 
+static void speaker_apply_codec_state(void)
+{
+#if defined(USING_CODEC) && USING_CODEC
+    #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
+    /* WM8960 has no hardware mute bit, use the minimum dB value as mute */
+    if (s_speaker_mute) {
+        wm8960_mute(&s_codec_control, wm8960_module_dac);
+    } else {
+        /* Restore previous volume from stored dB value */
+        float volume_db;
+        wm8960_clamp_volume_db(wm8960_module_dac, (float)s_speaker_volume_db, &volume_db);
+        wm8960_set_volume_db(&s_codec_control, wm8960_module_dac, volume_db);
+    }
+    #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
+    /* SGTL5000 has hardware mute, apply mute and volume independently */
+    if (sgtl_set_mute(&s_codec_control, sgtl_module_dac, s_speaker_mute) != status_success) {
+        USB_LOG_RAW("set mute Fail!\r\n");
+    }
+    if (!s_speaker_mute) {
+        float volume_db;
+        sgtl_clamp_volume_db(sgtl_module_dac, (float)s_speaker_volume_db, &volume_db);
+        if (sgtl_set_volume_db(&s_codec_control, sgtl_module_dac, volume_db) != status_success) {
+            USB_LOG_RAW("set volume Fail!\r\n");
+        }
+    }
+    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
+    /* ES8389 has hardware mute, apply mute and volume independently */
+    if (es8389_mute(&s_codec_control, es8389_dac1, s_speaker_mute) != status_success) {
+        USB_LOG_RAW("set mute Fail!\r\n");
+    }
+    if (es8389_mute(&s_codec_control, es8389_dac2, s_speaker_mute) != status_success) {
+        USB_LOG_RAW("set mute Fail!\r\n");
+    }
+    if (!s_speaker_mute) {
+        float volume_db;
+        es8389_clamp_volume_db(es8389_dac1, (float)s_speaker_volume_db, &volume_db);
+        if (es8389_set_volume_db(&s_codec_control, es8389_dac1, volume_db) != status_success) {
+            USB_LOG_RAW("set volume Fail!\r\n");
+        }
+        if (es8389_set_volume_db(&s_codec_control, es8389_dac2, volume_db) != status_success) {
+            USB_LOG_RAW("set volume Fail!\r\n");
+        }
+    }
+    #endif
+#endif
+}
+
 void usbd_audio_set_sampling_freq(uint8_t busid, uint8_t ep, uint32_t sampling_freq)
 {
     (void)busid;
 
-    hpm_stat_t state;
-
     if (ep == AUDIO_OUT_EP) {
         s_speaker_sample_rate = sampling_freq;
-        state = speaker_init_i2s_playback(sampling_freq, SPEAKER_AUDIO_DEPTH, OUT_CHANNEL_NUM);
-        if (state == status_success) {
-#if defined(USING_CODEC) && USING_CODEC
-    #if defined(CONFIG_CODEC_WM8960) && CONFIG_CODEC_WM8960
-            wm8960_set_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
-    #elif defined(CONFIG_CODEC_SGTL5000) && CONFIG_CODEC_SGTL5000
-            sgtl_config_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
-    #elif defined(CONFIG_CODEC_ES8389) && CONFIG_CODEC_ES8389
-            es8389_set_data_format(&s_codec_control, s_speaker_i2s_mclk_hz, sampling_freq, SPEAKER_AUDIO_DEPTH);
-    #endif
-#endif
-            USB_LOG_RAW("Init I2S Clock Ok! Sample Rate: %d, speaker_i2s_mclk_hz: %d\r\n", sampling_freq, s_speaker_i2s_mclk_hz);
-        } else {
-            USB_LOG_RAW("Init I2S Clock Fail!\r\n");
-        }
-        s_speaker_out_buffer_front = s_speaker_out_buffer_rear;
-        s_speaker_dma_transfer_req = true;
     }
 }
 
@@ -592,44 +626,57 @@ void usbd_audio_get_sampling_freq_table(uint8_t busid, uint8_t ep, uint8_t **sam
 static void usbd_audio_iso_out_callback(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     if (s_speaker_rx_flag) {
-        s_speaker_out_buffer_size[s_speaker_out_buffer_rear] = nbytes;
-        s_speaker_out_buffer_rear++;
-        if (s_speaker_out_buffer_rear >= AUDIO_BUFFER_COUNT) {
-            s_speaker_out_buffer_rear = 0;
+        uint32_t rear = s_speaker_out_buffer_rear;
+
+        s_speaker_out_buffer_size[rear] = nbytes;
+        rear++;
+        if (rear >= AUDIO_BUFFER_COUNT) {
+            rear = 0;
         }
-        usbd_ep_start_read(busid, ep, &s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET);
+        s_speaker_out_buffer_rear = rear;
+
+        /* Priming: on initial open, accumulate half the buffer before first DMA kickoff.
+         * Once primed, s_speaker_priming_count stays at its final value and never changes,
+         * so mid-stream underrun recovery kicks off immediately on the next packet.
+         */
+        if (s_speaker_dma_transfer_req) {
+            if (s_speaker_priming_count < (AUDIO_BUFFER_COUNT / 2)) {
+                s_speaker_priming_count++;
+            } else {
+                uint32_t front = s_speaker_out_buffer_front;
+                s_speaker_dma_transfer_req = false;
+                speaker_i2s_dma_start_transfer((uint32_t)&s_speaker_out_buffer[front][0],
+                                               s_speaker_out_buffer_size[front]);
+                front++;
+                if (front >= AUDIO_BUFFER_COUNT) {
+                    front = 0;
+                }
+                s_speaker_out_buffer_front = front;
+            }
+        }
+
+        usbd_ep_start_read(busid, ep, &s_speaker_out_buffer[s_speaker_out_buffer_rear][0], AUDIO_OUT_PACKET_MAX);
     }
 }
 
-static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_depth, uint8_t channel_num)
+static hpm_stat_t speaker_config_i2s_playback(uint32_t sample_rate)
 {
-    i2s_config_t i2s_config;
     i2s_transfer_config_t transfer;
 
-    if (channel_num > 2) {
+    if (OUT_CHANNEL_NUM > 2) {
         return status_invalid_argument; /* Currently not support TDM mode */
     }
 
-    i2s_get_default_config(TARGET_I2S, &i2s_config);
-#if defined(USING_CODEC) && USING_CODEC
-    i2s_config.enable_mclk_out = true;
-#endif
-    i2s_init(TARGET_I2S, &i2s_config);
-    i2s_invert_fclk_out = i2s_config.invert_fclk_out;
-
-    i2s_get_default_transfer_config_for_dao(&transfer);
+    i2s_get_default_transfer_config(&transfer);
     transfer.data_line = TARGET_I2S_TX_DATA_LINE;
     transfer.sample_rate = sample_rate;
-    transfer.audio_depth = audio_depth;
+    transfer.audio_depth = SPEAKER_AUDIO_DEPTH;
     transfer.channel_num_per_frame = 2; /* non TDM mode, channel num fix to 2. */
     transfer.channel_slot_mask = 0x3;   /* 2 channels */
-
-    s_speaker_i2s_mclk_hz = clock_get_frequency(TARGET_I2S_CLK_NAME);
 
     if (status_success != i2s_config_tx(TARGET_I2S, s_speaker_i2s_mclk_hz, &transfer)) {
         return status_fail;
     }
-    i2s_start(TARGET_I2S);
 
     return status_success;
 }
@@ -637,6 +684,7 @@ static hpm_stat_t speaker_init_i2s_playback(uint32_t sample_rate, uint8_t audio_
 static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
 {
     dma_channel_config_t ch_config = { 0 };
+    hpm_stat_t status;
 
     dma_default_channel_config(BOARD_APP_DMA1, &ch_config);
     ch_config.src_addr = core_local_mem_to_sys_address(HPM_CORE0, addr);
@@ -647,10 +695,14 @@ static void speaker_i2s_dma_start_transfer(uint32_t addr, uint32_t size)
     ch_config.dst_addr_ctrl = DMA_ADDRESS_CONTROL_FIXED;
     ch_config.size_in_byte = DMA_ALIGN_WORD(size);
     ch_config.dst_mode = DMA_HANDSHAKE_MODE_HANDSHAKE;
-    ch_config.src_burst_size = 0;
+    ch_config.src_burst_size = DMA_NUM_TRANSFER_PER_BURST_2T; /* 2 transfers per burst: each burst fetches one stereo audio frame (2 channels) */
 
-    if (status_success != dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true)) {
+    status = dma_setup_channel(BOARD_APP_DMA1, SPEAKER_DMA_CHANNEL, &ch_config, true);
+    if (status != status_success) {
         printf(" dma setup channel failed\n");
+    }
+    if (status == status_success) {
+        i2s_enable_tx(TARGET_I2S, 1U << TARGET_I2S_TX_DATA_LINE);
     }
 }
 

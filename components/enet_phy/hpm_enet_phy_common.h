@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 HPMicro
+ * Copyright (c) 2021-2024,2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -35,6 +35,11 @@
 #if defined(__USE_JL1111) && __USE_JL1111
     #include "hpm_jl1111.h"
     #include "hpm_jl1111_regs.h"
+#endif
+
+#if defined(__USE_RTL8211F) && __USE_RTL8211F
+    #include "hpm_rtl8211f.h"
+    #include "hpm_rtl8211f_regs.h"
 #endif
 
 

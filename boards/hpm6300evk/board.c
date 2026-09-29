@@ -437,15 +437,29 @@ uint32_t board_init_pdm_clock(void)
     return clock_get_frequency(clock_pdm);
 }
 
-hpm_stat_t board_set_audio_pll_clock(uint32_t freq)
+uint32_t board_config_i2s_clock(I2S_Type *ptr, uint32_t sample_rate)
 {
-    return pllctlv2_init_pll_with_freq(HPM_PLLCTLV2, 2, freq);    /* pll2clk */
-}
+    uint32_t freq = 0;
 
-uint32_t board_init_i2s_clock(I2S_Type *ptr)
-{
-    (void) ptr;
-    return 0;
+    if (ptr == HPM_I2S0) {
+        if ((sample_rate % 22050) == 0) {
+            init_i2s0_clock_22050(); /* config clock for 22050*n sample rate */
+        } else {
+            init_i2s0_clock_default(); /* default 24576000Hz */
+        }
+        freq = clock_get_frequency(clock_i2s0);
+    } else if (ptr == HPM_I2S1) {
+        if ((sample_rate % 22050) == 0) {
+            init_i2s1_clock_22050(); /* config clock for 22050*n sample rate */
+        } else {
+            init_i2s1_clock_default(); /* default 24576000Hz */
+        }
+        freq = clock_get_frequency(clock_i2s1);
+    } else {
+        ;
+    }
+
+    return freq;
 }
 
 void board_init_adc16_pins(void)
@@ -506,8 +520,10 @@ uint32_t board_init_dac_clock(DAC_Type *ptr, bool clk_src_ahb)
 
     if (ptr == HPM_DAC) {
         if (clk_src_ahb == true) {
+            /* Configure the DAC clock from AHB (@162MHz by default) */
             init_dac0_ahb_clock();
         } else {
+            /* Configure the DAC clock from pll0_clk1 via ana divider (/2, @166MHz by default) */
             init_dac0_analog_clock();
         }
         freq = clock_get_frequency(clock_dac0);
@@ -1057,4 +1073,3 @@ void init_sent_decode_pins(bool idle_high)
         init_gptmr2_channel0_pin_as_capture();
     }
 }
-

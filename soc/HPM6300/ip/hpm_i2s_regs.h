@@ -32,7 +32,7 @@ typedef struct {
 /*
  * SFTRST_RX (RW)
  *
- * software reset the RX module if asserted to be 1'b1. Self-clear.
+ * software reset the RX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.
  */
 #define I2S_CTRL_SFTRST_RX_MASK (0x40000UL)
 #define I2S_CTRL_SFTRST_RX_SHIFT (18U)
@@ -42,7 +42,7 @@ typedef struct {
 /*
  * SFTRST_TX (RW)
  *
- * software reset the TX module if asserted to be 1'b1. Self-clear.
+ * software reset the TX module if asserted to be 1'b1. Cannot be asserted at the same time with other software resets.
  */
 #define I2S_CTRL_SFTRST_TX_MASK (0x20000UL)
 #define I2S_CTRL_SFTRST_TX_SHIFT (17U)
@@ -52,7 +52,7 @@ typedef struct {
 /*
  * SFTRST_CLKGEN (RW)
  *
- * software reset the CLK GEN module if asserted to be 1'b1.  Self-clear.
+ * software reset the CLK GEN module if asserted to be 1'b1.
  */
 #define I2S_CTRL_SFTRST_CLKGEN_MASK (0x10000UL)
 #define I2S_CTRL_SFTRST_CLKGEN_SHIFT (16U)

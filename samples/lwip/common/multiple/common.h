@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2025 HPMicro
+ * Copyright (c) 2023-2026 HPMicro
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,13 +9,20 @@
 #define COMMON_LWIP_H
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
 #include <stdbool.h>
 #include "board.h"
 #include "common_cfg.h"
 #include "lwip/netif.h"
+#include "lwip/err.h"
 #include "hpm_l1c_drv.h"
 #include "hpm_enet_drv.h"
 #include "hpm_enet_phy_common.h"
+
+/* ENET_TX_HW_CRC_MODE: enet_tx_hw_crc_append / replace / off (see hpm_enet_drv.h) */
+#ifndef ENET_TX_HW_CRC_MODE
+#define ENET_TX_HW_CRC_MODE enet_tx_hw_crc_replace
+#endif
 
 #if defined(NO_SYS) && !NO_SYS
 #if defined(__ENABLE_FREERTOS) && __ENABLE_FREERTOS
@@ -54,6 +61,8 @@ typedef enum {
 #define LWIP_APP_TIMER_INTERVAL (2 * 1000U)  /* 2 * 1000 ms */
 #endif /* LWIP_APP_TIMER_INTERVAL  */
 
+#define LWIP_NETIF_COUNT BOARD_ENET_COUNT
+
 #ifndef ENET_TX_BUFF_COUNT
 #define ENET_TX_BUFF_COUNT  (10U)
 #endif
@@ -75,7 +84,9 @@ typedef ENET_Type enet_base_t;
 typedef struct {
     int idx;
     enet_frame_t frame[ENET_RX_BUFF_COUNT];
-} enet_frame_pointer_t;
+    enet_desc_t *desc;
+    ENET_Type *base;
+} enet_netif_state_t;
 
 #if defined __cplusplus
 extern "C" {
@@ -84,14 +95,41 @@ extern "C" {
 extern struct netif gnetif[];
 extern uint8_t mac[][ENET_MAC_SIZE];
 extern enet_desc_t desc[];
+extern enet_netif_state_t enet_netif_state[];
+
+#if __ENABLE_ENET_RECEIVE_INTERRUPT
+extern volatile bool rx_flag[];
+#endif
 
 hpm_stat_t enet_init(uint8_t idx);
-uint8_t enet_get_mac_address(uint8_t i, uint8_t *mac);
+int8_t enet_get_mac_address(uint8_t i, uint8_t *mac);
 void enet_set_mac_address(void *config, uint8_t *mac);
 bool enet_get_link_status(uint8_t i);
 void enet_self_adaptive_port_speed(void);
 void enet_services(struct netif *netif);
 void enet_common_handler(struct netif *netif);
+
+void enet_netif_state_bind(uint8_t idx, ENET_Type *base);
+static inline enet_netif_state_t *enet_netif_get_state(struct netif *netif)
+{
+    return (enet_netif_state_t *)netif->state;
+}
+
+void enet_lwip_tx_release(enet_desc_t *desc);
+err_t enet_lwip_output(ENET_Type *ptr, enet_desc_t *desc, struct pbuf *p);
+void enet_lwip_dc_invalidate(uint32_t addr, uint32_t len);
+
+typedef struct {
+    struct pbuf_custom p;
+    void *dma_descriptor;
+} enet_lwip_rx_custom_pbuf_t;
+
+typedef void *(*enet_lwip_rx_custom_alloc_fn)(void);
+typedef void (*enet_lwip_rx_custom_free_fn)(struct pbuf *p);
+
+struct pbuf *enet_lwip_input(enet_frame_t *frame, uint16_t rx_buff_size,
+                                          enet_lwip_rx_custom_alloc_fn alloc_fn,
+                                          enet_lwip_rx_custom_free_fn free_fn);
 
 #if defined(LWIP_DHCP) && LWIP_DHCP
 void enet_update_dhcp_state(struct netif *netif);

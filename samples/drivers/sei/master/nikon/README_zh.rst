@@ -39,12 +39,20 @@ SEI Master: Connect NIKON Encoder
    ----------------------------------------------------------------------
    SEI master nikon sample
    Started sei engine!
-   ST:0xfffa5, MT:0x8888, CRC:0xa9, sample_tm:320369459, update_tm:320375597, TimeDelay:306*0.1us
-   ST:0xfffa6, MT:0x8888, CRC:0x7a, sample_tm:360369459, update_tm:360375597, TimeDelay:306*0.1us
-   ST:0xfffa7, MT:0x8888, CRC:0x59, sample_tm:400369459, update_tm:400375598, TimeDelay:306*0.1us
-   ST:0xfffa8, MT:0x8888, CRC:0xca, sample_tm:440369459, update_tm:440375597, TimeDelay:306*0.1us
-   ST:0xfffa9, MT:0x8888, CRC:0xe9, sample_tm:480369459, update_tm:480375597, TimeDelay:306*0.1us
-   ST:0xfffaa, MT:0x8888, CRC:0x55, sample_tm:520369459, update_tm:520375597, TimeDelay:306*0.1us
-   ST:0xfffab, MT:0x8888, CRC:0x76, sample_tm:560369459, update_tm:560375598, TimeDelay:306*0.1us
-   ST:0xfffac, MT:0x8888, CRC:0xb, sample_tm:600369459, update_tm:600375598, TimeDelay:306*0.1us
+   ST:0xfffa5, MT:0x8888, CRC:0x63, TimeDelta:307*0.1us
+   ST:0xfffa6, MT:0x8888, CRC:0x5e, TimeDelta:307*0.1us
+   ST:0xfffa7, MT:0x8888, CRC:0x9a, TimeDelta:307*0.1us
+   ST:0xfffa8, MT:0x8888, CRC:0x53, TimeDelta:307*0.1us
+   ST:0xfffa9, MT:0x8888, CRC:0x97, TimeDelta:307*0.1us
+   ST:0xfffaa, MT:0x8888, CRC:0xaa, TimeDelta:307*0.1us
+   ST:0xfffab, MT:0x8888, CRC:0x6e, TimeDelta:307*0.1us
+   ST:0xfffac, MT:0x8888, CRC:0xd0, TimeDelta:307*0.1us
+   ST:0xfffad, MT:0x8888, CRC:0x14, TimeDelta:307*0.1us
+   ST:0xfffae, MT:0x8888, CRC:0x29, TimeDelta:307*0.1us
+   ST:0xfffaf, MT:0x8888, CRC:0xed, TimeDelta:307*0.1us
+   ST:0xfffb0, MT:0x8888, CRC:0xca, TimeDelta:307*0.1us
+   ST:0xfffb1, MT:0x8888, CRC:0xe, TimeDelta:307*0.1us
+   ST:0xfffb2, MT:0x8888, CRC:0x33, TimeDelta:307*0.1us
+   ST:0xfffb3, MT:0x8888, CRC:0xf7, TimeDelta:307*0.1us
+   ST:0xfffb4, MT:0x8888, CRC:0x49, TimeDelta:307*0.1us
 
